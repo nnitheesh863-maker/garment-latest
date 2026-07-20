@@ -34,11 +34,7 @@ exports.getEmployees = async (req, res, next) => {
       ];
     }
 
-    if (req.user.role === "manager") {
-      filter.$or = filter.$or || [];
-      filter.$or.push({ managerId: req.user._id }, { _id: req.user._id });
-    }
-
+    // Managers can view all employees (no managerId restriction)
     if (req.user.role === "employee") {
       filter._id = req.user._id;
     }
@@ -223,7 +219,7 @@ exports.getEmployeeTasks = async (req, res, next) => {
 
 exports.markAttendance = async (req, res, next) => {
   try {
-    const { date, clockIn, clockOut, status, notes } = req.body;
+    const { date, clockIn, clockOut, status, shift, timezone, deviceTime, notes } = req.body;
     const employeeId = req.params.id;
 
     if (!date) {
@@ -233,19 +229,65 @@ exports.markAttendance = async (req, res, next) => {
     const attendanceDate = new Date(date);
     attendanceDate.setHours(0, 0, 0, 0);
 
+    const now = new Date();
+    const clockInTime = clockIn ? new Date(clockIn) : now;
+    const clockOutTime = clockOut ? new Date(clockOut) : null;
+
     const existing = await Attendance.findOne({
       employee: employeeId,
       date: attendanceDate,
     });
 
-    let attendance;
-    if (existing) {
-      const updates = {};
-      if (clockIn) updates.clockIn = new Date(clockIn);
-      if (clockOut) updates.clockOut = new Date(clockOut);
-      if (status) updates.status = status;
-      if (notes) updates.notes = notes;
+    let clockInTimeStr, clockOutTimeStr;
+    if (clockInTime) {
+      clockInTimeStr = clockInTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
 
+    const updates = {
+      date: attendanceDate,
+      status: status || "present",
+      shift: shift || "general",
+      timezone: timezone || "IST",
+      deviceTime: deviceTime || now.toISOString(),
+      clockIn: clockInTime,
+      clockInTime: clockInTimeStr,
+      notes,
+    };
+
+    let attendance;
+    if (clockOutTime) {
+      updates.clockOut = clockOutTime;
+      updates.clockOutTime = clockOutTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      const workingHours = clockOutTime - clockInTime;
+      const hours = workingHours / (1000 * 60 * 60);
+      const breakTime = Math.min(hours * 0.1, 1);
+      const actualWorkingHours = Math.max(0, hours - breakTime);
+
+      const lateArrival = Math.max(0, hours - 9);
+      const earlyLeaving = 0;
+      const overtime = Math.max(0, actualWorkingHours - 8);
+
+      updates.workingHours = Math.round(actualWorkingHours * 100) / 100;
+      updates.breakTime = Math.round(breakTime * 100) / 100;
+      updates.overtime = Math.round(overtime * 100) / 100;
+      updates.lateArrival = Math.round(lateArrival * 100) / 100;
+      updates.earlyLeaving = Math.round(earlyLeaving * 100) / 100;
+
+      updates.status = "working";
+    } else {
+      updates.status = "working";
+    }
+
+    if (existing) {
       attendance = await Attendance.findOneAndUpdate(
         { employee: employeeId, date: attendanceDate },
         updates,
@@ -254,11 +296,7 @@ exports.markAttendance = async (req, res, next) => {
     } else {
       attendance = await Attendance.create({
         employee: employeeId,
-        date: attendanceDate,
-        clockIn: clockIn ? new Date(clockIn) : undefined,
-        clockOut: clockOut ? new Date(clockOut) : undefined,
-        status: status || "present",
-        notes,
+        ...updates,
       });
     }
 

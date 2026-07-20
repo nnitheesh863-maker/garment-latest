@@ -19,3 +19,4 @@ coverage/
 *.pkl
 *.h5
 *.joblib
+nul

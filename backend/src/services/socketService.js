@@ -62,6 +62,26 @@ function initSocket(server) {
       socket.leave(`line:${lineId}`);
     });
 
+    socket.on('employee_action', (data) => {
+      const { action, employeeId, details } = data;
+      io.to('management').emit('employee_activity', {
+        action,
+        employeeId: employeeId || socket.user._id,
+        time: new Date().toISOString(),
+        details: details || {},
+        employeeName: socket.user.profile?.firstName || 'Employee',
+        employeeEmail: socket.user.email,
+      });
+      io.to('admin').emit('employee_activity', {
+        action,
+        employeeId: employeeId || socket.user._id,
+        time: new Date().toISOString(),
+        details: details || {},
+        employeeName: socket.user.profile?.firstName || 'Employee',
+        employeeEmail: socket.user.email,
+      });
+    });
+
     socket.on('disconnect', () => {
       console.log(`Socket disconnected: ${socket.user.email}`);
     });

@@ -102,6 +102,21 @@ export const employeeApi = {
   reportIssue: (id, data) => api.post(`/api/employees/${id}/issues`, data),
 };
 
+export const attendanceApi = {
+  clockIn: (id) => api.post(`/api/employees/${id}/attendance`, {
+    date: new Date().toISOString().split('T')[0],
+    clockIn: new Date().toISOString(),
+    shift: 'general',
+    timezone: 'IST',
+    deviceTime: new Date().toISOString(),
+  }),
+  clockOut: (id) => api.post(`/api/employees/${id}/attendance`, {
+    date: new Date().toISOString().split('T')[0],
+    clockOut: new Date().toISOString(),
+  }),
+  getHistory: (id, params) => api.get(`/api/employees/${id}/attendance`, { params }),
+};
+
 export const machineApi = {
   list: (params) => api.get("/api/machines", { params }),
   get: (id) => api.get(`/api/machines/${id}`),

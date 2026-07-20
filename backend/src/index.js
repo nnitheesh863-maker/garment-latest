@@ -24,6 +24,7 @@ const productionLineRoutes = require("./routes/productionLines");
 const leaveRoutes = require("./routes/leaves");
 const learningVideoRoutes = require("./routes/learningVideos");
 const defectReportRoutes = require("./routes/defectReports");
+const voiceRoutes = require("./routes/voice");
 
 const app = express();
 const server = http.createServer(app);
@@ -72,6 +73,7 @@ app.use("/api/production-lines", productionLineRoutes);
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/learning-videos", learningVideoRoutes);
 app.use("/api/defect-reports", defectReportRoutes);
+app.use("/api/voice", voiceRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({

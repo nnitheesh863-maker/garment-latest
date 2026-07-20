@@ -21,7 +21,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import { toast } from "react-toastify";
 import { formatDate, formatDateTime } from "../../utils/helpers";
 import { useAuth } from "../../hooks/useAuth";
-import api from "../../api/axios";
+import api, { employeeApi } from "../../api/axios";
 
 const currentMonth = new Date().getMonth();
 const currentYear = new Date().getFullYear();
@@ -34,6 +34,15 @@ export default function Attendance() {
   const [clockedOut, setClockedOut] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [loading, setLoading] = useState(true);
+  const [clockInTime, setClockInTime] = useState(null);
+  const [clockOutTime, setClockOutTime] = useState(null);
+  const [workingHours, setWorkingHours] = useState(0);
+  const [breakTime, setBreakTime] = useState(0);
+  const [overtime, setOvertime] = useState(0);
+  const [lateArrival, setLateArrival] = useState(0);
+  const [earlyLeaving, setEarlyLeaving] = useState(0);
+  const [shift] = useState('general');
+  const [timezone] = useState('IST');
 
   const loadAttendance = useCallback(async () => {
     if (!user?._id) return;
@@ -72,14 +81,21 @@ export default function Attendance() {
 
   const handleClockIn = async () => {
     try {
-      const today = new Date().toISOString().split("T")[0];
-      await api.post(`/api/employees/${user._id}/attendance`, {
-        status: "present",
-        date: today,
-        clockIn: new Date().toISOString(),
+      const now = new Date();
+      const res = await employeeApi.attendance(user._id, {
+        date: now.toISOString().split('T')[0],
+        clockIn: now.toISOString(),
+        shift: 'general',
+        timezone: 'IST',
+        deviceTime: now.toISOString(),
       });
       setClockedIn(true);
-      toast.success(`Clocked in at ${new Date().toLocaleTimeString()}`);
+      setClockInTime(now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }));
+      toast.success(`Clocked in at ${now.toLocaleTimeString()}`);
       loadAttendance();
     } catch (err) {
       toast.error("Failed to clock in");
@@ -88,14 +104,25 @@ export default function Attendance() {
 
   const handleClockOut = async () => {
     try {
-      const today = new Date().toISOString().split("T")[0];
-      await api.post(`/api/employees/${user._id}/attendance`, {
-        status: "present",
-        date: today,
-        clockOut: new Date().toISOString(),
+      const now = new Date();
+      const res = await employeeApi.attendance(user._id, {
+        date: now.toISOString().split('T')[0],
+        clockOut: now.toISOString(),
       });
       setClockedOut(true);
-      toast.success(`Clocked out at ${new Date().toLocaleTimeString()}`);
+      setClockOutTime(now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }));
+      if (res.data?.data?.workingHours) {
+        setWorkingHours(res.data.data.workingHours);
+        setBreakTime(res.data.data.breakTime || 0);
+        setOvertime(res.data.data.overtime || 0);
+        setLateArrival(res.data.data.lateArrival || 0);
+        setEarlyLeaving(res.data.data.earlyLeaving || 0);
+      }
+      toast.success(`Clocked out at ${now.toLocaleTimeString()}`);
       loadAttendance();
     } catch (err) {
       toast.error("Failed to clock out");
@@ -178,48 +205,71 @@ export default function Attendance() {
       </Grid>
 
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <AccessTimeIcon
-                sx={{ fontSize: 48, color: "primary.main", mb: 1 }}
-              />
-              <Typography variant="h5" fontWeight={600}>
-                {currentTime.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                Current Time
-              </Typography>
-              <Grid container spacing={1}>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant={clockedIn ? "outlined" : "contained"}
-                    color="primary"
-                    onClick={handleClockIn}
-                    disabled={clockedIn}
-                  >
-                    {clockedIn ? "Clocked In" : "Clock In"}
-                  </Button>
-                </Grid>
-                <Grid item xs={6}>
-                  <Button
-                    fullWidth
-                    variant={clockedOut ? "outlined" : "contained"}
-                    color="secondary"
-                    onClick={handleClockOut}
-                    disabled={clockedOut || !clockedIn}
-                  >
-                    {clockedOut ? "Clocked Out" : "Clock Out"}
-                  </Button>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
+       <Grid item xs={12} md={4}>
+         <Card>
+           <CardContent sx={{ textAlign: "center" }}>
+             <AccessTimeIcon
+               sx={{ fontSize: 48, color: "primary.main", mb: 1 }}
+             />
+             <Typography variant="h5" fontWeight={600}>
+               {currentTime.toLocaleTimeString([], {
+                 hour: "2-digit",
+                 minute: "2-digit",
+               })}
+             </Typography>
+             <Typography variant="body2" color="text.secondary" mb={2}>
+               Current Time
+             </Typography>
+             {(clockedIn || clockInTime) && (
+               <Box mb={2}>
+                 <Typography variant="body2" fontWeight={500}>
+                   {clockedIn || clockInTime
+                     ? `Clocked In: ${clockInTime || new Date().toLocaleTimeString([], {
+                         hour: "2-digit",
+                         minute: "2-digit",
+                         hour12: true,
+                       })}`
+                     : "Not Clocked In"}
+                 </Typography>
+                 {clockedOut && clockOutTime && (
+                   <Box mt={1}>
+                     <Typography variant="body2" fontWeight={500}>
+                       Clocked Out: {clockOutTime}
+                     </Typography>
+                     <Typography variant="caption" color="text.secondary">
+                       Working Hours: {workingHours}h | Break: {breakTime}h | Overtime: {overtime}h
+                     </Typography>
+                   </Box>
+                 )}
+               </Box>
+             )}
+             <Grid container spacing={1}>
+               <Grid item xs={6}>
+                 <Button
+                   fullWidth
+                   variant={clockedIn ? "outlined" : "contained"}
+                   color="primary"
+                   onClick={handleClockIn}
+                   disabled={clockedIn}
+                 >
+                   {clockedIn ? "Clocked In" : "Clock In"}
+                 </Button>
+               </Grid>
+               <Grid item xs={6}>
+                 <Button
+                   fullWidth
+                   variant={clockedOut ? "outlined" : "contained"}
+                   color="secondary"
+                   onClick={handleClockOut}
+                   disabled={clockedOut || !clockedIn}
+                 >
+                   {clockedOut ? "Clocked Out" : "Clock Out"}
+                 </Button>
+               </Grid>
+             </Grid>
+           </CardContent>
+         </Card>
+       </Grid>
         <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
