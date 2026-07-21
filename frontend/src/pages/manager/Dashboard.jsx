@@ -121,10 +121,9 @@ export default function ManagerDashboard() {
         openIssues,
       });
 
-      // Build attendance summary from employee data
       const attendance = empData.slice(0, 8).map((e) => ({
         name:
-          `${e.firstName || ""} ${e.lastName || ""}`.trim() ||
+          `${e.profile?.firstName || ""} ${e.profile?.lastName || ""}`.trim() ||
           e.name ||
           e.email ||
           "Unknown",
@@ -498,19 +497,19 @@ export default function ManagerDashboard() {
                             fontSize: 12,
                           }}
                         >
-                          {(issue.employee?.firstName?.[0] || "") +
-                            (issue.employee?.lastName?.[0] || "") || "?"}
+                          {(issue.employee?.profile?.firstName?.[0] || "") +
+                            (issue.employee?.profile?.lastName?.[0] || "") || "?"}
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText
                         primary={
                           <Box display="flex" alignItems="center" gap={1}>
                             <Typography variant="body2" fontWeight={500}>
-                              {(issue.employee?.firstName || "") +
-                                " " +
-                                (issue.employee?.lastName || "") ||
-                                issue.employeeName ||
-                                "Unknown"}
+                            {(issue.employee?.profile?.firstName || "") +
+                              " " +
+                              (issue.employee?.profile?.lastName || "") ||
+                              issue.employeeName ||
+                              "Unknown"}
                             </Typography>
                             <Chip
                               label={issue.issueType || issue.type || "issue"}
@@ -632,16 +631,16 @@ export default function ManagerDashboard() {
                             fontSize: 14,
                           }}
                         >
-                          {(leave.employee?.firstName?.[0] || "") +
-                            (leave.employee?.lastName?.[0] || "") || "?"}
+                          {(leave.employee?.profile?.firstName?.[0] || "") +
+                            (leave.employee?.profile?.lastName?.[0] || "") || "?"}
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText
                         primary={
                           <Typography variant="body2" fontWeight={500}>
-                            {(leave.employee?.firstName || "") +
+                            {(leave.employee?.profile?.firstName || "") +
                               " " +
-                              (leave.employee?.lastName || "") ||
+                              (leave.employee?.profile?.lastName || "") ||
                               leave.employeeName ||
                               "Unknown"}
                           </Typography>
@@ -808,7 +807,7 @@ export default function ManagerDashboard() {
         <DialogContent>
           <DialogContentText mb={2}>
             Are you sure you want to reject the leave request from{" "}
-            {selectedLeave?.employee?.firstName ||
+            {selectedLeave?.employee?.profile?.firstName ||
               selectedLeave?.employeeName ||
               "this employee"}
             ?

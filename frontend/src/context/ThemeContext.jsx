@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
 import { createAppTheme } from '../styles/theme';
+import '@fontsource/inter/300.css';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '../styles/global.css';
 
 const ThemeContext = createContext();
 
@@ -26,6 +33,7 @@ export function ThemeContextProvider({ children }) {
 
   return (
     <ThemeContext.Provider value={{ mode, toggleTheme }}>
+      <CssBaseline />
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </ThemeContext.Provider>
   );

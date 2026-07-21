@@ -20,7 +20,7 @@ export default function MainLayout({ children }) {
   const handleToggleSidebar = () => setMobileOpen(!mobileOpen);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f1f5f9' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#FFF8F2' }}>
       <Header onToggleSidebar={handleToggleSidebar} />
       <Sidebar
         open={mobileOpen}
@@ -34,7 +34,7 @@ export default function MainLayout({ children }) {
           minWidth: 0,
           height: '100vh',
           overflow: 'auto',
-          bgcolor: '#f1f5f9',
+          bgcolor: '#FFF8F2',
           '&::-webkit-scrollbar': { width: 6 },
           '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
           '&::-webkit-scrollbar-thumb': { bgcolor: '#cbd5e1', borderRadius: 3 },

@@ -156,7 +156,7 @@ export default function ProductionLines() {
         <Chip label={val || 'unknown'} size="small" color={statusColors[val] || 'default'} />
       ),
     },
-    { id: 'supervisor', label: 'Supervisor', render: (val) => val || '-' },
+    { id: 'supervisor', label: 'Supervisor', render: (val) => val?.profile?.firstName || val?.email || '-' },
     { id: 'capacityDaily', label: 'Daily Capacity', render: (val) => val ? `${val} units` : '-' },
     { id: 'efficiency', label: 'Efficiency', render: (val) => val != null ? `${val}%` : '-' },
     {
@@ -247,7 +247,7 @@ export default function ProductionLines() {
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">Supervisor</Typography>
-                <Typography variant="body2" fontWeight={500}>{detailData.supervisor || '-'}</Typography>
+                <Typography variant="body2" fontWeight={500}>{detailData.supervisor?.profile?.firstName || detailData.supervisor?.email || '-'}</Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">Daily Capacity</Typography>

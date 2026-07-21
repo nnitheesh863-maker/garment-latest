@@ -176,7 +176,7 @@ export default function AdminQuality() {
         <Chip label={val?.replace(/_/g, ' ') || '-'} size="small" variant="outlined" />
       ),
     },
-    { id: 'inspector', label: 'Inspector', render: (val) => val || '-' },
+    { id: 'inspector', label: 'Inspector', render: (val) => val?.profile?.firstName || val?.email || '-' },
     {
       id: 'grade', label: 'Grade', render: (val) => val ? (
         <Chip label={val} size="small" color={gradeColors[val] || 'default'} />

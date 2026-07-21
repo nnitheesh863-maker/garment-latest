@@ -61,13 +61,15 @@ export default function Sidebar({ open, onClose, variant }) {
       sx={{
         width,
         height: '100vh',
-        bgcolor: '#0f172a',
-        color: '#fff',
+        bgcolor: '#fff',
+        color: '#2C1A1A',
         display: 'flex',
         flexDirection: 'column',
         transition: 'width 250ms cubic-bezier(0.4,0,0.2,1)',
         overflow: 'hidden',
         flexShrink: 0,
+        borderRight: '1px solid #F1D5C0',
+        boxShadow: '2px 0 20px rgba(89,23,27,0.04)',
       }}
     >
       <Box
@@ -79,6 +81,7 @@ export default function Sidebar({ open, onClose, variant }) {
           py: 1.5,
           height: 64,
           minHeight: 64,
+          borderBottom: '1px solid #F1D5C0',
         }}
       >
         {!collapsed && (
@@ -87,22 +90,23 @@ export default function Sidebar({ open, onClose, variant }) {
               <Box
                 sx={{
                   width: 32, height: 32, borderRadius: 1.5,
-                  background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+                  background: 'linear-gradient(135deg, #59171B, #7A2328)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(89,23,27,0.3)',
                 }}
               >
-                <Typography variant="body1" fontWeight={800} sx={{ color: '#fff', fontSize: 16, lineHeight: 1 }}>
+                <Typography variant="body1" fontWeight={800} sx={{ color: '#FED7B8', fontSize: 16, lineHeight: 1 }}>
                   G
                 </Typography>
               </Box>
-              <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#fff', fontSize: 16 }}>
+              <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#2C1A1A', fontSize: 16 }}>
                 GarmentOS
               </Typography>
             </Box>
             <IconButton
               size="small"
               onClick={() => setCollapsed(true)}
-              sx={{ color: 'rgba(255,255,255,0.3)', '&:hover': { color: '#fff' } }}
+              sx={{ color: '#7A6A63', '&:hover': { color: '#59171B', bgcolor: 'rgba(89,23,27,0.06)' } }}
             >
               <ChevronLeftIcon sx={{ fontSize: 18 }} />
             </IconButton>
@@ -112,7 +116,7 @@ export default function Sidebar({ open, onClose, variant }) {
           <IconButton
             size="small"
             onClick={() => setCollapsed(false)}
-            sx={{ color: 'rgba(255,255,255,0.3)', '&:hover': { color: '#fff' }, mx: 'auto' }}
+            sx={{ color: '#7A6A63', '&:hover': { color: '#59171B' }, mx: 'auto' }}
           >
             <ChevronRightIcon sx={{ fontSize: 18 }} />
           </IconButton>
@@ -124,10 +128,10 @@ export default function Sidebar({ open, onClose, variant }) {
           flex: 1,
           overflow: 'auto',
           px: collapsed ? 0.5 : 1.25,
-          py: 0.5,
+          py: 1,
           '&::-webkit-scrollbar': { width: 4 },
           '&::-webkit-scrollbar-track': { bgcolor: 'transparent' },
-          '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 2 },
+          '&::-webkit-scrollbar-thumb': { bgcolor: '#F1D5C0', borderRadius: 2 },
         }}
       >
         {navItems.map((item) => {
@@ -142,21 +146,22 @@ export default function Sidebar({ open, onClose, variant }) {
                   alignItems: 'center',
                   gap: 1.5,
                   px: collapsed ? 0 : 1.5,
-                  py: 0.7,
+                  py: 0.75,
                   mx: collapsed ? 0.5 : 0,
-                  my: 0.2,
+                  my: 0.3,
                   borderRadius: 1.5,
                   cursor: 'pointer',
-                  color: active ? '#fff' : 'rgba(255,255,255,0.45)',
-                  background: active ? 'linear-gradient(135deg, #4f46e5, #7c3aed)' : 'transparent',
+                  color: active ? '#FED7B8' : '#7A6A63',
+                  background: active ? 'linear-gradient(135deg, #59171B, #7A2328)' : 'transparent',
                   position: 'relative',
                   justifyContent: collapsed ? 'center' : 'flex-start',
                   transition: 'all 200ms ease',
+                  boxShadow: active ? '0 4px 12px rgba(89,23,27,0.25)' : 'none',
                   '&:hover': {
-                    color: '#fff',
+                    color: active ? '#FED7B8' : '#59171B',
                     background: active
-                      ? 'linear-gradient(135deg, #4f46e5, #7c3aed)'
-                      : 'rgba(255,255,255,0.06)',
+                      ? 'linear-gradient(135deg, #59171B, #7A2328)'
+                      : 'rgba(254,215,184,0.2)',
                   },
                   '&::before': active && !collapsed
                     ? {
@@ -166,9 +171,9 @@ export default function Sidebar({ open, onClose, variant }) {
                         top: '50%',
                         transform: 'translateY(-50%)',
                         width: 3,
-                        height: 18,
+                        height: 20,
                         borderRadius: 2,
-                        bgcolor: '#7c3aed',
+                        bgcolor: '#FED7B8',
                       }
                     : {},
                 }}
@@ -193,16 +198,16 @@ export default function Sidebar({ open, onClose, variant }) {
         sx={{
           px: collapsed ? 0 : 2,
           py: 1.25,
-          borderTop: '1px solid rgba(255,255,255,0.06)',
+          borderTop: '1px solid #F1D5C0',
           display: 'flex',
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'flex-start',
           gap: 1,
         }}
       >
-        <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#22c55e', flexShrink: 0 }} />
+        <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#16a34a', flexShrink: 0, boxShadow: '0 0 6px rgba(22,163,74,0.4)' }} />
         {!collapsed && (
-          <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>
+          <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 11 }}>
             System Online
           </Typography>
         )}

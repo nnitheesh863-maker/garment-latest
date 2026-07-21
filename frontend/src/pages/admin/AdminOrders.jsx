@@ -121,7 +121,7 @@ export default function AdminOrders() {
     { id: 'orderNumber', label: 'Order #', sortable: true },
     {
       id: 'customerName', label: 'Customer', sortable: true,
-      render: (val, row) => val || row.customer || '-',
+      render: (val, row) => val || row.customer?.name || row.customer?.email || '-',
     },
     { id: 'garmentType', label: 'Garment', render: (val) => val || '-' },
     { id: 'quantity', label: 'Qty', sortable: true },
@@ -294,7 +294,7 @@ export default function AdminOrders() {
                         {detailData.tasks.map((t, i) => (
                           <TableRow key={t._id || i}>
                             <TableCell>{t.title}</TableCell>
-                            <TableCell>{t.assignedTo?.name || '-'}</TableCell>
+                            <TableCell>{t.assignedTo?.profile?.firstName || t.assignedTo?.email || '-'}</TableCell>
                             <TableCell><Chip label={t.status} size="small" /></TableCell>
                           </TableRow>
                         ))}
@@ -322,7 +322,7 @@ export default function AdminOrders() {
                           <TableRow key={q._id || i}>
                             <TableCell>{q.type}</TableCell>
                             <TableCell><Chip label={q.grade} size="small" /></TableCell>
-                            <TableCell>{q.inspector}</TableCell>
+                            <TableCell>{q.inspector?.profile?.firstName || q.inspector?.email || '-'}</TableCell>
                             <TableCell>{formatDate(q.date)}</TableCell>
                           </TableRow>
                         ))}

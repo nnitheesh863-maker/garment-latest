@@ -407,14 +407,21 @@ export default function VoiceAssistant() {
         <Zoom in={!open}>
           <Tooltip title="Voice Assistant" placement="left">
             <Fab
-              color={listening ? 'secondary' : 'primary'}
               aria-label="voice assistant"
               onClick={() => { setOpen(true); setUnreadCount(0); }}
               sx={{
                 width: 64, height: 64,
-                boxShadow: listening ? '0 0 24px rgba(156,39,176,0.6)' : 6,
-                animation: listening ? 'pulse 1.5s infinite' : 'none',
-                '@keyframes pulse': { '0%': { boxShadow: '0 0 0 0 rgba(156,39,176,0.7)' }, '70%': { boxShadow: '0 0 0 15px rgba(156,39,176,0)' }, '100%': { boxShadow: '0 0 0 0 rgba(156,39,176,0)' } },
+                background: listening
+                  ? 'linear-gradient(135deg, #7A2328, #A45A4A)'
+                  : 'linear-gradient(135deg, #59171B, #7A2328)',
+                color: '#FED7B8',
+                boxShadow: listening
+                  ? '0 0 30px rgba(89,23,27,0.5), 0 4px 15px rgba(89,23,27,0.3)'
+                  : '0 4px 15px rgba(89,23,27,0.3)',
+                animation: listening ? 'pulse-glow 1.5s infinite' : 'none',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #7A2328, #59171B)',
+                },
               }}
             >
               {listening ? <MicOffIcon sx={{ fontSize: 28 }} /> : <MicIcon sx={{ fontSize: 28 }} />}
@@ -430,11 +437,13 @@ export default function VoiceAssistant() {
             position: 'fixed', bottom: 24, right: 24, zIndex: 1300,
             width: 380, maxWidth: 'calc(100vw - 32px)', height: 560, maxHeight: 'calc(100vh - 120px)',
             display: 'flex', flexDirection: 'column', borderRadius: 3, overflow: 'hidden',
+            border: '1px solid #F1D5C0',
+            boxShadow: '0 12px 40px rgba(89,23,27,0.12)',
           }}
         >
-          <Box sx={{
+          <Box           sx={{
             p: 1.5, display: 'flex', alignItems: 'center', gap: 1,
-            background: 'linear-gradient(135deg, #7c4dff, #6200ea)',
+            background: 'linear-gradient(135deg, #59171B, #7A2328)',
           }}>
             <SmartToyIcon sx={{ color: '#fff' }} />
             <Box sx={{ flex: 1 }}>

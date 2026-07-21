@@ -89,52 +89,70 @@ export default function NotificationBell() {
 
   return (
     <>
-      <IconButton color="inherit" onClick={handleClick}>
-        <Badge badgeContent={unreadCount} color="error">
-          <NotificationsIcon />
+      <IconButton
+        onClick={handleClick}
+        sx={{
+          color: '#7A6A63',
+          bgcolor: 'rgba(241,213,192,0.3)',
+          borderRadius: 1.5,
+          '&:hover': { bgcolor: 'rgba(241,213,192,0.5)' },
+        }}
+      >
+        <Badge badgeContent={unreadCount} sx={{ '& .MuiBadge-badge': { bgcolor: '#59171B', color: '#FED7B8', fontWeight: 600, fontSize: 10 } }}>
+          <NotificationsIcon sx={{ fontSize: 20 }} />
         </Badge>
       </IconButton>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleClose}
-        PaperProps={{ sx: { width: 360, maxHeight: 480 } }}
+        PaperProps={{
+          sx: {
+            width: 360, maxHeight: 480, borderRadius: 2,
+            boxShadow: '0 8px 30px rgba(89,23,27,0.1)',
+            border: '1px solid #F1D5C0',
+            mt: 0.5,
+          },
+        }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1}>
-          <Typography variant="subtitle1" fontWeight={600}>Notifications</Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="center" px={2} py={1} sx={{ borderBottom: '1px solid #F1D5C0' }}>
+          <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#2C1A1A' }}>Notifications</Typography>
           {unreadCount > 0 && (
-            <Button size="small" onClick={handleMarkAllRead}>Mark all read</Button>
+            <Button size="small" onClick={handleMarkAllRead} sx={{ color: '#59171B', fontSize: 12, fontWeight: 600 }}>Mark all read</Button>
           )}
         </Box>
-        <Divider />
         {notifs.length === 0 ? (
           <Box py={4} textAlign="center">
-            <Typography color="text.secondary">No notifications</Typography>
+            <Typography color="#7A6A63" variant="body2">No notifications</Typography>
           </Box>
         ) : (
           notifs.slice(0, 10).map((notif) => (
             <MenuItem
               key={notif._id || notif.id}
               onClick={() => handleMarkRead({ stopPropagation: () => {} }, notif._id || notif.id)}
-              sx={{ bgcolor: notif.read ? 'transparent' : 'action.hover' }}
+              sx={{
+                bgcolor: notif.read ? 'transparent' : 'rgba(254,215,184,0.15)',
+                borderRadius: 1, mx: 0.5, my: 0.25,
+              }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <CircleIcon sx={{ fontSize: 10, color: notif.read ? 'text.disabled' : 'primary.main' }} />
+                <CircleIcon sx={{ fontSize: 8, color: notif.read ? '#F1D5C0' : '#59171B' }} />
               </ListItemIcon>
               <ListItemText
                 primary={notif.message || notif.title || 'Notification'}
                 secondary={timeAgo(notif.createdAt)}
-                primaryTypographyProps={{ variant: 'body2', noWrap: true }}
-                secondaryTypographyProps={{ variant: 'caption' }}
+                primaryTypographyProps={{ variant: 'body2', noWrap: true, sx: { color: '#2C1A1A' } }}
+                secondaryTypographyProps={{ variant: 'caption', sx: { color: '#7A6A63' } }}
               />
             </MenuItem>
           ))
         )}
-        <Divider />
-        <Box px={2} py={1}>
-          <Button fullWidth size="small" onClick={handleViewAll}>View all</Button>
+        <Box px={2} py={1} sx={{ borderTop: '1px solid #F1D5C0' }}>
+          <Button fullWidth size="small" onClick={handleViewAll} sx={{ color: '#59171B', fontWeight: 600 }}>
+            View all
+          </Button>
         </Box>
       </Menu>
     </>
