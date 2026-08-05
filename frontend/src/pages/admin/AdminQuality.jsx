@@ -96,8 +96,8 @@ export default function AdminQuality() {
             {
               label: 'Pass Rate %',
               data: trend.map((t) => t.rate),
-              borderColor: '#66BB6A',
-              backgroundColor: 'rgba(102,187,106,0.1)',
+              borderColor: '#16A34A',
+              backgroundColor: 'rgba(22,163,74,0.1)',
             },
           ],
         });

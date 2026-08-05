@@ -79,20 +79,20 @@ export default function AdminAnalytics() {
           {
             label: 'Orders Created',
             data: orderAnalytics.dailyOrders?.map((d) => d.count) || days.map(() => Math.floor(Math.random() * 10 + 2)),
-            borderColor: '#3F51B5',
-            backgroundColor: 'rgba(63,81,181,0.1)',
+            borderColor: '#59171B',
+            backgroundColor: 'rgba(89,23,27,0.08)',
           },
           {
             label: 'Completed',
             data: orderAnalytics.dailyCompleted?.map((d) => d.count) || days.map(() => Math.floor(Math.random() * 8 + 1)),
-            borderColor: '#66BB6A',
-            backgroundColor: 'rgba(102,187,106,0.1)',
+            borderColor: '#E8A06B',
+            backgroundColor: 'rgba(232,160,107,0.12)',
           },
         ],
       });
 
       const statuses = ['pending', 'in_production', 'quality_check', 'completed', 'delivered'];
-      const statusColors = ['#FFA726', '#AB47BC', '#26A69A', '#66BB6A', '#1E88E5'];
+      const statusColors = ['#E8A06B', '#A45A4A', '#2C8C8C', '#16A34A', '#7A2328'];
       const statusCounts = orderAnalytics.statusDistribution || {};
       setOrderDistribution({
         labels: statuses.map((s) => s.replace(/_/g, ' ')),
@@ -110,7 +110,7 @@ export default function AdminAnalytics() {
         datasets: machineTypes.map((t, i) => ({
           label: t,
           data: [machineCounts[t.toLowerCase().replace(/\s/g, '_')] || Math.floor(Math.random() * 10 + 1)],
-          backgroundColor: ['#66BB6A', '#42A5F5', '#FFA726', '#EF5350', '#78909C'][i],
+          backgroundColor: ['#16A34A', '#2C8C8C', '#E8A06B', '#DC2626', '#7A6A63'][i],
         })),
       });
 
@@ -219,16 +219,16 @@ export default function AdminAnalytics() {
 
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} sm={6} md={3}>
-          <MetricCard title="Avg Production / Day" value={metrics.avgProductionPerDay} icon={<BarChartIcon />} color="#3F51B5" />
+          <MetricCard title="Avg Production / Day" value={metrics.avgProductionPerDay} icon={<BarChartIcon />} color="#59171B" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <MetricCard title="Defect Rate" value={metrics.defectRate} icon={<CheckCircleIcon />} color="#EF5350" suffix="%" />
+          <MetricCard title="Defect Rate" value={metrics.defectRate} icon={<CheckCircleIcon />} color="#DC2626" suffix="%" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <MetricCard title="Efficiency" value={metrics.efficiency} icon={<SpeedIcon />} color="#0097A7" suffix="%" />
+          <MetricCard title="Efficiency" value={metrics.efficiency} icon={<SpeedIcon />} color="#2C8C8C" suffix="%" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <MetricCard title="On-Time Delivery" value={metrics.onTimeDelivery} icon={<TrendingUpIcon />} color="#4CAF50" suffix="%" />
+          <MetricCard title="On-Time Delivery" value={metrics.onTimeDelivery} icon={<TrendingUpIcon />} color="#16A34A" suffix="%" />
         </Grid>
       </Grid>
 
@@ -253,11 +253,12 @@ export default function AdminAnalytics() {
               {loading ? (
                 <Box py={4}><Skeleton variant="circular" width={200} height={200} sx={{ mx: 'auto' }} /></Box>
               ) : orderDistData ? (
-                <Box sx={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Box sx={{ width: 200, height: 200 }}>
+                <Box sx={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  <Box sx={{ width: 170, height: 170, filter: 'drop-shadow(0 10px 24px rgba(89,23,27,0.12))' }}>
                     <svg viewBox="0 0 32 32" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
+                      <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(89,23,27,0.06)" strokeWidth={5.5} />
                       {orderDistData.datasets.map((ds, i) => {
-                        const total = orderDistData.datasets.reduce((s, d) => s + d.data[0], 0);
+                        const total = orderDistData.datasets.reduce((s, d) => s + d.data[0], 0) || 1;
                         const pct = ds.data[0] / total;
                         const circumference = 2 * Math.PI * 14;
                         const offset = orderDistData.datasets.slice(0, i).reduce((s, d) => s + (d.data[0] / total) * circumference, 0);
@@ -267,26 +268,32 @@ export default function AdminAnalytics() {
                             cx="16" cy="16" r="14"
                             fill="none"
                             stroke={ds.backgroundColor}
-                            strokeWidth={4}
+                            strokeWidth={5.5}
+                            strokeLinecap="round"
                             strokeDasharray={`${pct * circumference} ${circumference * (1 - pct)}`}
                             strokeDashoffset={-offset}
                           />
                         );
                       })}
-                      <circle cx="16" cy="16" r="10" fill="transparent" />
                     </svg>
+                  </Box>
+                  <Box sx={{ position: 'absolute', textAlign: 'center' }}>
+                    <Typography variant="h5" fontWeight={800} sx={{ color: 'text.primary' }}>
+                      {orderDistData.datasets.reduce((s, d) => s + d.data[0], 0)}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">Total orders</Typography>
                   </Box>
                 </Box>
               ) : null}
               {orderDistData && (
                 <Box mt={1}>
                   {orderDistData.labels.map((label, i) => (
-                    <Box key={label} display="flex" alignItems="center" justifyContent="space-between" mb={0.5}>
+                    <Box key={label} display="flex" alignItems="center" justifyContent="space-between" mb={0.6}>
                       <Box display="flex" alignItems="center" gap={1}>
-                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: orderDistData.datasets[i]?.backgroundColor }} />
-                        <Typography variant="caption">{label}</Typography>
+                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: orderDistData.datasets[i]?.backgroundColor, boxShadow: `0 0 6px ${orderDistData.datasets[i]?.backgroundColor}88` }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>{label}</Typography>
                       </Box>
-                      <Typography variant="caption" fontWeight={600}>{orderDistData.datasets[i]?.data[0]}</Typography>
+                      <Typography variant="caption" fontWeight={700} sx={{ color: 'text.primary' }}>{orderDistData.datasets[i]?.data[0]}</Typography>
                     </Box>
                   ))}
                 </Box>

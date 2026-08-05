@@ -17,33 +17,19 @@ import PeopleIcon from '@mui/icons-material/People';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import { motion } from 'framer-motion';
 import { useSocket } from '../../hooks/useSocket';
 import { orderApi, machineApi, inventoryApi, aiApi, notificationApi } from '../../api/axios';
 import ProductionChart from '../../components/charts/ProductionChart';
+import StatCard from '../../components/common/StatCard';
+import GlassCard from '../../components/common/GlassCard';
+import PageHeader from '../../components/common/PageHeader';
 import { timeAgo } from '../../utils/helpers';
-import { getStatusColor } from '../../utils/helpers';
+import { CHART_COLORS } from '../../utils/chart';
 
-function StatCard({ title, value, icon, color, loading }) {
-  return (
-    <Card>
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>{title}</Typography>
-            {loading ? (
-              <Skeleton width={80} height={36} />
-            ) : (
-              <Typography variant="h4" fontWeight={700}>{value}</Typography>
-            )}
-          </Box>
-          <Avatar sx={{ bgcolor: color || 'primary.main', width: 48, height: 48 }}>
-            {icon}
-          </Avatar>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
+const ORDER_COLORS = ['#E8A06B', '#A45A4A', '#7A2328', '#59171B', '#2C8C8C'];
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
@@ -90,19 +76,19 @@ export default function AdminDashboard() {
       setProductionData({
         labels: days,
         datasets: [
-          { label: 'Orders', data: days.map(() => Math.floor(Math.random() * 20 + 5)), borderColor: '#3F51B5', backgroundColor: 'rgba(63,81,181,0.1)' },
-          { label: 'Completed', data: days.map(() => Math.floor(Math.random() * 15 + 3)), borderColor: '#66BB6A', backgroundColor: 'rgba(102,187,106,0.1)' },
+          { label: 'Orders', data: days.map(() => Math.floor(Math.random() * 20 + 5)), borderColor: CHART_COLORS.maroon },
+          { label: 'Completed', data: days.map(() => Math.floor(Math.random() * 15 + 3)), borderColor: CHART_COLORS.gold },
         ],
       });
 
       setOrderDistribution({
         labels: ['Pending', 'In Production', 'Quality Check', 'Completed', 'Shipped'],
         data: [
-          { label: 'Pending', data: [Math.floor(Math.random() * 10 + 2)], backgroundColor: '#FFA726' },
-          { label: 'In Production', data: [Math.floor(Math.random() * 15 + 5)], backgroundColor: '#AB47BC' },
-          { label: 'Quality Check', data: [Math.floor(Math.random() * 8 + 2)], backgroundColor: '#26A69A' },
-          { label: 'Completed', data: [Math.floor(Math.random() * 20 + 10)], backgroundColor: '#66BB6A' },
-          { label: 'Shipped', data: [Math.floor(Math.random() * 10 + 5)], backgroundColor: '#1E88E5' },
+          { label: 'Pending', data: [Math.floor(Math.random() * 10 + 2)], backgroundColor: '#E8A06B' },
+          { label: 'In Production', data: [Math.floor(Math.random() * 15 + 5)], backgroundColor: '#A45A4A' },
+          { label: 'Quality Check', data: [Math.floor(Math.random() * 8 + 2)], backgroundColor: '#7A2328' },
+          { label: 'Completed', data: [Math.floor(Math.random() * 20 + 10)], backgroundColor: '#16A34A' },
+          { label: 'Shipped', data: [Math.floor(Math.random() * 10 + 5)], backgroundColor: '#2C8C8C' },
         ],
       });
 
@@ -128,59 +114,74 @@ export default function AdminDashboard() {
     })),
   } : null;
 
+  const totalOrders = orderDistData
+    ? orderDistData.datasets.reduce((s, d) => s + d.data[0], 0)
+    : 0;
+
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>Admin Dashboard</Typography>
-        <Chip
-          label={connected ? 'Live' : 'Offline'}
-          color={connected ? 'success' : 'error'}
-          size="small"
-          variant="outlined"
-        />
-      </Box>
+      <PageHeader
+        title="Admin Dashboard"
+        subtitle="Live overview of factory operations, production and AI insights."
+        badge={connected ? 'Live' : 'Offline'}
+        badgeColor={connected ? 'success' : 'error'}
+        actions={
+          <Chip
+            icon={<FiberManualRecordIcon sx={{ fontSize: 12 }} />}
+            label={connected ? 'Socket Connected' : 'Offline'}
+            sx={{
+              color: connected ? '#16A34A' : '#DC2626',
+              bgcolor: connected ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.1)',
+              fontWeight: 600,
+              borderRadius: 2,
+            }}
+          />
+        }
+      />
 
-      <Grid container spacing={3} mb={3}>
+      <Grid container spacing={3} mb={1}>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Users" value={stats.users} icon={<PeopleIcon />} color="#3F51B5" loading={loading} />
+          <StatCard title="Total Users" value={stats.users} icon={<PeopleIcon />} variant="maroon" loading={loading} delay={0} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Active Orders" value={stats.orders} icon={<ShoppingCartIcon />} color="#FF9800" loading={loading} />
+          <StatCard title="Active Orders" value={stats.orders} icon={<ShoppingCartIcon />} variant="gold" loading={loading} delay={0.06} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Machines" value={stats.machines} icon={<PrecisionManufacturingIcon />} color="#0097A7" loading={loading} />
+          <StatCard title="Machines" value={stats.machines} icon={<PrecisionManufacturingIcon />} variant="soft" loading={loading} delay={0.12} />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Inventory Items" value={stats.inventory} icon={<InventoryIcon />} color="#4CAF50" loading={loading} />
+          <StatCard title="Inventory Items" value={stats.inventory} icon={<InventoryIcon />} variant="teal" loading={loading} delay={0.18} />
         </Grid>
       </Grid>
 
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>Production Overview (30 Days)</Typography>
-              <ProductionChart
-                data={productionData?.datasets}
-                labels={productionData?.labels}
-                height={300}
-                loading={loading}
-              />
-            </CardContent>
-          </Card>
+          <GlassCard delay={0.2}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography variant="h6" fontWeight={700}>Production Overview</Typography>
+              <Typography variant="caption" color="text.secondary">Last 30 days</Typography>
+            </Box>
+            <ProductionChart
+              data={productionData?.datasets}
+              labels={productionData?.labels}
+              height={300}
+              loading={loading}
+            />
+          </GlassCard>
         </Grid>
         <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>Order Status</Typography>
-              {loading ? (
-                <Box py={4}><Skeleton variant="circular" width={200} height={200} sx={{ mx: 'auto' }} /></Box>
-              ) : orderDistData ? (
-                <Box sx={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Box sx={{ width: 200, height: 200 }}>
+          <GlassCard delay={0.26}>
+            <Typography variant="h6" fontWeight={700} mb={2}>Order Status</Typography>
+            {loading ? (
+              <Box py={4}><Skeleton variant="circular" width={180} height={180} sx={{ mx: 'auto' }} /></Box>
+            ) : orderDistData ? (
+              <>
+                <Box sx={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                  <Box sx={{ width: 180, height: 180, filter: 'drop-shadow(0 10px 24px rgba(89,23,27,0.12))' }}>
                     <svg viewBox="0 0 32 32" style={{ transform: 'rotate(-90deg)', width: '100%', height: '100%' }}>
+                      <circle cx="16" cy="16" r="14" fill="none" stroke="rgba(89,23,27,0.06)" strokeWidth={5.5} />
                       {orderDistData.datasets.map((ds, i) => {
-                        const total = orderDistData.datasets.reduce((s, d) => s + d.data[0], 0);
+                        const total = totalOrders || 1;
                         const pct = ds.data[0] / total;
                         const circumference = 2 * Math.PI * 14;
                         const offset = orderDistData.datasets.slice(0, i).reduce((s, d) => s + (d.data[0] / total) * circumference, 0);
@@ -190,89 +191,108 @@ export default function AdminDashboard() {
                             cx="16" cy="16" r="14"
                             fill="none"
                             stroke={ds.backgroundColor}
-                            strokeWidth={4}
+                            strokeWidth={5.5}
+                            strokeLinecap="round"
                             strokeDasharray={`${pct * circumference} ${circumference * (1 - pct)}`}
                             strokeDashoffset={-offset}
                           />
                         );
                       })}
-                      <circle cx="16" cy="16" r="10" fill="transparent" />
                     </svg>
                   </Box>
+                  <Box sx={{ position: 'absolute', textAlign: 'center' }}>
+                    <Typography variant="h5" fontWeight={800} sx={{ color: 'text.primary' }}>{totalOrders}</Typography>
+                    <Typography variant="caption" color="text.secondary">Total orders</Typography>
+                  </Box>
                 </Box>
-              ) : null}
-              {orderDistData && (
-                <Box mt={1}>
+                <Box mt={1.5}>
                   {orderDistData.labels.map((label, i) => (
-                    <Box key={label} display="flex" alignItems="center" justifyContent="space-between" mb={0.5}>
+                    <Box key={label} display="flex" alignItems="center" justifyContent="space-between" mb={0.6}>
                       <Box display="flex" alignItems="center" gap={1}>
-                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: orderDistData.datasets[i]?.backgroundColor }} />
-                        <Typography variant="caption">{label}</Typography>
+                        <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: orderDistData.datasets[i]?.backgroundColor, boxShadow: `0 0 6px ${orderDistData.datasets[i]?.backgroundColor}88` }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary' }}>{label}</Typography>
                       </Box>
-                      <Typography variant="caption" fontWeight={600}>{orderDistData.datasets[i]?.data[0]}</Typography>
+                      <Typography variant="caption" fontWeight={700} sx={{ color: 'text.primary' }}>{orderDistData.datasets[i]?.data[0]}</Typography>
                     </Box>
                   ))}
                 </Box>
-              )}
-            </CardContent>
-          </Card>
+              </>
+            ) : null}
+          </GlassCard>
         </Grid>
       </Grid>
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={7}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>AI Executive Summary</Typography>
-              {loading ? (
-                <Skeleton variant="rectangular" height={100} />
-              ) : (
-                <>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {aiSummary?.summary || 'AI analysis is processing...'}
-                  </Typography>
-                  {aiSummary?.recommendations?.length > 0 && (
-                    <Box>
-                      <Typography variant="subtitle2" fontWeight={600} gutterBottom>Recommendations</Typography>
+          <GlassCard delay={0.32}>
+            <Box display="flex" alignItems="center" gap={1} mb={1.5}>
+              <Box sx={{ width: 32, height: 32, borderRadius: 2.5, background: 'linear-gradient(135deg, #59171B, #A45A4A)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(89,23,27,0.25)' }}>
+                <AutoAwesomeIcon sx={{ fontSize: 17, color: '#FED7B8' }} />
+              </Box>
+              <Typography variant="h6" fontWeight={700}>AI Executive Summary</Typography>
+            </Box>
+            {loading ? (
+              <Skeleton variant="rectangular" height={110} sx={{ borderRadius: 3 }} />
+            ) : (
+              <>
+                <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                  {aiSummary?.summary || 'AI analysis is processing...'}
+                </Typography>
+                {aiSummary?.recommendations?.length > 0 && (
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>AI Recommendations</Typography>
+                    <Box display="flex" flexWrap="wrap" gap={1}>
                       {aiSummary.recommendations.map((rec, i) => (
-                        <Chip key={i} label={rec} size="small" sx={{ mr: 1, mb: 1 }} variant="outlined" color="primary" />
+                        <motion.div key={i} whileHover={{ y: -2 }}>
+                          <Chip
+                            label={rec}
+                            size="small"
+                            sx={{
+                              bgcolor: 'rgba(254,215,184,0.35)',
+                              color: 'primary.main',
+                              fontWeight: 600,
+                              borderRadius: 2,
+                              border: '1px solid rgba(122,35,40,0.25)',
+                            }}
+                          />
+                        </motion.div>
                       ))}
                     </Box>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
+                  </Box>
+                )}
+              </>
+            )}
+          </GlassCard>
         </Grid>
         <Grid item xs={12} md={5}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>Recent Activity</Typography>
-              {loading ? (
-                [...Array(4)].map((_, i) => <Skeleton key={i} height={48} sx={{ mb: 1 }} />)
-              ) : notifications.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" py={2}>No recent activity</Typography>
-              ) : (
-                <List dense disablePadding>
-                  {notifications.slice(0, 6).map((n, i) => (
-                    <ListItem key={n._id || i} disablePadding sx={{ mb: 0.5 }}>
+          <GlassCard delay={0.38}>
+            <Typography variant="h6" fontWeight={700} mb={1.5}>Recent Activity</Typography>
+            {loading ? (
+              [...Array(4)].map((_, i) => <Skeleton key={i} height={46} sx={{ mb: 1, borderRadius: 2.5 }} />)
+            ) : notifications.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" py={2}>No recent activity</Typography>
+            ) : (
+              <List dense disablePadding>
+                {notifications.slice(0, 6).map((n, i) => (
+                  <motion.div key={n._id || i} initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}>
+                    <ListItem disablePadding sx={{ mb: 0.5 }}>
                       <ListItemAvatar sx={{ minWidth: 40 }}>
-                        <Avatar sx={{ width: 32, height: 32, bgcolor: n.read ? 'action.hover' : 'primary.main', fontSize: 12 }}>
+                        <Avatar sx={{ width: 34, height: 34, bgcolor: n.read ? 'rgba(241,213,192,0.4)' : '#59171B', color: n.read ? '#7A6A63' : '#FED7B8', fontSize: 13, fontWeight: 700 }}>
                           {n.type?.[0] || 'N'}
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText
                         primary={n.message || n.title || 'Notification'}
                         secondary={timeAgo(n.createdAt)}
-                        primaryTypographyProps={{ variant: 'body2', noWrap: true }}
-                        secondaryTypographyProps={{ variant: 'caption' }}
+                        primaryTypographyProps={{ variant: 'body2', noWrap: true, sx: { color: 'text.primary' } }}
+                        secondaryTypographyProps={{ variant: 'caption', sx: { color: '#7A6A63' } }}
                       />
                     </ListItem>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
+                  </motion.div>
+                ))}
+              </List>
+            )}
+          </GlassCard>
         </Grid>
       </Grid>
     </Box>

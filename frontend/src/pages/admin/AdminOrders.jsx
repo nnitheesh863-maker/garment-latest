@@ -171,19 +171,19 @@ export default function AdminOrders() {
             <StatCard label="Total Orders" value={stats.total} color="primary.main" />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <StatCard label="Pending" value={stats.pending} color="#FFA726" />
+            <StatCard label="Pending" value={stats.pending} color="#E8A06B" />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <StatCard label="In Production" value={stats.inProduction} color="#AB47BC" />
+            <StatCard label="In Production" value={stats.inProduction} color="#A45A4A" />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <StatCard label="Quality Check" value={stats.qualityCheck} color="#26A69A" />
+            <StatCard label="Quality Check" value={stats.qualityCheck} color="#2C8C8C" />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <StatCard label="Completed" value={stats.completed} color="#66BB6A" />
+            <StatCard label="Completed" value={stats.completed} color="#16A34A" />
           </Grid>
           <Grid item xs={6} sm={4} md={2}>
-            <StatCard label="Delivered" value={stats.delivered} color="#1E88E5" />
+            <StatCard label="Delivered" value={stats.delivered} color="#7A2328" />
           </Grid>
         </Grid>
       )}

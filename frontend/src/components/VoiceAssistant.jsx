@@ -13,6 +13,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import WarningIcon from '@mui/icons-material/Warning';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../hooks/useSocket';
+import { motion } from 'framer-motion';
 import { detectLanguage, getSpeechRecognitionLang, getTTSLang, LANGUAGE_NAMES } from '../services/languageDetector';
 import { employeeApi, taskApi } from '../api/axios';
 import api from '../api/axios';
@@ -398,37 +399,53 @@ export default function VoiceAssistant() {
 
   return (
     <>
-      <Badge
-        color="error"
-        badgeContent={unreadCount}
-        invisible={unreadCount === 0 || open}
-        sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1300 }}
-      >
-        <Zoom in={!open}>
-          <Tooltip title="Voice Assistant" placement="left">
-            <Fab
-              aria-label="voice assistant"
-              onClick={() => { setOpen(true); setUnreadCount(0); }}
-              sx={{
-                width: 64, height: 64,
-                background: listening
-                  ? 'linear-gradient(135deg, #7A2328, #A45A4A)'
-                  : 'linear-gradient(135deg, #59171B, #7A2328)',
-                color: '#FED7B8',
-                boxShadow: listening
-                  ? '0 0 30px rgba(89,23,27,0.5), 0 4px 15px rgba(89,23,27,0.3)'
-                  : '0 4px 15px rgba(89,23,27,0.3)',
-                animation: listening ? 'pulse-glow 1.5s infinite' : 'none',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #7A2328, #59171B)',
-                },
-              }}
-            >
-              {listening ? <MicOffIcon sx={{ fontSize: 28 }} /> : <MicIcon sx={{ fontSize: 28 }} />}
-            </Fab>
-          </Tooltip>
-        </Zoom>
-      </Badge>
+      <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1300 }}>
+        <Badge
+          color="error"
+          badgeContent={unreadCount}
+          invisible={unreadCount === 0 || open}
+        >
+          <Zoom in={!open}>
+            <Tooltip title="Ask AI Assistant (voice + multi-language)" placement="left">
+              <Box sx={{ position: 'relative', display: 'flex' }}>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: -6,
+                    borderRadius: '50%',
+                    background: 'conic-gradient(from 0deg, #FED7B8, transparent 40%, #7A2328 70%, transparent)',
+                    opacity: 0.55,
+                    animation: 'orbSpin 8s linear infinite',
+                    filter: 'blur(2px)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <Fab
+                  aria-label="voice assistant"
+                  onClick={() => { setOpen(true); setUnreadCount(0); }}
+                  sx={{
+                    width: 64, height: 64,
+                    background: listening
+                      ? 'linear-gradient(135deg, #7A2328, #A45A4A)'
+                      : 'linear-gradient(135deg, #59171B, #7A2328)',
+                    color: '#FED7B8',
+                    boxShadow: listening
+                      ? '0 0 30px rgba(89,23,27,0.5), 0 4px 15px rgba(89,23,27,0.3)'
+                      : '0 10px 28px rgba(89,23,27,0.4)',
+                    animation: listening ? 'pulse-glow 1.5s infinite' : 'pulseRing 2.4s ease-out infinite',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #A45A4A, #59171B)',
+                      transform: 'scale(1.05) rotate(6deg)',
+                    },
+                  }}
+                >
+                  {listening ? <MicOffIcon sx={{ fontSize: 28 }} /> : <MicIcon sx={{ fontSize: 28 }} />}
+                </Fab>
+              </Box>
+            </Tooltip>
+          </Zoom>
+        </Badge>
+      </Box>
 
       <Zoom in={open}>
         <Paper
@@ -436,69 +453,106 @@ export default function VoiceAssistant() {
           sx={{
             position: 'fixed', bottom: 24, right: 24, zIndex: 1300,
             width: 380, maxWidth: 'calc(100vw - 32px)', height: 560, maxHeight: 'calc(100vh - 120px)',
-            display: 'flex', flexDirection: 'column', borderRadius: 3, overflow: 'hidden',
-            border: '1px solid #F1D5C0',
-            boxShadow: '0 12px 40px rgba(89,23,27,0.12)',
+            display: 'flex', flexDirection: 'column', borderRadius: 4, overflow: 'hidden',
+            border: (theme) => `1px solid ${theme.palette.mode === 'dark' ? 'rgba(254,215,184,0.15)' : '#F1D5C0'}`,
+            boxShadow: '0 20px 60px rgba(89,23,27,0.18)',
+            bgcolor: 'background.paper',
           }}
         >
-          <Box           sx={{
+          <Box sx={{
             p: 1.5, display: 'flex', alignItems: 'center', gap: 1,
-            background: 'linear-gradient(135deg, #59171B, #7A2328)',
+            background: 'linear-gradient(135deg, #59171B, #7A2328, #A45A4A)',
+            position: 'relative',
           }}>
-            <SmartToyIcon sx={{ color: '#fff' }} />
+            <Box sx={{
+              width: 34, height: 34, borderRadius: 3,
+              background: 'rgba(254,215,184,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '1px solid rgba(254,215,184,0.35)',
+            }}>
+              <SmartToyIcon sx={{ color: '#FED7B8' }} />
+            </Box>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="subtitle2" fontWeight={600} color="#fff">
+              <Typography variant="subtitle2" fontWeight={700} color="#FFF8F2">
                 AI Voice Assistant
               </Typography>
-              <Typography variant="caption" color="rgba(255,255,255,0.8)">
+              <Typography variant="caption" color="rgba(254,215,184,0.85)">
                 {listening ? 'Listening...' : connected ? 'Online' : 'Offline'} · {LANGUAGE_NAMES[currentLang] || 'English'}
               </Typography>
             </Box>
-            {listening && <CircularProgress size={20} sx={{ color: '#fff' }} />}
-            <IconButton size="small" sx={{ color: '#fff' }} onClick={() => { setOpen(false); setUnreadCount(0); }}><CloseIcon /></IconButton>
+            {listening && <CircularProgress size={20} sx={{ color: '#FED7B8' }} />}
+            <IconButton size="small" sx={{ color: '#FED7B8', '&:hover': { bgcolor: 'rgba(255,255,255,0.12)' } }} onClick={() => { setOpen(false); setUnreadCount(0); }}><CloseIcon /></IconButton>
           </Box>
 
-          <Box ref={chatRef} sx={{ flex: 1, overflowY: 'auto', p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, bgcolor: '#fafafa' }}>
+          <Box ref={chatRef} sx={{ flex: 1, overflowY: 'auto', p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, bgcolor: (theme) => theme.palette.mode === 'dark' ? '#1A1012' : '#FFF8F2' }}>
             {messages.length === 0 && (
               <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-                <SmartToyIcon sx={{ fontSize: 48, mb: 1, opacity: 0.5 }} />
-                <Typography variant="body2">Voice Assistant ready</Typography>
+                <Box className="ai-orb" sx={{ width: 64, height: 64, mx: 'auto', mb: 1.5 }}>
+                  <SmartToyIcon sx={{ fontSize: 30 }} />
+                </Box>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                  Voice Assistant ready
+                </Typography>
                 <Typography variant="caption">Tap the mic or type a command</Typography>
                 <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center' }}>
                   {['Clock In', 'My Tasks', 'Show Attendance', 'Help'].map(cmd => (
-                    <Chip key={cmd} label={cmd} size="small" variant="outlined" onClick={() => processVoiceCommand(cmd)} sx={{ cursor: 'pointer' }} />
+                    <Chip
+                      key={cmd}
+                      label={cmd}
+                      size="small"
+                      variant="outlined"
+                      onClick={() => processVoiceCommand(cmd)}
+                      sx={{
+                        cursor: 'pointer',
+                        borderColor: 'rgba(122,35,40,0.4)',
+                        color: 'primary.main',
+                        fontWeight: 600,
+                        '&:hover': { bgcolor: 'rgba(254,215,184,0.4)', borderColor: 'primary.main' },
+                      }}
+                    />
                   ))}
                 </Box>
               </Box>
             )}
             {messages.map((msg, i) => (
-              <Box key={i} sx={{ display: 'flex', gap: 1, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-                <Avatar sx={{ width: 28, height: 28, bgcolor: msg.role === 'user' ? 'primary.main' : msg.role === 'system' ? 'warning.main' : 'secondary.main' }}>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: 'flex', gap: 8, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}
+              >
+                <Avatar sx={{ width: 28, height: 28, bgcolor: msg.role === 'user' ? '#59171B' : msg.role === 'system' ? '#F59E0B' : '#A45A4A', color: '#FFF8F2' }}>
                   {getMessageIcon(msg.role)}
                 </Avatar>
                 <Paper elevation={0} sx={{
-                  p: 1.5, borderRadius: 2, maxWidth: '80%',
-                  bgcolor: getMessageBg(msg.role),
-                  color: getMessageColor(msg.role),
-                  borderTopRightRadius: msg.role === 'user' ? 0 : 2,
-                  borderTopLeftRadius: msg.role === 'user' ? 2 : 0,
+                  p: 1.5, borderRadius: 2.5, maxWidth: '80%',
+                  background: msg.role === 'user'
+                    ? 'linear-gradient(135deg, #59171B, #7A2328)'
+                    : msg.role === 'system'
+                      ? 'rgba(245,158,11,0.14)'
+                      : (theme) => theme.palette.mode === 'dark' ? 'rgba(254,215,184,0.1)' : '#FFFFFF',
+                  color: msg.role === 'user' ? '#FFF8F2' : 'text.primary',
+                  border: msg.role === 'ai' ? '1px solid rgba(241,213,192,0.6)' : 'none',
+                  boxShadow: msg.role === 'ai' ? '0 4px 14px rgba(89,23,27,0.06)' : 'none',
+                  borderTopRightRadius: msg.role === 'user' ? 0 : 2.5,
+                  borderTopLeftRadius: msg.role === 'user' ? 2.5 : 0,
                   whiteSpace: 'pre-wrap',
                 }}>
-                  <Typography variant="body2">{msg.text}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.6, display: 'block', mt: 0.5 }}>{msg.time}</Typography>
+                  <Typography variant="body2" sx={{ color: 'inherit' }}>{msg.text}</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.6, display: 'block', mt: 0.5, color: msg.role === 'user' ? '#FED7B8' : 'text.secondary' }}>{msg.time}</Typography>
                 </Paper>
-              </Box>
+              </motion.div>
             ))}
             {processing && (
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', pl: 1 }}>
-                <CircularProgress size={16} />
-                <Typography variant="caption" color="text.secondary">Processing...</Typography>
+                <Box className="loading-dots" sx={{ display: 'inline-flex' }}><span /><span /><span /></Box>
               </Box>
             )}
             <div ref={messagesEndRef} />
           </Box>
 
-          <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider', bgcolor: '#fff' }}>
+          <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <TextField
                 fullWidth size="small" placeholder="Type a command..."
@@ -507,7 +561,7 @@ export default function VoiceAssistant() {
                 onKeyDown={handleKeyPress}
                 disabled={processing}
                 InputProps={{
-                  sx: { borderRadius: 3 },
+                  sx: { borderRadius: 2.5 },
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -521,7 +575,17 @@ export default function VoiceAssistant() {
                   ),
                 }}
               />
-              <IconButton color="primary" onClick={handleSendText} disabled={!inputText.trim() || processing} sx={{ bgcolor: 'primary.main', color: '#fff', '&:hover': { bgcolor: 'primary.dark' }, '&.Mui-disabled': { bgcolor: 'grey.300' } }}>
+              <IconButton
+                color="primary"
+                onClick={handleSendText}
+                disabled={!inputText.trim() || processing}
+                sx={{
+                  background: 'linear-gradient(135deg, #59171B, #7A2328)',
+                  color: '#FFF8F2',
+                  '&:hover': { background: 'linear-gradient(135deg, #7A2328, #A45A4A)' },
+                  '&.Mui-disabled': { bgcolor: 'rgba(241,213,192,0.3)', color: '#B39A8C' },
+                }}
+              >
                 <SendIcon />
               </IconButton>
             </Box>

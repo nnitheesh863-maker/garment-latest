@@ -131,14 +131,14 @@ export default function Reporting() {
       {
         label: "Production",
         data: [320, 450, 380, 520, 490, 350, 280],
-        borderColor: "#3F51B5",
-        backgroundColor: "rgba(63,81,181,0.1)",
+        borderColor: "#59171B",
+        backgroundColor: "rgba(89,23,27,0.08)",
       },
       {
         label: "Target",
         data: [400, 400, 400, 500, 500, 400, 300],
-        borderColor: "#FF9800",
-        backgroundColor: "rgba(255,152,0,0.1)",
+        borderColor: "#E8A06B",
+        backgroundColor: "rgba(232,160,107,0.12)",
       },
     ],
   };

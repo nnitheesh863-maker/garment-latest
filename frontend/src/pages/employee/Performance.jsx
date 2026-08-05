@@ -51,7 +51,7 @@ export default function Performance() {
         <Grid item xs={6} sm={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#3F51B5', width: 48, height: 48, mx: 'auto', mb: 1 }}><StarIcon /></Avatar>
+              <Avatar sx={{ bgcolor: '#59171B', width: 48, height: 48, mx: 'auto', mb: 1 }}><StarIcon /></Avatar>
               <Typography variant="h4" fontWeight={700}>92%</Typography>
               <Typography variant="body2" color="text.secondary">Performance Score</Typography>
             </CardContent>
@@ -60,7 +60,7 @@ export default function Performance() {
         <Grid item xs={6} sm={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#66BB6A', width: 48, height: 48, mx: 'auto', mb: 1 }}><CheckCircleIcon /></Avatar>
+              <Avatar sx={{ bgcolor: '#16A34A', width: 48, height: 48, mx: 'auto', mb: 1 }}><CheckCircleIcon /></Avatar>
               <Typography variant="h4" fontWeight={700}>95%</Typography>
               <Typography variant="body2" color="text.secondary">Quality Score</Typography>
             </CardContent>
@@ -69,7 +69,7 @@ export default function Performance() {
         <Grid item xs={6} sm={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#FF9800', width: 48, height: 48, mx: 'auto', mb: 1 }}><SpeedIcon /></Avatar>
+              <Avatar sx={{ bgcolor: '#E8A06B', width: 48, height: 48, mx: 'auto', mb: 1 }}><SpeedIcon /></Avatar>
               <Typography variant="h4" fontWeight={700}>88%</Typography>
               <Typography variant="body2" color="text.secondary">Efficiency</Typography>
             </CardContent>
@@ -78,7 +78,7 @@ export default function Performance() {
         <Grid item xs={6} sm={3}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#0097A7', width: 48, height: 48, mx: 'auto', mb: 1 }}><TrendingUpIcon /></Avatar>
+              <Avatar sx={{ bgcolor: '#2C8C8C', width: 48, height: 48, mx: 'auto', mb: 1 }}><TrendingUpIcon /></Avatar>
               <Typography variant="h4" fontWeight={700}>+5%</Typography>
               <Typography variant="body2" color="text.secondary">Last Month Growth</Typography>
             </CardContent>
@@ -99,7 +99,7 @@ export default function Performance() {
                 </TextField>
               </Box>
               <PerformanceChart
-                data={[{ label: 'My Performance', data: currentData.data, borderColor: '#3F51B5', backgroundColor: 'rgba(63,81,181,0.1)' }]}
+                data={[{ label: 'My Performance', data: currentData.data, borderColor: '#59171B', backgroundColor: 'rgba(89,23,27,0.08)' }]}
                 labels={currentData.labels}
                 height={280}
                 loading={loading}
@@ -139,8 +139,8 @@ export default function Performance() {
               <PerformanceChart
                 type="bar"
                 data={[
-                  { label: 'Completed', data: [18, 22, 20, 25, 28, 24, 30], backgroundColor: '#66BB6A' },
-                  { label: 'Assigned', data: [20, 25, 22, 28, 30, 26, 32], backgroundColor: '#3F51B5' },
+                  { label: 'Completed', data: [18, 22, 20, 25, 28, 24, 30], backgroundColor: '#16A34A' },
+                  { label: 'Assigned', data: [20, 25, 22, 28, 30, 26, 32], backgroundColor: '#59171B' },
                 ]}
                 labels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']}
                 height={200}
@@ -154,7 +154,7 @@ export default function Performance() {
             <CardContent>
               <Typography variant="h6" fontWeight={600} mb={2}>Quality Trend</Typography>
               <PerformanceChart
-                data={[{ label: 'Quality Score', data: [88, 90, 87, 92, 94, 91, 95, 93, 96, 94, 97, 95], borderColor: '#66BB6A', backgroundColor: 'rgba(102,187,106,0.1)' }]}
+                data={[{ label: 'Quality Score', data: [88, 90, 87, 92, 94, 91, 95, 93, 96, 94, 97, 95], borderColor: '#E8A06B', backgroundColor: 'rgba(232,160,107,0.12)' }]}
                 labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']}
                 height={200}
                 loading={loading}

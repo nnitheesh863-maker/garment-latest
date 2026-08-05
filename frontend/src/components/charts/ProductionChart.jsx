@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Skeleton } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,54 +13,59 @@ import {
   Filler,
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
+import { premiumOptions, withGradient, getThemeMode } from '../../utils/chart';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
 export default function ProductionChart({ data, labels, type = 'line', options, loading = false, height = 300 }) {
+  const isDark = getThemeMode();
+
   if (loading) {
-    return <Skeleton variant="rectangular" height={height} sx={{ borderRadius: 2 }} />;
+    return (
+      <Box sx={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <LoadingSpinner fullPage={false} message="Loading chart..." size={30} />
+      </Box>
+    );
   }
 
   if (!data || !labels || labels.length === 0) {
     return (
       <Box display="flex" alignItems="center" justifyContent="center" height={height}>
-        <Typography color="text.secondary">No data available</Typography>
+        <Typography color="text.secondary" variant="body2">No chart data available</Typography>
       </Box>
     );
   }
-
-  const defaultOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'bottom' },
-      tooltip: { mode: 'index', intersect: false },
-    },
-    scales: {
-      y: { beginAtZero: true, grid: { drawBorder: false } },
-      x: { grid: { display: false } },
-    },
-    ...options,
-  };
 
   const datasets = Array.isArray(data) ? data : [{ label: 'Production', data }];
 
   const chartData = {
     labels,
-    datasets: datasets.map((ds) => ({
-      fill: true,
-      tension: 0.4,
-      borderWidth: 2,
-      pointRadius: 3,
-      ...ds,
-    })),
+    datasets: datasets.map((ds) => {
+      const color = ds.borderColor;
+      return withGradient(
+        {
+          ...ds,
+          fill: ds.fill ?? true,
+          tension: 0.45,
+          borderWidth: ds.borderWidth || 2.5,
+          pointRadius: ds.pointRadius ?? 0,
+          pointHoverRadius: 5,
+          pointBackgroundColor: color,
+          pointBorderColor: isDark ? '#1A1012' : '#FFFFFF',
+          pointBorderWidth: 2,
+          ...(type === 'bar' ? { borderRadius: 8, maxBarThickness: 28, borderSkipped: false } : {}),
+        },
+        isDark,
+      );
+    }),
   };
 
   const ChartComponent = type === 'bar' ? Bar : Line;
 
   return (
     <Box sx={{ height, position: 'relative' }}>
-      <ChartComponent data={chartData} options={defaultOptions} />
+      <ChartComponent data={chartData} options={premiumOptions(options, isDark)} />
     </Box>
   );
 }

@@ -137,7 +137,7 @@ export default function QualityControl() {
             <CardContent>
               <Typography variant="h6" fontWeight={600} mb={2}>Quality Trend</Typography>
               <PerformanceChart
-                data={[{ label: 'Quality Score', data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 15 + 82)), borderColor: '#3F51B5', backgroundColor: 'rgba(63,81,181,0.1)' }]}
+                data={[{ label: 'Quality Score', data: Array.from({ length: 12 }, () => Math.floor(Math.random() * 15 + 82)), borderColor: '#59171B', backgroundColor: 'rgba(89,23,27,0.08)' }]}
                 labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']}
                 height={200}
               />

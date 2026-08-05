@@ -2,11 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Grid,
-  Card,
-  CardContent,
   Typography,
   Chip,
-  LinearProgress,
   List,
   ListItem,
   ListItemText,
@@ -37,10 +34,17 @@ import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import ErrorIcon from "@mui/icons-material/Error";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { motion } from "framer-motion";
 import { useSocket } from "../../hooks/useSocket";
 import ProductionChart from "../../components/charts/ProductionChart";
+import StatCard from "../../components/common/StatCard";
+import GlassCard from "../../components/common/GlassCard";
+import PageHeader from "../../components/common/PageHeader";
+import StatusBadge from "../../components/common/StatusBadge";
 import { formatDate, getStatusColor, truncateText } from "../../utils/helpers";
 import api from "../../api/axios";
+import { CHART_COLORS } from "../../utils/chart";
 
 export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true);
@@ -70,7 +74,6 @@ export default function ManagerDashboard() {
         api.get("/api/leaves"),
       ]);
 
-      // Process employees
       let empData = [];
       if (employeesRes.status === "fulfilled") {
         const res = employeesRes.value.data;
@@ -79,7 +82,6 @@ export default function ManagerDashboard() {
         setEmployees(empData);
       }
 
-      // Process issues
       let issuesData = [];
       if (issuesRes.status === "fulfilled") {
         const res = issuesRes.value.data;
@@ -88,7 +90,6 @@ export default function ManagerDashboard() {
         setIssues(issuesData);
       }
 
-      // Process leaves
       let leavesData = [];
       if (leavesRes.status === "fulfilled") {
         const res = leavesRes.value.data;
@@ -97,7 +98,6 @@ export default function ManagerDashboard() {
         setLeaves(leavesData);
       }
 
-      // Calculate stats
       const activeEmployees = Array.isArray(empData)
         ? empData.filter((e) => e.status !== "inactive").length
         : 0;
@@ -136,7 +136,6 @@ export default function ManagerDashboard() {
       }));
       setAttendanceSummary(attendance);
 
-      // Fetch AI recommendations
       try {
         const aiRes = await api.get("/api/ai/recommendations");
         const aiData = aiRes.data?.data || [];
@@ -164,7 +163,6 @@ export default function ManagerDashboard() {
     loadData();
   }, [loadData]);
 
-  // Generate production chart data
   useEffect(() => {
     if (!loading) {
       const days = Array.from({ length: 14 }, (_, i) => {
@@ -181,14 +179,12 @@ export default function ManagerDashboard() {
           {
             label: "Target",
             data: days.map(() => Math.floor(Math.random() * 100 + 200)),
-            borderColor: "#3F51B5",
-            backgroundColor: "rgba(63,81,181,0.1)",
+            borderColor: CHART_COLORS.maroon,
           },
           {
             label: "Actual",
             data: days.map(() => Math.floor(Math.random() * 80 + 180)),
-            borderColor: "#66BB6A",
-            backgroundColor: "rgba(102,187,106,0.1)",
+            borderColor: CHART_COLORS.gold,
           },
         ],
       });
@@ -265,236 +261,70 @@ export default function ManagerDashboard() {
 
   return (
     <Box>
-      {/* Header */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          Manager Dashboard
-        </Typography>
-        <Chip
-          label={connected ? "Live" : "Offline"}
-          color={connected ? "success" : "error"}
-          size="small"
-          variant="outlined"
-        />
-      </Box>
+      <PageHeader
+        title="Manager Dashboard"
+        subtitle="Oversee workforce, production targets and AI-driven recommendations."
+        badge={connected ? "Live" : "Offline"}
+        badgeColor={connected ? "success" : "error"}
+      />
 
-      {/* Stats Cards */}
       <Grid container spacing={3} mb={3}>
         <Grid item xs={6} sm={3}>
-          <Card
-            sx={{
-              transition: "0.2s",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
-            }}
-          >
-            <CardContent>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="flex-start"
-              >
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Total Employees
-                  </Typography>
-                  {loading ? (
-                    <Skeleton width={40} height={40} />
-                  ) : (
-                    <Typography variant="h4" fontWeight={700}>
-                      {stats.totalEmployees}
-                    </Typography>
-                  )}
-                  <Typography variant="caption" color="text.secondary">
-                    Active workforce
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: "#3F51B5" }}>
-                  <PeopleIcon />
-                </Avatar>
-              </Box>
-            </CardContent>
-          </Card>
+          <StatCard title="Total Employees" value={stats.totalEmployees} icon={<PeopleIcon />} variant="maroon" loading={loading} subtitle="Active workforce" delay={0} />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Card
-            sx={{
-              transition: "0.2s",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
-            }}
-          >
-            <CardContent>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="flex-start"
-              >
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Active Tasks
-                  </Typography>
-                  {loading ? (
-                    <Skeleton width={40} height={40} />
-                  ) : (
-                    <Typography variant="h4" fontWeight={700}>
-                      {stats.activeTasks}
-                    </Typography>
-                  )}
-                  <Typography variant="caption" color="text.secondary">
-                    In progress
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: "#FF9800" }}>
-                  <AssignmentIcon />
-                </Avatar>
-              </Box>
-            </CardContent>
-          </Card>
+          <StatCard title="Active Tasks" value={stats.activeTasks} icon={<AssignmentIcon />} variant="gold" loading={loading} subtitle="In progress" delay={0.06} />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Card
-            sx={{
-              transition: "0.2s",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
-            }}
-          >
-            <CardContent>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="flex-start"
-              >
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Pending Leaves
-                  </Typography>
-                  {loading ? (
-                    <Skeleton width={40} height={40} />
-                  ) : (
-                    <Typography
-                      variant="h4"
-                      fontWeight={700}
-                      color="warning.main"
-                    >
-                      {stats.pendingLeaves}
-                    </Typography>
-                  )}
-                  <Typography variant="caption" color="text.secondary">
-                    Awaiting approval
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: "#FF9800" }}>
-                  <PendingActionsIcon />
-                </Avatar>
-              </Box>
-            </CardContent>
-          </Card>
+          <StatCard title="Pending Leaves" value={stats.pendingLeaves} icon={<PendingActionsIcon />} variant="cream" loading={loading} subtitle="Awaiting approval" delay={0.12} />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Card
-            sx={{
-              transition: "0.2s",
-              "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
-            }}
-          >
-            <CardContent>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="flex-start"
-              >
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Open Issues
-                  </Typography>
-                  {loading ? (
-                    <Skeleton width={40} height={40} />
-                  ) : (
-                    <Typography
-                      variant="h4"
-                      fontWeight={700}
-                      color={
-                        stats.openIssues > 0 ? "error.main" : "success.main"
-                      }
-                    >
-                      {stats.openIssues}
-                    </Typography>
-                  )}
-                  <Typography variant="caption" color="text.secondary">
-                    Needs attention
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: "#EF5350" }}>
-                  <ErrorIcon />
-                </Avatar>
-              </Box>
-            </CardContent>
-          </Card>
+          <StatCard title="Open Issues" value={stats.openIssues} icon={<ErrorIcon />} variant={stats.openIssues > 0 ? "soft" : "green"} loading={loading} subtitle="Needs attention" delay={0.18} />
         </Grid>
       </Grid>
 
-      {/* Issues & Alerts */}
       <Grid container spacing={3} mb={3}>
-        {/* Recent Issue Reports */}
         <Grid item xs={12} md={7}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                Recent Issue Reports
+          <GlassCard delay={0.22}>
+            <Typography variant="h6" fontWeight={700} mb={2}>Recent Issue Reports</Typography>
+            {loading ? (
+              [...Array(3)].map((_, i) => (
+                <Skeleton key={i} height={56} sx={{ mb: 1, borderRadius: 2.5 }} />
+              ))
+            ) : recentIssues.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" py={2} textAlign="center">
+                No issues reported
               </Typography>
-              {loading ? (
-                [...Array(3)].map((_, i) => (
-                  <Skeleton key={i} height={60} sx={{ mb: 1 }} />
-                ))
-              ) : recentIssues.length === 0 ? (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  py={2}
-                  textAlign="center"
-                >
-                  No issues reported
-                </Typography>
-              ) : (
-                <List dense disablePadding>
-                  {recentIssues.map((issue) => (
+            ) : (
+              <List dense disablePadding>
+                {recentIssues.map((issue) => (
+                  <motion.div
+                    key={issue._id}
+                    initial={{ opacity: 0, x: 14 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
                     <ListItem
-                      key={issue._id}
                       sx={{
                         borderLeft: `4px solid ${getStatusColor(issue.status)}`,
                         mb: 1,
-                        bgcolor: "action.hover",
-                        borderRadius: 1,
-                        py: 1,
+                        bgcolor: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "rgba(254,215,184,0.06)"
+                            : "rgba(255,248,242,0.9)",
+                        borderRadius: 2,
+                        py: 1.25,
                       }}
                     >
                       <ListItemAvatar>
                         <Avatar
                           sx={{
-                            width: 32,
-                            height: 32,
-                            bgcolor: "primary.light",
+                            width: 34,
+                            height: 34,
+                            background: "linear-gradient(135deg, #59171B, #A45A4A)",
+                            color: "#FED7B8",
                             fontSize: 12,
+                            fontWeight: 700,
                           }}
                         >
                           {(issue.employee?.profile?.firstName?.[0] || "") +
@@ -503,123 +333,103 @@ export default function ManagerDashboard() {
                       </ListItemAvatar>
                       <ListItemText
                         primary={
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Typography variant="body2" fontWeight={500}>
-                            {(issue.employee?.profile?.firstName || "") +
-                              " " +
-                              (issue.employee?.profile?.lastName || "") ||
-                              issue.employeeName ||
-                              "Unknown"}
+                          <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                            <Typography variant="body2" fontWeight={600} sx={{ color: "text.primary" }}>
+                              {(issue.employee?.profile?.firstName || "") +
+                                " " +
+                                (issue.employee?.profile?.lastName || "") ||
+                                issue.employeeName ||
+                                "Unknown"}
                             </Typography>
                             <Chip
                               label={issue.issueType || issue.type || "issue"}
                               size="small"
                               variant="outlined"
-                              sx={{ height: 20, fontSize: 11 }}
+                              sx={{ height: 20, fontSize: 10.5, borderColor: "rgba(122,35,40,0.3)", color: "primary.main", fontWeight: 600 }}
                             />
                           </Box>
                         }
-                        secondary={truncateText(
-                          issue.description || issue.issue,
-                          80,
-                        )}
-                        secondaryTypographyProps={{ variant: "caption" }}
+                        secondary={truncateText(issue.description || issue.issue, 80)}
+                        secondaryTypographyProps={{ variant: "caption", sx: { color: "#7A6A63" } }}
                       />
-                      <Box
-                        display="flex"
-                        flexDirection="column"
-                        alignItems="flex-end"
-                        gap={0.5}
-                        ml={1}
-                      >
-                        <Chip
-                          label={issue.priority || "normal"}
-                          size="small"
-                          color={priorityChipColor(issue.priority)}
-                          sx={{ height: 20, fontSize: 11 }}
-                        />
-                        <Chip
-                          label={issue.status || "open"}
-                          size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: 11,
-                            bgcolor: getStatusColor(issue.status),
-                            color: "#fff",
-                          }}
-                        />
-                        <Typography variant="caption" color="text.secondary">
+                      <Box display="flex" flexDirection="column" alignItems="flex-end" gap={0.5} ml={1}>
+                        <StatusBadge status={issue.status} size="small" />
+                        <Typography variant="caption" sx={{ color: "#7A6A63" }}>
                           {formatDate(issue.createdAt || issue.date)}
                         </Typography>
                       </Box>
                     </ListItem>
-                  ))}
-                </List>
-              )}
-            </CardContent>
-          </Card>
+                  </motion.div>
+                ))}
+              </List>
+            )}
+          </GlassCard>
         </Grid>
 
-        {/* AI Alerts */}
         <Grid item xs={12} md={5}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                AI Alerts & Recommendations
-              </Typography>
-              {loading
-                ? [...Array(3)].map((_, i) => (
-                    <Skeleton key={i} height={50} sx={{ mb: 1 }} />
-                  ))
-                : displayAlerts.map((alert, i) => (
+          <GlassCard delay={0.28}>
+            <Box display="flex" alignItems="center" gap={1} mb={1.5}>
+              <Box sx={{ width: 32, height: 32, borderRadius: 2.5, background: "linear-gradient(135deg, #59171B, #A45A4A)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 6px 16px rgba(89,23,27,0.25)" }}>
+                <AutoAwesomeIcon sx={{ fontSize: 17, color: "#FED7B8" }} />
+              </Box>
+              <Typography variant="h6" fontWeight={700}>AI Alerts & Recommendations</Typography>
+            </Box>
+            {loading
+              ? [...Array(3)].map((_, i) => (
+                  <Skeleton key={i} height={48} sx={{ mb: 1, borderRadius: 2 }} />
+                ))
+              : displayAlerts.map((alert, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}>
                     <Alert
-                      key={i}
                       severity={alert.type || "info"}
                       sx={{
                         mb: 1,
+                        borderRadius: 2.5,
                         "& .MuiAlert-icon": { alignItems: "center" },
+                        bgcolor: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "rgba(254,215,184,0.08)"
+                            : undefined,
                       }}
                     >
-                      <Typography variant="body2">{alert.message}</Typography>
+                      <Typography variant="body2" sx={{ color: "text.primary" }}>{alert.message}</Typography>
                     </Alert>
-                  ))}
-            </CardContent>
-          </Card>
+                  </motion.div>
+                ))}
+          </GlassCard>
         </Grid>
       </Grid>
 
-      {/* Leave Requests & Attendance */}
       <Grid container spacing={3} mb={3}>
-        {/* Leave Requests */}
         <Grid item xs={12} md={7}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                Leave Requests
+          <GlassCard delay={0.32}>
+            <Typography variant="h6" fontWeight={700} mb={2}>Leave Requests</Typography>
+            {loading ? (
+              [...Array(2)].map((_, i) => (
+                <Skeleton key={i} height={70} sx={{ mb: 1, borderRadius: 2.5 }} />
+              ))
+            ) : pendingLeaves.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" py={2} textAlign="center">
+                No pending leave requests
               </Typography>
-              {loading ? (
-                [...Array(2)].map((_, i) => (
-                  <Skeleton key={i} height={80} sx={{ mb: 1 }} />
-                ))
-              ) : pendingLeaves.length === 0 ? (
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  py={2}
-                  textAlign="center"
-                >
-                  No pending leave requests
-                </Typography>
-              ) : (
-                <List dense disablePadding>
-                  {pendingLeaves.slice(0, 5).map((leave) => (
+            ) : (
+              <List dense disablePadding>
+                {pendingLeaves.slice(0, 5).map((leave) => (
+                  <motion.div
+                    key={leave._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
                     <ListItem
-                      key={leave._id}
                       sx={{
                         mb: 1,
-                        bgcolor: "action.hover",
-                        borderRadius: 1,
-                        py: 1,
+                        bgcolor: (theme) =>
+                          theme.palette.mode === "dark"
+                            ? "rgba(254,215,184,0.06)"
+                            : "rgba(255,248,242,0.9)",
+                        borderRadius: 2,
+                        py: 1.25,
                       }}
                     >
                       <ListItemAvatar>
@@ -627,8 +437,10 @@ export default function ManagerDashboard() {
                           sx={{
                             width: 36,
                             height: 36,
-                            bgcolor: "info.light",
-                            fontSize: 14,
+                            background: "linear-gradient(135deg, #A45A4A, #59171B)",
+                            color: "#FED7B8",
+                            fontSize: 13,
+                            fontWeight: 700,
                           }}
                         >
                           {(leave.employee?.profile?.firstName?.[0] || "") +
@@ -637,7 +449,7 @@ export default function ManagerDashboard() {
                       </ListItemAvatar>
                       <ListItemText
                         primary={
-                          <Typography variant="body2" fontWeight={500}>
+                          <Typography variant="body2" fontWeight={600} sx={{ color: "text.primary" }}>
                             {(leave.employee?.profile?.firstName || "") +
                               " " +
                               (leave.employee?.profile?.lastName || "") ||
@@ -647,20 +459,10 @@ export default function ManagerDashboard() {
                         }
                         secondary={
                           <Box component="span">
-                            <Typography variant="caption" component="span">
-                              {leave.leaveType || leave.type}
+                            <StatusBadge status={leave.leaveType || leave.type} size="small" withDot={false} sx={{ mr: 0.75 }} />
+                            <Typography variant="caption" component="span" sx={{ color: "#7A6A63" }}>
+                              {formatDate(leave.startDate)} - {formatDate(leave.endDate)} ({getDaysDifference(leave.startDate, leave.endDate)} days)
                             </Typography>
-                            {" — "}
-                            <Typography variant="caption" component="span">
-                              {formatDate(leave.startDate)} -{" "}
-                              {formatDate(leave.endDate)}
-                            </Typography>
-                            {" ("}
-                            {getDaysDifference(
-                              leave.startDate,
-                              leave.endDate,
-                            )}{" "}
-                            days)
                           </Box>
                         }
                       />
@@ -668,8 +470,8 @@ export default function ManagerDashboard() {
                         <Tooltip title="Approve">
                           <IconButton
                             size="small"
-                            color="success"
                             onClick={() => handleApproveLeave(leave)}
+                            sx={{ bgcolor: "rgba(22,163,74,0.12)", color: "#16A34A", "&:hover": { bgcolor: "rgba(22,163,74,0.22)" } }}
                           >
                             <CheckCircleIcon fontSize="small" />
                           </IconButton>
@@ -677,133 +479,104 @@ export default function ManagerDashboard() {
                         <Tooltip title="Reject">
                           <IconButton
                             size="small"
-                            color="error"
                             onClick={() => openRejectDialog(leave)}
+                            sx={{ bgcolor: "rgba(220,38,38,0.12)", color: "#DC2626", "&:hover": { bgcolor: "rgba(220,38,38,0.22)" } }}
                           >
                             <CancelIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       </Box>
                     </ListItem>
-                  ))}
-                </List>
-              )}
-              {pendingLeaves.length > 5 && (
-                <Typography variant="caption" color="text.secondary" mt={1}>
-                  And {pendingLeaves.length - 5} more pending requests
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
+                  </motion.div>
+                ))}
+              </List>
+            )}
+            {pendingLeaves.length > 5 && (
+              <Typography variant="caption" sx={{ color: "#7A6A63", mt: 1 }}>
+                And {pendingLeaves.length - 5} more pending requests
+              </Typography>
+            )}
+          </GlassCard>
         </Grid>
 
-        {/* Employee Attendance Summary */}
         <Grid item xs={12} md={5}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                Today's Attendance
-              </Typography>
-              {loading ? (
-                [...Array(4)].map((_, i) => (
-                  <Skeleton key={i} height={36} sx={{ mb: 0.5 }} />
-                ))
-              ) : (
-                <TableContainer
-                  component={Paper}
-                  variant="outlined"
-                  sx={{ boxShadow: "none" }}
-                >
-                  <Table size="small">
-                    <TableHead>
+          <GlassCard delay={0.38}>
+            <Typography variant="h6" fontWeight={700} mb={2}>Today's Attendance</Typography>
+            {loading ? (
+              [...Array(4)].map((_, i) => (
+                <Skeleton key={i} height={34} sx={{ mb: 0.5, borderRadius: 1.5 }} />
+              ))
+            ) : (
+              <TableContainer
+                component={Paper}
+                variant="outlined"
+                sx={{ boxShadow: "none", borderRadius: 2, borderColor: "rgba(241,213,192,0.6)", bgcolor: "transparent" }}
+              >
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ "& th": { fontWeight: 700, color: "primary.main", fontSize: 11.5, textTransform: "uppercase", letterSpacing: 0.4 } }}>
+                      <TableCell>Employee</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>In</TableCell>
+                      <TableCell>Out</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {attendanceSummary.length === 0 ? (
                       <TableRow>
-                        <TableCell sx={{ fontWeight: 600 }}>Employee</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>In</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Out</TableCell>
+                        <TableCell colSpan={4} align="center">
+                          <Typography variant="body2" color="text.secondary">
+                            No attendance data
+                          </Typography>
+                        </TableCell>
                       </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {attendanceSummary.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4} align="center">
-                            <Typography variant="body2" color="text.secondary">
-                              No attendance data
-                            </Typography>
+                    ) : (
+                      attendanceSummary.map((row, i) => (
+                        <TableRow key={i} sx={{ "&:hover": { bgcolor: "rgba(254,215,184,0.18)" } }}>
+                          <TableCell>
+                            <Typography variant="body2" sx={{ fontWeight: 500, color: "text.primary" }}>{row.name}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge status={row.status} size="small" />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption" sx={{ color: "#7A6A63" }}>{row.checkIn || "-"}</Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="caption" sx={{ color: "#7A6A63" }}>{row.checkOut || "-"}</Typography>
                           </TableCell>
                         </TableRow>
-                      ) : (
-                        attendanceSummary.map((row, i) => (
-                          <TableRow key={i}>
-                            <TableCell>
-                              <Typography variant="body2">
-                                {row.name}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Chip
-                                label={row.status}
-                                size="small"
-                                color={
-                                  row.status === "present"
-                                    ? "success"
-                                    : row.status === "late"
-                                      ? "warning"
-                                      : "default"
-                                }
-                                variant="outlined"
-                                sx={{ height: 20, fontSize: 11 }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="caption">
-                                {row.checkIn || "-"}
-                              </Typography>
-                            </TableCell>
-                            <TableCell>
-                              <Typography variant="caption">
-                                {row.checkOut || "-"}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </CardContent>
-          </Card>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </GlassCard>
         </Grid>
       </Grid>
 
-      {/* Production Progress Chart */}
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                Production Progress (14 Days)
-              </Typography>
-              <ProductionChart
-                data={productionData?.datasets}
-                labels={productionData?.labels}
-                height={280}
-                loading={loading}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <GlassCard delay={0.44}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h6" fontWeight={700}>Production Progress</Typography>
+          <Typography variant="caption" sx={{ color: "#7A6A63" }}>Last 14 days</Typography>
+        </Box>
+        <ProductionChart
+          data={productionData?.datasets}
+          labels={productionData?.labels}
+          height={280}
+          loading={loading}
+        />
+      </GlassCard>
 
-      {/* Rejection Reason Dialog */}
       <Dialog
         open={rejectDialogOpen}
         onClose={() => setRejectDialogOpen(false)}
         maxWidth="sm"
         fullWidth
+        PaperProps={{ sx: { borderRadius: 4 } }}
       >
-        <DialogTitle>Reject Leave Request</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>Reject Leave Request</DialogTitle>
         <DialogContent>
           <DialogContentText mb={2}>
             Are you sure you want to reject the leave request from{" "}
@@ -822,13 +595,20 @@ export default function ManagerDashboard() {
             variant="outlined"
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setRejectDialogOpen(false)} sx={{ borderRadius: 2, textTransform: "none" }}>
+            Cancel
+          </Button>
           <Button
             onClick={handleRejectLeave}
             variant="contained"
-            color="error"
             disabled={!rejectionReason.trim()}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              background: "linear-gradient(135deg, #DC2626, #B91C1C)",
+              "&:hover": { background: "linear-gradient(135deg, #EF4444, #DC2626)" },
+            }}
           >
             Reject
           </Button>

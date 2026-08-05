@@ -361,14 +361,14 @@ export default function EmployeeManagement() {
                       data: Array.from({ length: 12 }, () =>
                         Math.floor(Math.random() * 40 + 60),
                       ),
-                      borderColor: "#3F51B5",
+                      borderColor: "#59171B",
                     },
                     {
                       label: "Quality",
                       data: Array.from({ length: 12 }, () =>
                         Math.floor(Math.random() * 20 + 80),
                       ),
-                      borderColor: "#66BB6A",
+                      borderColor: "#E8A06B",
                     },
                   ]}
                   labels={[
