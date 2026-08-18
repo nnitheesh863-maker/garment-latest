@@ -54,17 +54,17 @@ export default function VoiceAssistant() {
     socket.on('attendance_update', (d) => {
       addMessage(`Attendance: ${d.clockInTime || d.clockOutTime || 'updated'}`, 'system');
     });
-    socket.on('task_update', (d) => {
-      addMessage(`Task ${d.status}: ${d.title}`, 'system');
+    socket.on('taskUpdated', (d) => {
+      addMessage(`Task ${d.task?.status || 'updated'}: ${d.task?.title || ''}`, 'system');
     });
-    socket.on('production_update', (d) => {
+    socket.on('productionUpdated', (d) => {
       addMessage(`Production: ${d.message || 'updated'}`, 'system');
     });
     return () => {
       socket.off('newNotification');
       socket.off('attendance_update');
-      socket.off('task_update');
-      socket.off('production_update');
+      socket.off('taskUpdated');
+      socket.off('productionUpdated');
     };
   }, [socket, open]);
 
@@ -89,7 +89,7 @@ export default function VoiceAssistant() {
     recognitionInstance.continuous = false;
     recognitionInstance.interimResults = true;
     recognitionInstance.maxAlternatives = 3;
-    recognitionInstance.lang = 'en-IN';
+    recognitionInstance.lang = getSpeechRecognitionLang(currentLang);
 
     recognitionInstance.onstart = () => setListening(true);
     recognitionInstance.onend = () => setListening(false);
@@ -113,7 +113,7 @@ export default function VoiceAssistant() {
       }
     };
     recognitionInstance.start();
-  }, []);
+  }, [currentLang]);
 
   const stopListening = useCallback(() => {
     if (recognitionInstance) {

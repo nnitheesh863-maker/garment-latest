@@ -47,7 +47,7 @@ const iconMap = {
 export const DRAWER_WIDTH = 248;
 export const DRAWER_COLLAPSED = 84;
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 export default function Sidebar({ open, onClose, variant }) {
   const { user } = useAuth();

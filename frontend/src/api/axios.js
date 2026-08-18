@@ -207,3 +207,8 @@ export const notificationApi = {
   getUnreadCount: () => api.get("/api/notifications/unread-count"),
   delete: (id) => api.delete(`/api/notifications/${id}`),
 };
+
+export const adminDashboardApi = {
+  summary: (params) => api.get("/api/admin/dashboard/summary", { params }),
+  health: (params) => api.get("/api/admin/dashboard/health", { params }),
+};

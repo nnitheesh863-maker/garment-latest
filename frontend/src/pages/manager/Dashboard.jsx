@@ -27,6 +27,11 @@ import {
   TextField,
   DialogActions,
   Button,
+  Divider,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import PeopleIcon from "@mui/icons-material/People";
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -52,6 +57,7 @@ export default function ManagerDashboard() {
   const [issues, setIssues] = useState([]);
   const [leaves, setLeaves] = useState([]);
   const [employees, setEmployees] = useState([]);
+  const [pendingOrders, setPendingOrders] = useState([]);
   const [stats, setStats] = useState({
     totalEmployees: 0,
     activeTasks: 0,
@@ -63,15 +69,16 @@ export default function ManagerDashboard() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
-  const { connected } = useSocket();
+  const { connected, socket } = useSocket();
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [employeesRes, issuesRes, leavesRes] = await Promise.allSettled([
+      const [employeesRes, issuesRes, leavesRes, ordersRes] = await Promise.allSettled([
         api.get("/api/employees", { params: { active: true } }),
         api.get("/api/employees/issues/all"),
         api.get("/api/leaves"),
+        api.get("/api/orders", { params: { status: "pending", limit: 50 } }),
       ]);
 
       let empData = [];
@@ -96,6 +103,14 @@ export default function ManagerDashboard() {
         leavesData = res?.data || res?.leaves || res || [];
         if (!Array.isArray(leavesData)) leavesData = [];
         setLeaves(leavesData);
+      }
+
+      let ordersData = [];
+      if (ordersRes.status === "fulfilled") {
+        const res = ordersRes.value.data;
+        ordersData = res?.data || res?.orders || res || [];
+        if (!Array.isArray(ordersData)) ordersData = [];
+        setPendingOrders(ordersData);
       }
 
       const activeEmployees = Array.isArray(empData)
@@ -224,6 +239,85 @@ export default function ManagerDashboard() {
     }
   };
 
+  const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
+  const [candidatesData, setCandidatesData] = useState(null);
+  const [splits, setSplits] = useState([]);
+  const [selectedLineId, setSelectedLineId] = useState('');
+  const [selectedPlanId, setSelectedPlanId] = useState(null);
+  const [dispatchLoading, setDispatchLoading] = useState(false);
+
+  const handleOpenDispatchModal = async (orderId) => {
+    setSelectedPlanId(orderId);
+    try {
+      const res = await api.get(`/api/ai/production-plan/${orderId}/candidates`);
+      const data = res.data?.data || res.data || {};
+      setCandidatesData(data);
+      setSplits(data.suggestedSplits || []);
+      if (data.lines?.length > 0) {
+        setSelectedLineId(data.lines[0]._id);
+      }
+      setDispatchModalOpen(true);
+    } catch (e) {
+      console.error("Failed to load candidates:", e);
+    }
+  };
+
+  const handleUpdateSplit = (index, field, value) => {
+    setSplits(prev => prev.map((s, idx) => idx === index ? { ...s, [field]: value } : s));
+  };
+
+  const handleAddSplit = () => {
+    setSplits(prev => [...prev, { assignedTo: '', machineId: '', quantity: 0 }]);
+  };
+
+  const handleRemoveSplit = (index) => {
+    setSplits(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleDispatchTasks = async () => {
+    const totalQty = splits.reduce((sum, s) => sum + parseInt(s.quantity || 0), 0);
+    const targetQty = candidatesData?.order?.orderDetails?.quantity || 0;
+    if (totalQty !== targetQty) {
+      alert(`The sum of splits (${totalQty}) must equal the order target quantity (${targetQty}).`);
+      return;
+    }
+    
+    if (splits.some(s => !s.assignedTo)) {
+      alert("Please select operators for all tasks.");
+      return;
+    }
+
+    setDispatchLoading(true);
+    try {
+      await api.post(`/api/ai/production-plan/${selectedPlanId}/dispatch`, {
+        splits,
+        productionLineId: selectedLineId,
+      });
+      setDispatchModalOpen(false);
+      setPendingOrders(prev => prev.filter(o => o._id !== selectedPlanId));
+      loadData();
+    } catch (e) {
+      console.error("Failed to dispatch tasks:", e);
+    } finally {
+      setDispatchLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("orderCreated", loadData);
+      socket.on("orderUpdated", loadData);
+      socket.on("aiPlanCreated", loadData);
+      socket.on("productionUpdated", loadData);
+      return () => {
+        socket.off("orderCreated");
+        socket.off("orderUpdated");
+        socket.off("aiPlanCreated");
+        socket.off("productionUpdated");
+      };
+    }
+  }, [socket, loadData]);
+
   const openRejectDialog = (leave) => {
     setSelectedLeave(leave);
     setRejectionReason("");
@@ -282,6 +376,75 @@ export default function ManagerDashboard() {
           <StatCard title="Open Issues" value={stats.openIssues} icon={<ErrorIcon />} variant={stats.openIssues > 0 ? "soft" : "green"} loading={loading} subtitle="Needs attention" delay={0.18} />
         </Grid>
       </Grid>
+
+      {/* Pending AI Production Plans Section */}
+      {pendingOrders.length > 0 && (
+        <Box mb={4}>
+          <Typography variant="h6" fontWeight={800} color="#59171B" mb={2} display="flex" alignItems="center" gap={1}>
+            <AutoAwesomeIcon /> NEW AI PRODUCTION PLANS
+          </Typography>
+          <Grid container spacing={3}>
+            {pendingOrders.map((order, index) => {
+              const aiInsights = order.aiInsights || {};
+              const rec = aiInsights.recommendations?.[0] || "Line 3 is recommended based on operator load and stitch expertise.";
+              const delayProb = aiInsights.predictedDelay || 12;
+              const riskLevel = aiInsights.riskLevel || "LOW";
+              return (
+                <Grid item xs={12} key={order._id}>
+                  <GlassCard delay={index * 0.1} sx={{ border: "1px solid rgba(89,23,27,0.12)" }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2} flexWrap="wrap" gap={2}>
+                      <Box>
+                        <Chip label="NEW AI PLAN READY" color="primary" size="small" sx={{ mb: 1, bgcolor: "#59171B", color: "#FED7B8", fontSize: 10, fontWeight: 700 }} />
+                        <Typography variant="h6" fontWeight={800}>
+                          Order: {order.orderNumber} ({order.customer?.name})
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {order.orderDetails?.quantity} units of {order.orderDetails?.garmentType} · Target Completion: {order.requiredDate ? new Date(order.requiredDate).toLocaleDateString() : 'N/A'}
+                        </Typography>
+                      </Box>
+                      <Box display="flex" gap={1}>
+                        <Button variant="contained" color="success" size="small" onClick={() => handleOpenDispatchModal(order._id)} sx={{ px: 2.5, py: 1, fontWeight: 700 }}>
+                          APPROVE AI PLAN
+                        </Button>
+                        <Button variant="outlined" color="primary" size="small" sx={{ px: 2, py: 1, fontWeight: 700 }}>
+                          MODIFY
+                        </Button>
+                        <Button variant="outlined" color="error" size="small" sx={{ px: 2, py: 1, fontWeight: 700 }}>
+                          REJECT
+                        </Button>
+                      </Box>
+                    </Box>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Grid container spacing={2} mb={2}>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Recommended Line</Typography>
+                        <Typography variant="body2" fontWeight={700}>Line 3</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Required Employees</Typography>
+                        <Typography variant="body2" fontWeight={700}>3 Operators</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Delay Risk</Typography>
+                        <Typography variant="body2" fontWeight={700} color={riskLevel === 'high' ? 'error' : 'success'}>
+                          {delayProb}% ({riskLevel})
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">AI Confidence</Typography>
+                        <Typography variant="body2" fontWeight={700} color="primary">91%</Typography>
+                      </Grid>
+                    </Grid>
+                    <Typography variant="body2" sx={{ p: 1.5, bgcolor: "rgba(89,23,27,0.03)", borderRadius: 2 }}>
+                      <strong>Reasoning:</strong> {rec}
+                    </Typography>
+                  </GlassCard>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
+      )}
 
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={7}>
@@ -611,6 +774,123 @@ export default function ManagerDashboard() {
             }}
           >
             Reject
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* AI Task Allocation & Splitting Dialog */}
+      <Dialog open={dispatchModalOpen} onClose={() => setDispatchModalOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ bgcolor: '#59171B', color: '#FED7B8', fontWeight: 800 }}>
+          ⚡ AI TASK ALLOCATION & QUANTITY SPLITTING
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          {candidatesData && (
+            <Box>
+              <Typography variant="subtitle1" fontWeight={700} gutterBottom sx={{ color: '#59171B', mt: 1 }}>
+                Order: {candidatesData.order?.orderNumber} · Total Quantity: {candidatesData.order?.orderDetails?.quantity} units of {candidatesData.order?.orderDetails?.garmentType}
+              </Typography>
+              
+              <FormControl fullWidth size="small" sx={{ mb: 3, mt: 1 }}>
+                <InputLabel>Production Line</InputLabel>
+                <Select
+                  value={selectedLineId}
+                  label="Production Line"
+                  onChange={(e) => setSelectedLineId(e.target.value)}
+                >
+                  {candidatesData.lines?.map(l => (
+                    <MenuItem key={l._id} value={l._id}>{l.name} (Daily Cap: {l.capacity?.daily || 'N/A'})</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Typography variant="subtitle2" fontWeight={800} color="#59171B" mb={1.5}>
+                TASK DIVISION & WORKER ASSIGNMENT
+              </Typography>
+
+              {splits.map((split, index) => (
+                <Grid container spacing={2} key={index} alignItems="center" sx={{ mb: 2, p: 2, bgcolor: 'rgba(89,23,27,0.02)', borderRadius: 2, border: '1px solid rgba(89,23,27,0.08)' }}>
+                  <Grid item xs={12} sm={4}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Operator</InputLabel>
+                      <Select
+                        value={split.assignedTo}
+                        label="Operator"
+                        onChange={(e) => handleUpdateSplit(index, 'assignedTo', e.target.value)}
+                      >
+                        {candidatesData.candidates?.map(c => (
+                          <MenuItem key={c.id} value={c.id}>
+                            {c.name} ({c.score}% Match - Stitch Specialist)
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Reserved Machine</InputLabel>
+                      <Select
+                        value={split.machineId}
+                        label="Reserved Machine"
+                        onChange={(e) => handleUpdateSplit(index, 'machineId', e.target.value)}
+                      >
+                        {candidatesData.machines?.map(m => (
+                          <MenuItem key={m._id} value={m._id}>{m.name} ({m.type || 'Stitching'})</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={8} sm={3}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Task Qty"
+                      type="number"
+                      value={split.quantity}
+                      onChange={(e) => handleUpdateSplit(index, 'quantity', parseInt(e.target.value) || 0)}
+                    />
+                  </Grid>
+
+                  <Grid item xs={4} sm={1} textAlign="center">
+                    <Button color="error" size="small" onClick={() => handleRemoveSplit(index)} disabled={splits.length <= 1}>
+                      Remove
+                    </Button>
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                <Button variant="outlined" onClick={handleAddSplit} sx={{ borderColor: '#59171B', color: '#59171B', fontWeight: 700, borderRadius: 2 }}>
+                  + Add Another Split
+                </Button>
+                <Box textAlign="right">
+                  <Typography variant="body2" fontWeight={700}>
+                    Sum of Splits: {splits.reduce((sum, s) => sum + parseInt(s.quantity || 0), 0)} / {candidatesData.order?.orderDetails?.quantity} units
+                  </Typography>
+                  {splits.reduce((sum, s) => sum + parseInt(s.quantity || 0), 0) !== candidatesData.order?.orderDetails?.quantity && (
+                    <Typography variant="caption" color="error" fontWeight={600}>
+                      ⚠️ Quantities do not match target quantity!
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setDispatchModalOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleDispatchTasks}
+            disabled={
+              dispatchLoading ||
+              !candidatesData ||
+              splits.reduce((sum, s) => sum + parseInt(s.quantity || 0), 0) !== (candidatesData?.order?.orderDetails?.quantity || 0)
+            }
+          >
+            Dispatch discrete Tasks
           </Button>
         </DialogActions>
       </Dialog>

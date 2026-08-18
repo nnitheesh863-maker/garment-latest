@@ -144,13 +144,13 @@ export default function MachineManagement() {
         <DialogContent>
           <Grid container spacing={2} mt={1}>
             <Grid item xs={12}>
-              <TextField full size="small" label="Machine Name" value={newMachine.name} onChange={(e) => setNewMachine((p) => ({ ...p, name: e.target.value }))} />
+              <TextField fullWidth size="small" label="Machine Name" value={newMachine.name} onChange={(e) => setNewMachine((p) => ({ ...p, name: e.target.value }))} />
             </Grid>
             <Grid item xs={12}>
-              <TextField full size="small" label="Model" value={newMachine.model} onChange={(e) => setNewMachine((p) => ({ ...p, model: e.target.value }))} />
+              <TextField fullWidth size="small" label="Model" value={newMachine.model} onChange={(e) => setNewMachine((p) => ({ ...p, model: e.target.value }))} />
             </Grid>
             <Grid item xs={12}>
-              <TextField full size="small" label="Production Line" value={newMachine.line} onChange={(e) => setNewMachine((p) => ({ ...p, line: e.target.value }))} />
+              <TextField fullWidth size="small" label="Production Line" value={newMachine.line} onChange={(e) => setNewMachine((p) => ({ ...p, line: e.target.value }))} />
             </Grid>
           </Grid>
         </DialogContent>

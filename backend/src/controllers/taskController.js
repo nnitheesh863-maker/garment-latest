@@ -219,10 +219,12 @@ exports.updateStatus = async (req, res, next) => {
     const validTransitions = {
       pending: ['accepted'],
       accepted: ['in_progress'],
-      in_progress: ['paused', 'completed', 'delayed'],
+      in_progress: ['paused', 'completed', 'delayed', 'quality_check'],
       paused: ['in_progress'],
       delayed: ['in_progress'],
-      completed: [],
+      quality_check: ['completed', 'rework'],
+      rework: ['in_progress', 'quality_check'],
+      completed: ['quality_check'],
     };
 
     const task = await Task.findOne({ _id: req.params.id, isDeleted: false });
@@ -280,8 +282,8 @@ exports.updateProgress = async (req, res, next) => {
 
     const progress = calculateProgress(task.quantity.target, task.quantity.produced);
 
-    if (progress >= 100 && task.status !== 'completed') {
-      task.status = 'completed';
+    if (progress >= 100 && task.status !== 'completed' && task.status !== 'quality_check') {
+      task.status = 'quality_check';
       task.timeline.completedAt = new Date();
     } else if (task.status === 'pending' && task.quantity.produced > 0) {
       task.status = 'in_progress';

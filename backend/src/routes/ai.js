@@ -10,5 +10,9 @@ router.get('/recommendations', protect, aiController.getRecommendations);
 router.post('/train', protect, authorize('admin'), aiController.triggerTraining);
 router.get('/model-status', protect, aiController.getModelStatus);
 router.get('/dashboard', protect, aiController.getDashboardData);
+router.post('/command', protect, aiController.processCommand);
+router.post('/production-plan/:id/approve', protect, aiController.approveProductionPlan);
+router.get('/production-plan/:id/candidates', protect, aiController.getPlanCandidates);
+router.post('/production-plan/:id/dispatch', protect, aiController.dispatchProductionTasks);
 
 module.exports = router;

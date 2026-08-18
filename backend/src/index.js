@@ -25,6 +25,7 @@ const leaveRoutes = require("./routes/leaves");
 const learningVideoRoutes = require("./routes/learningVideos");
 const defectReportRoutes = require("./routes/defectReports");
 const voiceRoutes = require("./routes/voice");
+const adminDashboardRoutes = require("./routes/adminDashboard");
 
 const app = express();
 const server = http.createServer(app);
@@ -74,6 +75,7 @@ app.use("/api/leaves", leaveRoutes);
 app.use("/api/learning-videos", learningVideoRoutes);
 app.use("/api/defect-reports", defectReportRoutes);
 app.use("/api/voice", voiceRoutes);
+app.use("/api/admin/dashboard", adminDashboardRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -95,9 +97,12 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
+    console.log('Connecting to DB...');
     await connectDB();
+    console.log('DB connected, initializing socket...');
 
     initSocket(server);
+    console.log('Socket initialized, starting server...');
 
     server.listen(PORT, () => {
       console.log(

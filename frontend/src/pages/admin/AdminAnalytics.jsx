@@ -205,10 +205,10 @@ export default function AdminAnalytics() {
         <CardContent>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={4}>
-              <TextField full size="small" label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
+              <TextField fullWidth size="small" label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
             </Grid>
             <Grid item xs={12} sm={4}>
-              <TextField full size="small" label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
+              <TextField fullWidth size="small" label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
             </Grid>
             <Grid item xs={12} sm={4}>
               <Button variant="contained" onClick={loadAnalytics} disabled={loading}>Apply</Button>

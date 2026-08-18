@@ -37,7 +37,7 @@ const taskSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'accepted', 'in_progress', 'paused', 'completed', 'delayed'],
+    enum: ['pending', 'accepted', 'in_progress', 'paused', 'completed', 'delayed', 'quality_check', 'rework'],
     default: 'pending',
   },
   qualityGrade: {

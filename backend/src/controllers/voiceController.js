@@ -4,13 +4,92 @@ const Issue = require('../models/Issue');
 const Notification = require('../models/Notification');
 const Machine = require('../models/Machine');
 const { emitToUser, emitToRoom, emitToAll } = require('../services/socketService');
+const GroqService = require('../ai/GroqService');
 
 const LANG_MAP = {
   en: 'en', ta: 'ta', hi: 'hi', kn: 'kn', ml: 'ml', te: 'te', tanglish: 'tanglish',
 };
 
+const CENTRALIZED_TRANSLATIONS = {
+  kn: {
+    clock_in: 'ಶಿಫ್ಟ್ ಪ್ರಾರಂಭವಾಗಿದೆ. ಶುಭ ದಿನ!',
+    clock_out: 'ಶಿಫ್ಟ್ ಪೂರ್ಣಗೊಂಡಿದೆ. ಸುರಕ್ಷಿತವಾಗಿ ಮನೆಗೆ ಹೋಗಿ!',
+    task_start: 'ಕೆಲಸ ಪ್ರಾರಂಭವಾಗಿದೆ.',
+    task_pause: 'ಕೆಲಸವನ್ನು ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ.',
+    task_complete: 'ಕೆಲಸ ಪೂರ್ಣಗೊಂಡಿದೆ. ಗುಣಮಟ್ಟ ಪರಿಶೀಲನೆಗೆ ಕಳುಹಿಸಲಾಗಿದೆ.',
+    production_log: 'ಉತ್ಪಾದನೆ ದಾಖಲಾಗಿದೆ.',
+    issue_report: 'ಸಮಸ್ಯೆ ದಾಖಲಾಗಿದೆ. ನಿರ್ವಹಣೆಗೆ ತಿಳಿಸಲಾಗಿದೆ.',
+    todays_target: 'ಇಂದಿನ ಗುರಿ',
+    which_machine: 'ನಿಯೋಜಿಸಲಾದ ಯಂತ್ರ',
+    machine_health: 'ಯಂತ್ರ ಸ್ಥಿತಿ ಉತ್ತಮವಾಗಿದೆ.',
+    how_many_hours: 'ಇಲ್ಲಿಯವರೆಗೆ ಕೆಲಸ ಮಾಡಿದ ಸಮಯ',
+    opening_dashboard: 'ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ',
+    opening_attendance: 'ಹಾಜರಾತಿ ಪುಟ ತೆರೆಯಲಾಗುತ್ತಿದೆ',
+    opening_tasks: 'ಕೆಲಸಗಳ ಪುಟ ತೆರೆಯಲಾಗುತ್ತಿದೆ',
+    default: 'ಆಜ್ಞೆಯನ್ನು ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗಿದೆ.'
+  },
+  ml: {
+    clock_in: 'ഷിഫ്റ്റ് ആരംഭിച്ചു. ശുഭദിനം!',
+    clock_out: 'ഷിഫ്റ്റ് പൂർത്തിയായി. സുരക്ഷിതമായി വീട്ടിൽ പോകുക!',
+    task_start: 'ജോലി ആരംഭിച്ചു.',
+    task_pause: 'ജോലി താൽക്കാലികമായി നിർത്തിവെച്ചു.',
+    task_complete: 'ജോലി പൂർത്തിയായി. ക്വാളിറ്റി ചെക്കിനായി സമർപ്പിച്ചു.',
+    production_log: 'ഉത്പാദനം രേഖപ്പെടുത്തി.',
+    issue_report: 'പ്രശ്നം രേഖപ്പെടുത്തി. മാനേജ്മെന്റിനെ അറിയിച്ചു.',
+    todays_target: 'ഇന്നത്തെ ലക്ഷ్యం',
+    which_machine: 'അനുവദിച്ച മെഷീൻ',
+    machine_health: 'മെഷീൻ ആരോഗ്യനില തൃപ്തികരമാണ്.',
+    how_many_hours: 'ഇതുവരെ ജോലി ചെയ്ത സമയം',
+    opening_dashboard: 'ഡാഷ്‌ബോർഡ് തുറക്കുന്നു',
+    opening_attendance: 'ഹാജർ പേജ് തുറക്കുന്നു',
+    opening_tasks: 'ടാസ്‌ക് പേജ് തുറക്കുന്നു',
+    default: 'കമാൻഡ് പ്രോസസ്സ് ചെയ്തു.'
+  },
+  te: {
+    clock_in: 'షిఫ్ట్ ప్రారంభమైంది. శుభదినం!',
+    clock_out: 'షిఫ్ట్ పూర్తయింది. క్షేమంగా ఇంటికి వెళ్ళండి!',
+    task_start: 'పని ప్రారంభమైంది.',
+    task_pause: 'పని నిలిపివేయబడింది.',
+    task_complete: 'పని పూర్తయింది. నాణ్యత పరిశీలనకు పంపబడింది.',
+    production_log: 'ఉత్పత్తి నమోదు చేయబడింది.',
+    issue_report: 'సమస్య నమోదైంది. యాజమాన్యానికి తెలియజేయబడింది.',
+    todays_target: 'ఇవాల్టి లక్ష్యం',
+    which_machine: 'కేటాయించిన యంత్రం',
+    machine_health: 'యంత్రం పనితీరు బాగుంది.',
+    how_many_hours: 'ఇప్పటివరకు పని చేసిన సమయం',
+    opening_dashboard: 'డ్యాష్‌బోర్డ్ తెరవబడుతోంది',
+    opening_attendance: 'ఆహ్వానం పేజీ తెరవబడుతోంది',
+    opening_tasks: 'పనుల పేజీ తెరవబడుతోంది',
+    default: 'ఆదేశం ప్రాసెస్ చేయబడింది.'
+  }
+};
+
 function getReply(lang, replies) {
-  return replies[lang] || replies.en || 'Command processed';
+  if (replies[lang]) return replies[lang];
+  
+  if (['kn', 'ml', 'te'].includes(lang)) {
+    const enText = (replies.en || '').toLowerCase();
+    const translations = CENTRALIZED_TRANSLATIONS[lang];
+    
+    if (enText.includes('clocked in') || enText.includes('clock in')) return translations.clock_in;
+    if (enText.includes('clocked out') || enText.includes('clock out')) return translations.clock_out;
+    if (enText.includes('started production') || enText.includes('task started') || enText.includes('begun')) return translations.task_start;
+    if (enText.includes('paused') || enText.includes('pause')) return translations.task_pause;
+    if (enText.includes('completed') || enText.includes('complete') || enText.includes('finished')) return translations.task_complete;
+    if (enText.includes('logged') || enText.includes('production updated')) return translations.production_log;
+    if (enText.includes('issue reported') || enText.includes('reported issue') || enText.includes('shortage')) return translations.issue_report;
+    if (enText.includes('target')) return `${translations.todays_target}: ${replies.en.replace(/[a-zA-Z:]/g, '').trim()}`;
+    if (enText.includes('machine') && enText.includes('assigned')) return translations.which_machine;
+    if (enText.includes('machine') && enText.includes('health')) return translations.machine_health;
+    if (enText.includes('worked') || enText.includes('hours')) return translations.how_many_hours;
+    if (enText.includes('opening dashboard')) return translations.opening_dashboard;
+    if (enText.includes('opening attendance')) return translations.opening_attendance;
+    if (enText.includes('opening tasks')) return translations.opening_tasks;
+    
+    return replies.en;
+  }
+  
+  return replies.en || 'Command processed';
 }
 
 exports.processVoiceCommand = async (req, res) => {
@@ -24,6 +103,121 @@ exports.processVoiceCommand = async (req, res) => {
     if (!command) {
       return res.json({ success: true, data: { reply: 'How can I help you?', language: 'en' } });
     }
+
+    // Call unified Groq parser
+    const parsed = await GroqService.parseEmployeeCommand(command);
+    if (parsed && parsed.intent !== 'UNKNOWN') {
+      const intent = parsed.intent;
+
+      if (intent === 'START_TASK') {
+        const task = await Task.findOne({ assignedTo: employeeId, status: { $in: ['pending', 'accepted', 'paused'] }, isDeleted: false });
+        if (task) {
+          task.status = 'in_progress';
+          task.timeline.startedAt = now;
+          await task.save();
+          emitToRoom('management', 'employee_activity', {
+            employeeId, action: 'start_task', task: task.title, employeeName: req.user.profile?.firstName || 'Employee',
+          });
+          emitToUser(employeeId, 'taskUpdated', { action: 'statusChanged', task });
+          return res.json({
+            success: true,
+            data: { reply: `Started task: ${task.title}. Keep up the pace!`, language: lang, action: 'start_task' }
+          });
+        }
+      }
+
+      if (intent === 'PAUSE_TASK') {
+        const task = await Task.findOne({ assignedTo: employeeId, status: 'in_progress', isDeleted: false });
+        if (task) {
+          task.status = 'paused';
+          task.timeline.pausedAt = now;
+          await task.save();
+          emitToRoom('management', 'employee_activity', {
+            employeeId, action: 'pause_task', task: task.title, employeeName: req.user.profile?.firstName || 'Employee',
+          });
+          emitToUser(employeeId, 'taskUpdated', { action: 'statusChanged', task });
+          return res.json({
+            success: true,
+            data: { reply: `Paused task: ${task.title}.`, language: lang, action: 'pause_task' }
+          });
+        }
+      }
+
+      if (intent === 'UPDATE_PRODUCTION') {
+        const qty = parsed.quantity || 1;
+        const task = await Task.findOne({ assignedTo: employeeId, status: { $in: ['in_progress', 'accepted', 'rework'] }, isDeleted: false });
+        if (task) {
+          task.quantity.produced = (task.quantity.produced || 0) + qty;
+          
+          if (task.quantity.produced >= task.quantity.target) {
+            task.status = 'quality_check'; // Triggers inspection workflow!
+          } else {
+            task.status = 'in_progress';
+          }
+          await task.save();
+
+          emitToRoom('management', 'employee_activity', {
+            employeeId, action: 'production_log', quantity: qty, product: 'garments', employeeName: req.user.profile?.firstName || 'Employee',
+          });
+          emitToUser(employeeId, 'taskUpdated', { action: 'progress', task });
+
+          // Send update notification to management
+          emitToRoom('management', 'productionUpdated', { taskId: task._id, quantity: qty, produced: task.quantity.produced, target: task.quantity.target });
+
+          return res.json({
+            success: true,
+            data: { 
+              reply: `Logged ${qty} garments. Total produced is now ${task.quantity.produced} out of ${task.quantity.target}.` + 
+                     (task.status === 'quality_check' ? ' Submitting task to Quality Control.' : ''),
+              language: lang, 
+              action: 'production_log' 
+            }
+          });
+        }
+      }
+
+      if (intent === 'REPORT_ISSUE') {
+        const type = parsed.type || 'general';
+        const desc = parsed.description || command;
+        const issue = await Issue.create({
+          employee: employeeId, type, description: desc,
+          priority: type === 'machine' ? 'high' : 'medium',
+        });
+
+        const User = require('../models/User');
+        const managers = await User.find({ role: { $in: ['manager', 'admin'] }, active: true });
+        
+        if (managers && managers.length > 0) {
+          for (const mgr of managers) {
+            await Notification.create({
+              recipient: mgr._id, sender: employeeId, type: 'issue_report',
+              title: `Issue reported: ${type}`,
+              message: desc,
+              link: `/issues/${issue._id}`, priority: 'high',
+            });
+            emitToUser(mgr._id.toString(), 'newNotification', {
+              type: 'issue_report',
+              title: `Issue reported: ${type}`,
+              message: desc.substring(0, 50),
+              employeeId, time: now,
+            });
+          }
+        } else {
+          console.warn('No active managers or admins found to notify.');
+        }
+
+        emitToRoom('management', 'newNotification', {
+          type: 'issue_report', title: desc.substring(0, 50),
+          employeeId, time: now,
+        });
+
+        return res.json({
+          success: true,
+          data: { reply: `Reported ${type} issue. Management has been notified.`, language: lang, action: 'report_issue' }
+        });
+      }
+    }
+
 
     if (/clock.?in|come in|check.?in|login/.test(cmd)) {
       const dateStr = now.toISOString().split('T')[0];
@@ -217,34 +411,50 @@ exports.processVoiceCommand = async (req, res) => {
       const quantityMatch = cmd.match(/(\d+)/);
       const quantity = quantityMatch ? parseInt(quantityMatch[1]) : 0;
       const product = cmd.includes('shirt') ? 'shirt' : cmd.includes('pant') ? 'pant' : 'garment';
+      let remaining = 0;
+      let target = 0;
+      let totalProduced = 0;
+
       if (quantity > 0) {
-        const task = await Task.findOne({ assignedTo: employeeId, isDeleted: false }).sort({ createdAt: -1 });
+        const task = await Task.findOne({ assignedTo: employeeId, status: { $in: ['in_progress', 'accepted', 'rework'] }, isDeleted: false }).sort({ createdAt: -1 });
         if (task) {
-          task.quantityCompleted = (task.quantityCompleted || 0) + quantity;
-          if (task.quantityCompleted >= (task.quantityTarget || 0)) task.status = 'completed';
+          task.quantity.produced = (task.quantity.produced || 0) + quantity;
+          if (task.quantity.produced >= (task.quantity.target || 0)) {
+            task.status = 'quality_check';
+          } else {
+            task.status = 'in_progress';
+          }
           await task.save();
+          target = task.quantity.target || 0;
+          totalProduced = task.quantity.produced;
+          remaining = Math.max(0, target - totalProduced);
+
+          emitToRoom('management', 'employee_activity', {
+            employeeId, action: 'production_log', product, quantity,
+            time: now, employeeName: req.user.profile?.firstName || 'Employee',
+          });
+          emitToUser(employeeId.toString(), 'taskUpdated', { action: 'progress', task });
+          emitToRoom('management', 'productionUpdated', { taskId: task._id, quantity, produced: totalProduced, target });
         }
-        emitToRoom('management', 'employee_activity', {
-          employeeId, action: 'production_log', product, quantity,
-          time: now, employeeName: req.user.profile?.firstName || 'Employee',
-        });
       }
       return res.json({
         success: true, data: {
           reply: getReply(lang, {
-            en: `Logged ${quantity > 0 ? `${quantity} ${product}(s)` : 'production'}. ` + (quantity > 0 ? 'Keep up the good work!' : 'Please specify quantity.'),
-            ta: quantity > 0 ? `${quantity} ${product}(கள்) உற்பத்தி பதிவு செய்யப்பட்டது. தொடர்ந்து சிறப்பாக செயல்படுங்கள்!` : 'அளவை குறிப்பிடவும்.',
-            tanglish: quantity > 0 ? `${quantity} ${product} production log aachu. Nalla velai!` : 'Quantity solunga.',
+            en: quantity > 0 
+              ? `Production updated. ${quantity} pieces completed. ${remaining} pieces remaining.` 
+              : 'Please specify quantity.',
+            ta: quantity > 0 ? `${quantity} ${product}(கள்) உற்பத்தி பதிவு செய்யப்பட்டது. இன்னும் ${remaining} மீதமுள்ளது.` : 'அளவை குறிப்பிடவும்.',
+            tanglish: quantity > 0 ? `${quantity} ${product} production log aachu. ${remaining} pieces remaining.` : 'Quantity solunga.',
           }),
-          language: lang, action: 'production_log', details: { product, quantity },
+          language: lang, action: 'production_log', details: { product, quantity, remaining, target, produced: totalProduced },
         },
       });
     }
 
     if (/todays target|today target|production target|target (\d+)/.test(cmd)) {
       const tasks = await Task.find({ assignedTo: employeeId, isDeleted: false });
-      const totalTarget = tasks.reduce((s, t) => s + (t.quantityTarget || 0), 0);
-      const totalCompleted = tasks.reduce((s, t) => s + (t.quantityCompleted || 0), 0);
+      const totalTarget = tasks.reduce((s, t) => s + (t.quantity?.target || 0), 0);
+      const totalCompleted = tasks.reduce((s, t) => s + (t.quantity?.produced || 0), 0);
       const progress = totalTarget > 0 ? Math.round((totalCompleted / totalTarget) * 100) : 0;
       return res.json({
         success: true, data: {
@@ -338,12 +548,27 @@ exports.processVoiceCommand = async (req, res) => {
       });
 
       const Notification = require('../models/Notification');
-      await Notification.create({
-        recipient: null, sender: employeeId, type: 'issue_report',
-        title: `Issue reported: ${issueType}`,
-        message: command,
-        link: `/issues/${issue._id}`, priority: 'high',
-      });
+      const User = require('../models/User');
+      const managers = await User.find({ role: { $in: ['manager', 'admin'] }, active: true });
+      
+      if (managers && managers.length > 0) {
+        for (const mgr of managers) {
+          await Notification.create({
+            recipient: mgr._id, sender: employeeId, type: 'issue_report',
+            title: `Issue reported: ${issueType}`,
+            message: command,
+            link: `/issues/${issue._id}`, priority: 'high',
+          });
+          emitToUser(mgr._id.toString(), 'newNotification', {
+            type: 'issue_report',
+            title: `Issue reported: ${issueType}`,
+            message: command.substring(0, 50),
+            employeeId, time: now,
+          });
+        }
+      } else {
+        console.warn('No active managers or admins found to notify.');
+      }
 
       emitToRoom('management', 'newNotification', {
         type: 'issue_report', title: command.substring(0, 50),

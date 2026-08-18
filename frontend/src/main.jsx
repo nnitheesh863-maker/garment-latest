@@ -10,7 +10,9 @@ import { ThemeContextProvider } from './context/ThemeContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <ThemeContextProvider>
         <CssBaseline />
         <AuthProvider>

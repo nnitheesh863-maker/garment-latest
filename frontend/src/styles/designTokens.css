@@ -1,0 +1,19 @@
+:root {
+  --maroon: #59171b;
+  --maroon-2: #7a2328;
+  --maroon-3: #a45a4a;
+  --cream: #fed7b8;
+  --cream-light: #fff8f2;
+  --border: #f1d5c0;
+  --text-primary: #2c1a1a;
+  --text-secondary: #7a6a63;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --shadow-sm: 0 2px 12px rgba(89, 23, 27, 0.06);
+  --shadow-md: 0 8px 32px rgba(89, 23, 27, 0.1);
+  --shadow-lg: 0 20px 60px rgba(89, 23, 27, 0.16);
+  --grad-primary: linear-gradient(135deg, #59171b 0%, #7a2328 55%, #a45a4a 100%);
+  --grad-warm: linear-gradient(135deg, #a45a4a 0%, #7a2328 50%, #59171b 100%);
+  --grad-cream: linear-gradient(135deg, #fed7b8 0%, #fff8f2 100%);
+}

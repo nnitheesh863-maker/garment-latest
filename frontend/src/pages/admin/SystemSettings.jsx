@@ -93,13 +93,13 @@ export default function SystemSettings() {
               <Typography variant="h6" fontWeight={600} mb={2}>Factory Settings</Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
-                  <TextField full size="small" label="Factory Name" value={settings.factoryName} onChange={handleSettingChange('factoryName')} />
+                  <TextField fullWidth size="small" label="Factory Name" value={settings.factoryName} onChange={handleSettingChange('factoryName')} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField full size="small" label="Timezone" value={settings.timezone} onChange={handleSettingChange('timezone')} />
+                  <TextField fullWidth size="small" label="Timezone" value={settings.timezone} onChange={handleSettingChange('timezone')} />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField full size="small" label="Address" multiline rows={2} value={settings.address} onChange={handleSettingChange('address')} />
+                  <TextField fullWidth size="small" label="Address" multiline rows={2} value={settings.address} onChange={handleSettingChange('address')} />
                 </Grid>
               </Grid>
             </CardContent>
@@ -112,22 +112,22 @@ export default function SystemSettings() {
               <Typography variant="h6" fontWeight={600} mb={2}>Shift Timings</Typography>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Morning Shift Start" type="time" value={settings.shiftMorningStart} onChange={handleSettingChange('shiftMorningStart')} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth size="small" label="Morning Shift Start" type="time" value={settings.shiftMorningStart} onChange={handleSettingChange('shiftMorningStart')} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Morning Shift End" type="time" value={settings.shiftMorningEnd} onChange={handleSettingChange('shiftMorningEnd')} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth size="small" label="Morning Shift End" type="time" value={settings.shiftMorningEnd} onChange={handleSettingChange('shiftMorningEnd')} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Evening Shift Start" type="time" value={settings.shiftEveningStart} onChange={handleSettingChange('shiftEveningStart')} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth size="small" label="Evening Shift Start" type="time" value={settings.shiftEveningStart} onChange={handleSettingChange('shiftEveningStart')} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Evening Shift End" type="time" value={settings.shiftEveningEnd} onChange={handleSettingChange('shiftEveningEnd')} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth size="small" label="Evening Shift End" type="time" value={settings.shiftEveningEnd} onChange={handleSettingChange('shiftEveningEnd')} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Night Shift Start" type="time" value={settings.shiftNightStart} onChange={handleSettingChange('shiftNightStart')} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth size="small" label="Night Shift Start" type="time" value={settings.shiftNightStart} onChange={handleSettingChange('shiftNightStart')} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Night Shift End" type="time" value={settings.shiftNightEnd} onChange={handleSettingChange('shiftNightEnd')} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth size="small" label="Night Shift End" type="time" value={settings.shiftNightEnd} onChange={handleSettingChange('shiftNightEnd')} InputLabelProps={{ shrink: true }} />
                 </Grid>
               </Grid>
             </CardContent>
@@ -178,7 +178,7 @@ export default function SystemSettings() {
               <FormControlLabel control={<Switch checked={aiConfig.predictiveMaintenance} onChange={(e) => setAiConfig((p) => ({ ...p, predictiveMaintenance: e.target.checked }))} />} label="Predictive Maintenance" />
               <FormControlLabel control={<Switch checked={aiConfig.qualityPrediction} onChange={(e) => setAiConfig((p) => ({ ...p, qualityPrediction: e.target.checked }))} />} label="Quality Prediction" />
               <Box mt={2}>
-                <TextField full size="small" label="Retrain Interval (days)" type="number" value={aiConfig.retrainInterval} onChange={(e) => setAiConfig((p) => ({ ...p, retrainInterval: e.target.value }))} />
+                <TextField fullWidth size="small" label="Retrain Interval (days)" type="number" value={aiConfig.retrainInterval} onChange={(e) => setAiConfig((p) => ({ ...p, retrainInterval: e.target.value }))} />
               </Box>
               <Box mt={2} display="flex" gap={1} flexWrap="wrap">
                 <Chip label="Model: Production-v2.1" variant="outlined" color="primary" size="small" />

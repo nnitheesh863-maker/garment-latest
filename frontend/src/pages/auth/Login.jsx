@@ -16,8 +16,9 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email.trim() || !password) return;
     try {
-      await login(email, password);
+      await login(email.trim(), password);
     } catch {
       // error handled in context
     }

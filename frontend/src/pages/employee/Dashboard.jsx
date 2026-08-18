@@ -8,6 +8,8 @@ import {
   Button,
   Skeleton,
   LinearProgress,
+  Divider,
+  Grid,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -28,6 +30,8 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { useAuth } from "../../hooks/useAuth";
+import { useSocket } from "../../hooks/useSocket";
+import { toast } from "react-toastify";
 import {
   formatDate,
   getStatusColor,
@@ -103,11 +107,12 @@ function AnimatedNumber({ value, suffix = '', duration = 1 }) {
   return <>{display}{suffix}</>;
 }
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 export default function EmployeeDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { socket } = useSocket();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
   const [attendance, setAttendance] = useState(null);
@@ -145,6 +150,28 @@ export default function EmployeeDashboard() {
   }, [user?._id]);
 
   useEffect(() => { fetchDashboardData(); }, [fetchDashboardData]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleSocketSync = () => {
+      fetchDashboardData();
+    };
+
+    socket.on("taskAssigned", handleSocketSync);
+    socket.on("taskUpdated", handleSocketSync);
+    socket.on("qualityApproved", handleSocketSync);
+    socket.on("reworkRequested", handleSocketSync);
+    socket.on("attendance_update", handleSocketSync);
+
+    return () => {
+      socket.off("taskAssigned", handleSocketSync);
+      socket.off("taskUpdated", handleSocketSync);
+      socket.off("qualityApproved", handleSocketSync);
+      socket.off("reworkRequested", handleSocketSync);
+      socket.off("attendance_update", handleSocketSync);
+    };
+  }, [socket, fetchDashboardData]);
 
   useEffect(() => {
     const todayStart = new Date();
@@ -186,6 +213,110 @@ export default function EmployeeDashboard() {
     { label: "Learning", icon: <OndemandVideoIcon />, path: "/employee/learning-videos", color: "#9333ea" },
     { label: "Voice", icon: <MicIcon />, path: null, color: "#7A6A63", voice: true },
   ];
+
+  const [logQty, setLogQty] = useState('');
+  const [voiceReply, setVoiceReply] = useState('');
+  const [voiceListening, setVoiceListening] = useState(false);
+  const employeeRecRef = useRef(null);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const rec = new SpeechRecognition();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = 'en-US';
+
+      rec.onresult = async (event) => {
+        const text = event.results[0][0].transcript;
+        setVoiceListening(false);
+        try {
+          const response = await api.post('/api/voice/process', {
+            command: text,
+            language: 'en',
+          });
+          const reply = response.data?.data?.reply || response.data?.reply || 'Processed voice action.';
+          setVoiceReply(reply);
+          toast.info(reply);
+          fetchDashboardData();
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      rec.onerror = () => setVoiceListening(false);
+      rec.onend = () => setVoiceListening(false);
+      employeeRecRef.current = rec;
+    }
+  }, [fetchDashboardData]);
+
+  const handleVoiceTrigger = () => {
+    if (!employeeRecRef.current) {
+      alert('Speech recognition is not supported in this browser.');
+      return;
+    }
+    if (voiceListening) {
+      employeeRecRef.current.stop();
+    } else {
+      setVoiceListening(true);
+      employeeRecRef.current.start();
+    }
+  };
+
+  const handleAcceptTask = async (taskId) => {
+    try {
+      await api.put(`/api/tasks/${taskId}/status`, { status: 'accepted' });
+      toast.success('Task accepted!');
+      fetchDashboardData();
+    } catch (e) {
+      toast.error('Failed to accept task.');
+    }
+  };
+
+  const handleStartTask = async (taskId) => {
+    try {
+      await api.put(`/api/tasks/${taskId}/status`, { status: 'in_progress' });
+      toast.success('Production started!');
+      fetchDashboardData();
+    } catch (e) {
+      toast.error('Failed to start production.');
+    }
+  };
+
+  const handlePauseTask = async (taskId) => {
+    try {
+      await api.put(`/api/tasks/${taskId}/status`, { status: 'paused' });
+      toast.info('Production paused.');
+      fetchDashboardData();
+    } catch (e) {
+      toast.error('Failed to pause production.');
+    }
+  };
+
+  const handleLogProgress = async (taskId) => {
+    if (!logQty || isNaN(logQty)) {
+      toast.error('Please enter a valid quantity.');
+      return;
+    }
+    try {
+      await api.post(`/api/tasks/${taskId}/progress`, { produced: parseInt(logQty) });
+      toast.success(`Logged progress: ${logQty} garments.`);
+      setLogQty('');
+      fetchDashboardData();
+    } catch (e) {
+      toast.error('Failed to update progress.');
+    }
+  };
+
+  const handleCompleteTask = async (taskId) => {
+    try {
+      await api.put(`/api/tasks/${taskId}/status`, { status: 'quality_check' });
+      toast.success('Task submitted to Quality Control check.');
+      fetchDashboardData();
+    } catch (e) {
+      toast.error('Failed to submit task.');
+    }
+  };
 
   const quote = QUOTES[new Date().getDate() % QUOTES.length];
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.06 } } };
@@ -309,6 +440,134 @@ export default function EmployeeDashboard() {
 
           {/* ===== LEFT (70%) ===== */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            {/* AI Active Task Card */}
+            {(() => {
+              const activeTask = tasks.find((t) => ['pending', 'accepted', 'in_progress', 'paused', 'rework', 'quality_check'].includes(t.status));
+              if (!activeTask) return null;
+              
+              const pct = activeTask.quantity?.target > 0 
+                ? Math.round(((activeTask.quantity?.produced || 0) / activeTask.quantity.target) * 100) 
+                : 0;
+
+              return (
+                <Card sx={{ ...glassCard, borderLeft: '5px solid #59171B', bgcolor: 'rgba(89,23,27,0.02)' }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                      <Box>
+                        <Chip label="NEW AI-ASSIGNED TASK" size="small" sx={{ mb: 1.5, bgcolor: '#59171B', color: '#FED7B8', fontWeight: 800, fontSize: 10 }} />
+                        <Typography variant="h5" fontWeight={800} color="#2C1A1A">
+                          {activeTask.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                          Order ID: {activeTask.orderId?.orderNumber || "ORD-1042"} · Customer: {activeTask.orderId?.customer?.name || "ABC Fashion"}
+                        </Typography>
+                      </Box>
+                      <Chip label={activeTask.status.replace('_', ' ')} size="small" color="primary" sx={{ bgcolor: '#59171B', fontWeight: 700 }} />
+                    </Box>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Grid container spacing={2.5} mb={2.5}>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Production Line</Typography>
+                        <Typography variant="body2" fontWeight={700}>Line 3</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Reserved Machine</Typography>
+                        <Typography variant="body2" fontWeight={700}>{activeTask.machineId?.name || "M-12"}</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Quantity Target</Typography>
+                        <Typography variant="body2" fontWeight={700}>{activeTask.quantity?.target || 625} units</Typography>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Typography variant="caption" color="text.secondary">Quantity Produced</Typography>
+                        <Typography variant="body2" fontWeight={700}>{activeTask.quantity?.produced || 0} units</Typography>
+                      </Grid>
+                    </Grid>
+
+                    <Box mb={2.5}>
+                      <Box display="flex" justifyContent="space-between" mb={0.75}>
+                        <Typography variant="caption" color="text.secondary">Production Progress</Typography>
+                        <Typography variant="caption" fontWeight={700}>{pct}%</Typography>
+                      </Box>
+                      <LinearProgress variant="determinate" value={pct} sx={{ height: 8, borderRadius: 4, bgcolor: 'rgba(89,23,27,0.06)', '& .MuiLinearProgress-bar': { bgcolor: '#59171B' } }} />
+                    </Box>
+
+                    <Typography variant="body2" sx={{ p: 1.5, bgcolor: '#FFF8F2', border: '1px solid rgba(89,23,27,0.08)', borderRadius: 2, mb: 3 }}>
+                      <strong>AI Productivity Tip:</strong> Maintain consistent stitching speed to reduce defect rate and prevent rework.
+                    </Typography>
+
+                    {/* Actions */}
+                    <Box display="flex" gap={2} flexWrap="wrap" mb={2}>
+                      {(activeTask.status === 'pending' || activeTask.status === 'rework') && (
+                        <Button variant="contained" onClick={() => handleAcceptTask(activeTask._id)} sx={{ bgcolor: '#59171B', '&:hover': { bgcolor: '#7A2328' }, borderRadius: 2, px: 3, py: 1.2 }}>
+                          ACCEPT TASK
+                        </Button>
+                      )}
+                      {activeTask.status === 'accepted' && (
+                        <Button variant="contained" onClick={() => handleStartTask(activeTask._id)} sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' }, borderRadius: 2, px: 3, py: 1.2 }}>
+                          START PRODUCTION
+                        </Button>
+                      )}
+                      {activeTask.status === 'in_progress' && (
+                        <>
+                          <TextField
+                            size="small"
+                            placeholder="Enter units completed"
+                            value={logQty}
+                            onChange={(e) => setLogQty(e.target.value)}
+                            sx={{ width: 180 }}
+                          />
+                          <Button variant="contained" onClick={() => handleLogProgress(activeTask._id)} sx={{ bgcolor: '#59171B', '&:hover': { bgcolor: '#7A2328' }, borderRadius: 2, px: 3 }}>
+                            LOG PRODUCTION
+                          </Button>
+                          <Button variant="outlined" onClick={() => handlePauseTask(activeTask._id)} sx={{ borderColor: 'rgba(89,23,27,0.3)', color: '#59171B', borderRadius: 2, px: 3 }}>
+                            PAUSE
+                          </Button>
+                          <Button variant="contained" color="success" onClick={() => handleCompleteTask(activeTask._id)} sx={{ borderRadius: 2, px: 3 }}>
+                            COMPLETE TASK
+                          </Button>
+                        </>
+                      )}
+                      {activeTask.status === 'paused' && (
+                        <Button variant="contained" onClick={() => handleStartTask(activeTask._id)} sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' }, borderRadius: 2, px: 3 }}>
+                          RESUME TASK
+                        </Button>
+                      )}
+                      {activeTask.status === 'quality_check' && (
+                        <Typography variant="body2" color="warning.main" fontWeight={700}>
+                          Awaiting Quality Control checklist inspection approval...
+                        </Typography>
+                      )}
+                    </Box>
+
+                    {/* Integrated Floor Voice Assistant widget */}
+                    <Box sx={{ p: 2, bgcolor: 'rgba(89,23,27,0.03)', borderRadius: 2.5, border: '1px dashed rgba(89,23,27,0.15)' }}>
+                      <Box display="flex" alignItems="center" gap={1.5}>
+                        <IconButton onClick={handleVoiceTrigger} sx={{ bgcolor: voiceListening ? '#dc2626' : '#59171B', color: '#fff', '&:hover': { bgcolor: voiceListening ? '#b91c1c' : '#7A2328' } }}>
+                          <MicIcon />
+                        </IconButton>
+                        <Box>
+                          <Typography variant="body2" fontWeight={700} color="#59171B">
+                            {voiceListening ? 'Listening on factory floor...' : 'Voice Assistant Panel'}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Try saying "Start my task", "I completed 100 shirts", or "I need fabric".
+                          </Typography>
+                        </Box>
+                      </Box>
+                      {voiceReply && (
+                        <Typography variant="body2" sx={{ mt: 1.5, pl: 1, borderLeft: '2px solid #59171B', color: '#59171B', fontWeight: 600 }}>
+                          AI Response: "{voiceReply}"
+                        </Typography>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
             {/* Today's Tasks */}
             <Card sx={glassCard}>
               <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>

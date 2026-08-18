@@ -104,13 +104,13 @@ export default function TaskForm({ open, onClose, onSubmit, initialValues, loadi
             <DialogContent dividers>
               <Grid container spacing={2}>
                 <Grid item xs={12}>
-                  <TextField full size="small" label="Task Title" name="title" value={values.title} onChange={handleChange} onBlur={handleBlur} error={touched.title && !!errors.title} helperText={touched.title && errors.title} />
+                  <TextField fullWidth size="small" label="Task Title" name="title" value={values.title} onChange={handleChange} onBlur={handleBlur} error={touched.title && !!errors.title} helperText={touched.title && errors.title} />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField full size="small" label="Description" name="description" multiline rows={2} value={values.description} onChange={handleChange} onBlur={handleBlur} />
+                  <TextField fullWidth size="small" label="Description" name="description" multiline rows={2} value={values.description} onChange={handleChange} onBlur={handleBlur} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField full size="small" label="Order" name="orderId" select value={values.orderId} onChange={handleChange} onBlur={handleBlur} error={touched.orderId && !!errors.orderId} helperText={touched.orderId && errors.orderId}>
+                  <TextField fullWidth size="small" label="Order" name="orderId" select value={values.orderId} onChange={handleChange} onBlur={handleBlur} error={touched.orderId && !!errors.orderId} helperText={touched.orderId && errors.orderId}>
                     {orders.map((o) => (
                       <MenuItem key={o._id || o.id} value={o._id || o.id}>
                         {o.orderNumber || o.customerName || o._id}
@@ -119,23 +119,23 @@ export default function TaskForm({ open, onClose, onSubmit, initialValues, loadi
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField full size="small" label="Target Quantity" name="quantityTarget" type="number" value={values.quantityTarget} onChange={handleChange} onBlur={handleBlur} error={touched.quantityTarget && !!errors.quantityTarget} helperText={touched.quantityTarget && errors.quantityTarget} />
+                  <TextField fullWidth size="small" label="Target Quantity" name="quantityTarget" type="number" value={values.quantityTarget} onChange={handleChange} onBlur={handleBlur} error={touched.quantityTarget && !!errors.quantityTarget} helperText={touched.quantityTarget && errors.quantityTarget} />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Difficulty" name="difficulty" select value={values.difficulty} onChange={handleChange} error={touched.difficulty && !!errors.difficulty} helperText={touched.difficulty && errors.difficulty}>
+                  <TextField fullWidth size="small" label="Difficulty" name="difficulty" select value={values.difficulty} onChange={handleChange} error={touched.difficulty && !!errors.difficulty} helperText={touched.difficulty && errors.difficulty}>
                     {difficulties.map((d) => <MenuItem key={d.value} value={d.value}>{d.label}</MenuItem>)}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Priority" name="priority" select value={values.priority} onChange={handleChange} error={touched.priority && !!errors.priority} helperText={touched.priority && errors.priority}>
+                  <TextField fullWidth size="small" label="Priority" name="priority" select value={values.priority} onChange={handleChange} error={touched.priority && !!errors.priority} helperText={touched.priority && errors.priority}>
                     {priorities.map((p) => <MenuItem key={p.value} value={p.value}>{p.label}</MenuItem>)}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <TextField full size="small" label="Due Date" name="dueDate" type="date" value={values.dueDate} onChange={handleChange} onBlur={handleBlur} error={touched.dueDate && !!errors.dueDate} helperText={touched.dueDate && errors.dueDate} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth size="small" label="Due Date" name="dueDate" type="date" value={values.dueDate} onChange={handleChange} onBlur={handleBlur} error={touched.dueDate && !!errors.dueDate} helperText={touched.dueDate && errors.dueDate} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField full size="small" label="Assign To" name="assignedTo" select value={values.assignedTo} onChange={handleChange}>
+                  <TextField fullWidth size="small" label="Assign To" name="assignedTo" select value={values.assignedTo} onChange={handleChange}>
                     <MenuItem value="">Unassigned</MenuItem>
                     {employees.map((e) => (
                       <MenuItem key={e._id || e.id} value={e._id || e.id}>
@@ -145,7 +145,7 @@ export default function TaskForm({ open, onClose, onSubmit, initialValues, loadi
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField full size="small" label="Machine" name="machineId" select value={values.machineId} onChange={handleChange}>
+                  <TextField fullWidth size="small" label="Machine" name="machineId" select value={values.machineId} onChange={handleChange}>
                     <MenuItem value="">Not specified</MenuItem>
                     {machines.map((m) => (
                       <MenuItem key={m._id || m.id} value={m._id || m.id}>

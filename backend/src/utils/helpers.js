@@ -3,15 +3,15 @@ let taskCounter = 0;
 let machineCounter = 0;
 
 function generateOrderNumber() {
-  orderCounter += 1;
   const year = new Date().getFullYear();
-  return `ORD-${year}-${String(orderCounter).padStart(5, '0')}`;
+  const rand = Math.floor(10000 + Math.random() * 90000);
+  return `ORD-${year}-${rand}`;
 }
 
 function generateTaskNumber() {
-  taskCounter += 1;
   const year = new Date().getFullYear();
-  return `TSK-${year}-${String(taskCounter).padStart(5, '0')}`;
+  const rand = Math.floor(10000 + Math.random() * 90000);
+  return `TSK-${year}-${rand}`;
 }
 
 function generateMachineNumber() {

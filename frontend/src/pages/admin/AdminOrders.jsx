@@ -204,13 +204,13 @@ export default function AdminOrders() {
           </TextField>
         </Grid>
         <Grid item xs={12} sm={2}>
-          <TextField full size="small" label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField fullWidth size="small" label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
         </Grid>
         <Grid item xs={12} sm={2}>
-          <TextField full size="small" label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField fullWidth size="small" label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
         </Grid>
         <Grid item xs={12} sm={3}>
-          <TextField full size="small" label="Search Customer" value={searchCustomer} onChange={(e) => setSearchCustomer(e.target.value)} />
+          <TextField fullWidth size="small" label="Search Customer" value={searchCustomer} onChange={(e) => setSearchCustomer(e.target.value)} />
         </Grid>
       </Grid>
 

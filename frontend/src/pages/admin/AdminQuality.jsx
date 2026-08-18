@@ -237,10 +237,10 @@ export default function AdminQuality() {
           </TextField>
         </Grid>
         <Grid item xs={12} sm={3}>
-          <TextField full size="small" label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField fullWidth size="small" label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
         </Grid>
         <Grid item xs={12} sm={3}>
-          <TextField full size="small" label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField fullWidth size="small" label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
         </Grid>
       </Grid>
 
@@ -344,26 +344,26 @@ export default function AdminQuality() {
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <TextField full size="small" label="Order ID" value={form.order} onChange={handleFormChange('order')} />
+              <TextField fullWidth size="small" label="Order ID" value={form.order} onChange={handleFormChange('order')} />
             </Grid>
             <Grid item xs={6}>
-              <TextField select full size="small" label="Type" value={form.type} onChange={handleFormChange('type')}>
+              <TextField select fullWidth size="small" label="Type" value={form.type} onChange={handleFormChange('type')}>
                 {inspectionTypes.map((t) => <MenuItem key={t} value={t}>{t.replace(/_/g, ' ')}</MenuItem>)}
               </TextField>
             </Grid>
             <Grid item xs={6}>
-              <TextField full size="small" label="Inspector" value={form.inspector} onChange={handleFormChange('inspector')} />
+              <TextField fullWidth size="small" label="Inspector" value={form.inspector} onChange={handleFormChange('inspector')} />
             </Grid>
             <Grid item xs={6}>
-              <TextField select full size="small" label="Grade" value={form.grade} onChange={handleFormChange('grade')}>
+              <TextField select fullWidth size="small" label="Grade" value={form.grade} onChange={handleFormChange('grade')}>
                 {Object.values(QUALITY_GRADE).map((g) => <MenuItem key={g} value={g}>Grade {g}</MenuItem>)}
               </TextField>
             </Grid>
             <Grid item xs={12}>
-              <TextField full size="small" label="Notes" multiline rows={2} value={form.notes} onChange={handleFormChange('notes')} />
+              <TextField fullWidth size="small" label="Notes" multiline rows={2} value={form.notes} onChange={handleFormChange('notes')} />
             </Grid>
             <Grid item xs={12}>
-              <TextField full size="small" label="Defects (one per line)" multiline rows={3} value={form.defects} onChange={handleFormChange('defects')} placeholder="Defect description 1&#10;Defect description 2" />
+              <TextField fullWidth size="small" label="Defects (one per line)" multiline rows={3} value={form.defects} onChange={handleFormChange('defects')} placeholder="Defect description 1&#10;Defect description 2" />
             </Grid>
           </Grid>
         </DialogContent>

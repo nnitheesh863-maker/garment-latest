@@ -8,6 +8,7 @@ let retryCount = 0;
 async function connectDB() {
   const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/garment_production';
   try {
+    console.log('Attempting MongoDB connection...');
     await mongoose.connect(uri);
     retryCount = 0;
     console.log(`MongoDB connected: ${mongoose.connection.host}`);

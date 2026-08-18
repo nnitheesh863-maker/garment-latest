@@ -72,19 +72,19 @@ export default function AuditLogs() {
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={3}>
-          <TextField full size="small" label="User" value={userFilter} onChange={(e) => setUserFilter(e.target.value)} />
+          <TextField fullWidth size="small" label="User" value={userFilter} onChange={(e) => setUserFilter(e.target.value)} />
         </Grid>
         <Grid item xs={12} sm={3}>
-          <TextField select full size="small" label="Action Type" value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
+          <TextField select fullWidth size="small" label="Action Type" value={actionFilter} onChange={(e) => setActionFilter(e.target.value)}>
             <MenuItem value="">All Actions</MenuItem>
             {actionTypes.map((a) => <MenuItem key={a} value={a}>{a}</MenuItem>)}
           </TextField>
         </Grid>
         <Grid item xs={12} sm={3}>
-          <TextField full size="small" label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField fullWidth size="small" label="From Date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} InputLabelProps={{ shrink: true }} />
         </Grid>
         <Grid item xs={12} sm={3}>
-          <TextField full size="small" label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField fullWidth size="small" label="To Date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} InputLabelProps={{ shrink: true }} />
         </Grid>
       </Grid>
 

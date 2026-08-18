@@ -3,7 +3,7 @@ import { Card, CardContent, Typography, Box, Chip, Skeleton } from '@mui/materia
 import { motion } from 'framer-motion';
 import AnimatedNumber from './AnimatedNumber';
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 const VARIANT_COLORS = {
   maroon: '#59171B',

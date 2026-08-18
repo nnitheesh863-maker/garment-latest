@@ -3,8 +3,12 @@ const Quality = require('../models/Quality');
 const Order = require('../models/Order');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
+const Task = require('../models/Task');
+const Inventory = require('../models/Inventory');
+const Machine = require('../models/Machine');
 const ApiResponse = require('../utils/apiResponse');
-const { emitToUser, emitToRoom } = require('../services/socketService');
+const { emitToUser, emitToRoom, emitToAll } = require('../services/socketService');
+
 
 let inspectionCounter = 0;
 
@@ -263,3 +267,159 @@ exports.generateReport = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.approveQuality = async (req, res, next) => {
+  try {
+    const taskId = req.params.id;
+    const task = await Task.findById(taskId).populate('orderId').populate('assignedTo');
+    if (!task) {
+      return ApiResponse.error(res, 'Task not found', 404);
+    }
+
+    task.status = 'completed';
+    task.timeline.completedAt = new Date();
+    await task.save();
+
+    // Create inspection record
+    const inspectionNumber = generateInspectionNumber();
+    const inspection = await Quality.create({
+      inspectionNumber,
+      orderId: task.orderId?._id,
+      taskId: task._id,
+      inspector: req.user._id,
+      inspectionType: 'final',
+      results: {
+        totalInspected: task.quantity.produced,
+        passed: task.quantity.produced,
+        failedItems: 0,
+        defectRate: 0,
+      },
+      grade: 'A',
+      notes: 'Passed quality check checklist: stitching, measurement, fabric, color, logo, buttons approved.',
+    });
+
+    if (task.orderId) {
+      await Order.findByIdAndUpdate(task.orderId._id, {
+        $push: { qualityChecks: inspection._id },
+      });
+    }
+
+    // Substract material stock from Inventory as simulated production cost
+    // Find fabric and thread and decrement their stocks
+    await Inventory.updateMany(
+      { category: { $in: ['fabric', 'material', 'thread'] } },
+      { $inc: { 'stockLevels.current': -Math.ceil(task.quantity.produced * 0.5) } }
+    );
+
+    // Free the machine (make it available)
+    if (task.machineId) {
+      const machineObj = await Machine.findById(task.machineId);
+      if (machineObj) {
+        machineObj.status = 'available';
+        await machineObj.save();
+        emitToRoom('management', 'machineStatusChanged', { action: 'updated', machine: machineObj });
+      }
+    }
+
+    // Check if entire order is completed
+    if (task.orderId) {
+      const orderTasks = await Task.find({ orderId: task.orderId._id, isDeleted: false });
+      const allDone = orderTasks.every(t => t.status === 'completed');
+      
+      const totalProduced = orderTasks.reduce((s, t) => s + (t.quantity.produced || 0), 0);
+      const remainingQuantity = Math.max(0, task.orderId.orderDetails.quantity - totalProduced);
+
+      // Emit orderProgressUpdated
+      emitToRoom('management', 'orderProgressUpdated', {
+        orderId: task.orderId._id,
+        completedQuantity: totalProduced,
+        remainingQuantity,
+        progress: Math.round((totalProduced / task.orderId.orderDetails.quantity) * 100),
+      });
+
+      if (allDone && totalProduced >= task.orderId.orderDetails.quantity) {
+        await Order.findByIdAndUpdate(task.orderId._id, { status: 'completed' });
+        emitToRoom('management', 'orderCompleted', { orderId: task.orderId._id });
+        emitToAll('orderCompleted', { orderId: task.orderId._id, orderNumber: task.orderId.orderNumber });
+      }
+    }
+
+    // Notify employee
+    if (task.assignedTo) {
+      emitToUser(task.assignedTo._id, 'qualityApproved', {
+        task: task.title,
+        message: 'Your production task has been approved by Quality Control.',
+      });
+    }
+
+    emitToRoom('management', 'taskCompleted', { taskId: task._id, status: 'completed' });
+
+    return ApiResponse.success(res, { task, inspection }, 'Quality approved successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.requestRework = async (req, res, next) => {
+  try {
+    const taskId = req.params.id;
+    const { reason = 'Loose thread detected.' } = req.body;
+    const task = await Task.findById(taskId).populate('assignedTo');
+    if (!task) {
+      return ApiResponse.error(res, 'Task not found', 404);
+    }
+
+    task.status = 'rework';
+    task.description = `${task.description || ''} | REWORK REQUESTED: ${reason}`;
+    await task.save();
+
+    if (task.assignedTo) {
+      emitToUser(task.assignedTo._id, 'reworkRequested', {
+        taskId: task._id,
+        task: task.title,
+        reason,
+        message: `Quality rework requested: "${reason}"`,
+      });
+
+      await Notification.create({
+        recipient: task.assignedTo._id,
+        sender: req.user._id,
+        type: 'task_alert',
+        title: 'Rework Required',
+        message: `Quality rework requested: ${reason}`,
+        link: `/tasks/${task._id}`,
+      });
+
+      emitToUser(task.assignedTo._id, 'newNotification', {
+        type: 'rework_requested',
+        message: `Quality rework requested: ${reason}`,
+      });
+    }
+
+    emitToRoom('management', 'taskUpdated', { action: 'rework', task });
+
+    return ApiResponse.success(res, task, 'Rework request registered successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.rejectQuality = async (req, res, next) => {
+  try {
+    const taskId = req.params.id;
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return ApiResponse.error(res, 'Task not found', 404);
+    }
+
+    task.status = 'pending';
+    await task.save();
+
+    emitToRoom('management', 'taskUpdated', { action: 'rejected', task });
+
+    return ApiResponse.success(res, task, 'Task inspection rejected and returned to queue');
+  } catch (err) {
+    next(err);
+  }
+};
+

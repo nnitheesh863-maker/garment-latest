@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@mui/material';
 import { motion } from 'framer-motion';
 
-const MotionCard = motion(Card);
+const MotionCard = motion.create(Card);
 
 export default function GlassCard({
   children,

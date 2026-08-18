@@ -50,6 +50,19 @@ const emptyForm = {
 
 const emptyStockForm = { quantity: 0, type: "add", reason: "" };
 
+const normalizeItem = (item) => ({
+  ...item,
+  currentStock: item.stockLevels?.current ?? item.currentStock ?? 0,
+  minStock: item.stockLevels?.minimum ?? item.minStock ?? 0,
+  maxStock: item.stockLevels?.maximum ?? item.maxStock ?? 0,
+  reorderPoint: item.stockLevels?.reorderPoint ?? item.reorderPoint ?? 0,
+  unit: item.unitOfMeasure ?? item.unit ?? "pcs",
+  supplier:
+    item.supplier && typeof item.supplier === "object"
+      ? item.supplier.name || ""
+      : item.supplier || "",
+});
+
 export default function AdminInventory() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +84,7 @@ export default function AdminInventory() {
     try {
       const res = await inventoryApi.list();
       const d = res.data;
-      setItems(d?.data || d?.inventory || []);
+      setItems((d?.data || d?.inventory || []).map(normalizeItem));
     } catch {
       setItems([]);
     } finally {
@@ -141,11 +154,27 @@ export default function AdminInventory() {
   const handleFormSubmit = async () => {
     setSaving(true);
     try {
+      const payload = {
+        name: form.name,
+        category: form.category,
+        unitOfMeasure: form.unit || "pcs",
+        supplier: {
+          name: form.supplier || "",
+          contact: "",
+          leadTime: 0,
+        },
+        stockLevels: {
+          current: Number(form.currentStock) || 0,
+          minimum: Number(form.minStock) || 0,
+          maximum: Number(form.maxStock) || 0,
+          reorderPoint: Number(form.reorderPoint) || 0,
+        },
+      };
       if (editItem) {
-        await inventoryApi.update(editItem._id, form);
+        await inventoryApi.update(editItem._id, payload);
         toast.success("Item updated");
       } else {
-        await inventoryApi.create(form);
+        await inventoryApi.create(payload);
         toast.success("Item created");
       }
       setFormOpen(false);
@@ -194,9 +223,9 @@ export default function AdminInventory() {
   const handleViewDetail = async (item) => {
     try {
       const res = await inventoryApi.get(item._id);
-      setDetailData(res.data?.data || res.data?.inventory || res.data);
+      setDetailData(normalizeItem(res.data?.data || res.data?.inventory || res.data));
     } catch {
-      setDetailData(item);
+      setDetailData(normalizeItem(item));
     }
     setDetailOpen(true);
   };
@@ -461,7 +490,7 @@ export default function AdminInventory() {
             <Grid item xs={6}>
               <TextField
                 select
-                full
+                fullWidth
                 size="small"
                 label="Type"
                 value={stockForm.type}
@@ -473,7 +502,7 @@ export default function AdminInventory() {
             </Grid>
             <Grid item xs={6}>
               <TextField
-                full
+                fullWidth
                 size="small"
                 label="Quantity"
                 type="number"
@@ -483,7 +512,7 @@ export default function AdminInventory() {
             </Grid>
             <Grid item xs={12}>
               <TextField
-                full
+                fullWidth
                 size="small"
                 label="Reason"
                 value={stockForm.reason}

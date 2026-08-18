@@ -154,6 +154,39 @@ exports.deleteOrder = async (req, res, next) => {
       return ApiResponse.error(res, 'Order not found', 404);
     }
 
+    // Cascade delete associated tasks and release machines
+    const orderTasks = await Task.find({ orderId: req.params.id, isDeleted: false });
+    if (orderTasks && orderTasks.length > 0) {
+      const Machine = require('../models/Machine');
+      for (const task of orderTasks) {
+        task.isDeleted = true;
+        await task.save();
+
+        if (task.assignedTo) {
+          emitToUser(task.assignedTo.toString(), 'taskUpdated', { action: 'deleted', task });
+        }
+
+        // Release machine if not in use by other active tasks
+        if (task.machineId) {
+          const otherActiveTask = await Task.findOne({
+            machineId: task.machineId,
+            _id: { $ne: task._id },
+            orderId: { $ne: req.params.id },
+            isDeleted: false,
+            status: { $in: ['in_progress', 'accepted', 'paused', 'rework'] }
+          });
+          if (!otherActiveTask) {
+            const machineObj = await Machine.findById(task.machineId);
+            if (machineObj) {
+              machineObj.status = 'available';
+              await machineObj.save();
+              emitToRoom('management', 'machineStatusChanged', { action: 'updated', machine: machineObj });
+            }
+          }
+        }
+      }
+    }
+
     emitToRoom('management', 'orderUpdated', { action: 'deleted', orderId: req.params.id });
 
     return ApiResponse.success(res, null, 'Order deleted');
