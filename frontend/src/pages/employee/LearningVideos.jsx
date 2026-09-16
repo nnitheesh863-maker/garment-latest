@@ -9,6 +9,7 @@ import {
   Skeleton,
   useMediaQuery,
   useTheme,
+} from "@mui/material";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import PageHeader from "../../components/common/PageHeader";
 import EmptyState from "../../components/common/EmptyState";
