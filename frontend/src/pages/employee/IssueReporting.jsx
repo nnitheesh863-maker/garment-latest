@@ -19,6 +19,9 @@ import {
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import { toast } from "react-toastify";
+import PageHeader from "../../components/common/PageHeader";
+import GradientButton from "../../components/common/GradientButton";
+import GlassCard from "../../components/common/GlassCard";
 import StatusBadge from "../../components/common/StatusBadge";
 import { ISSUE_TYPES, PRIORITY } from "../../utils/constants";
 import { formatDate } from "../../utils/helpers";
@@ -87,9 +90,11 @@ export default function IssueReporting() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={700} mb={3}>
-        Report an Issue
-      </Typography>
+      <PageHeader
+        title="Incident & Equipment Issue Log"
+        subtitle="Flag mechanical malfunctions, safety hazards, and supply shortages directly to line managers."
+        badge="Safety & Ops"
+      />
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={5}>
