@@ -19,6 +19,10 @@ import { toast } from "react-toastify";
 import { differenceInDays, parseISO } from "date-fns";
 import api from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
+import PageHeader from "../../components/common/PageHeader";
+import StatCard from "../../components/common/StatCard";
+import GradientButton from "../../components/common/GradientButton";
+import StatusBadge from "../../components/common/StatusBadge";
 import DataTable from "../../components/common/DataTable";
 import { LEAVE_TYPES, LEAVE_STATUS } from "../../utils/constants";
 import { formatDate, getStatusColor } from "../../utils/helpers";
@@ -163,13 +167,7 @@ export default function LeaveRequest() {
     {
       id: "status",
       label: "Status",
-      render: (val) => (
-        <Chip
-          label={val ? val.replace(/_/g, " ") : "unknown"}
-          size="small"
-          sx={{ bgcolor: getStatusColor(val), color: "#fff", fontWeight: 500 }}
-        />
-      ),
+      render: (val) => <StatusBadge status={val} />,
     },
     {
       id: "actions",
@@ -193,60 +191,45 @@ export default function LeaveRequest() {
 
   return (
     <Box>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          Leave Requests
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenDialog}
-        >
-          Request Leave
-        </Button>
-      </Box>
+      <PageHeader
+        title="Leave Management & Requests"
+        subtitle="Submit time-off requests, track approval statuses, and view annual quotas."
+        badge="Self Service"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleOpenDialog}>
+            Request Leave
+          </GradientButton>
+        }
+      />
 
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} sm={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4" fontWeight={700} color="primary">
-                {totalLeavesThisYear}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Total Leaves This Year
-              </Typography>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total Leaves Used"
+            value={`${totalLeavesThisYear} Days`}
+            icon={<AddIcon />}
+            variant="maroon"
+            loading={loading}
+            subtitle="Current calendar year"
+          />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4" fontWeight={700} color="warning.main">
-                {pendingCount}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Pending Requests
-              </Typography>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Pending Requests"
+            value={pendingCount}
+            variant="gold"
+            loading={loading}
+            subtitle="Under supervisor review"
+          />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h4" fontWeight={700} color="success.main">
-                {approvedCount}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Approved Requests
-              </Typography>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Approved Requests"
+            value={approvedCount}
+            variant="green"
+            loading={loading}
+            subtitle="Authorized absences"
+          />
         </Grid>
       </Grid>
 
