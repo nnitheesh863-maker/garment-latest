@@ -33,6 +33,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { toast } from "react-toastify";
 import { machineApi } from "../../api/axios";
 import DataTable from "../../components/common/DataTable";
+import PageHeader from "../../components/common/PageHeader";
+import GradientButton from "../../components/common/GradientButton";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { formatDate } from "../../utils/helpers";
 import { MACHINE_STATUS } from "../../utils/constants";
@@ -253,23 +255,16 @@ export default function AdminMachines() {
 
   return (
     <Box>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          Machine Management
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenCreate}
-        >
-          Add Machine
-        </Button>
-      </Box>
+      <PageHeader
+        title="Machine Fleet & Telemetry"
+        subtitle="Monitor operational status, IoT diagnostics, and AI predictive maintenance schedules."
+        badge="IoT Connected"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleOpenCreate}>
+            Add Machine
+          </GradientButton>
+        }
+      />
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={3}>
