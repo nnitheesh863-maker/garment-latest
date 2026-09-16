@@ -5,6 +5,7 @@ const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/rbac');
 
 router.post('/', protect, leaveController.createLeaveRequest);
+router.get('/balance', protect, leaveController.getLeaveBalance);
 router.get('/', protect, authorize('admin', 'manager'), leaveController.getLeaveRequests);
 router.get('/my', protect, leaveController.getMyLeaves);
 router.put('/:id/status', protect, authorize('admin', 'manager'), leaveController.updateLeaveStatus);

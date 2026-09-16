@@ -128,3 +128,38 @@ exports.updateLeaveStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getLeaveBalance = async (req, res, next) => {
+  try {
+    const currentYear = new Date().getFullYear();
+    const startOfYear = new Date(currentYear, 0, 1);
+    const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59);
+
+    const approvedLeaves = await Leave.find({
+      employee: req.user._id,
+      status: 'approved',
+      startDate: { $gte: startOfYear, $lte: endOfYear },
+    });
+
+    let usedDays = 0;
+    approvedLeaves.forEach((leave) => {
+      const diffMs = new Date(leave.endDate) - new Date(leave.startDate);
+      const days = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1);
+      usedDays += days;
+    });
+
+    const totalAllowance = 18;
+    const remainingDays = Math.max(0, totalAllowance - usedDays);
+
+    return ApiResponse.success(res, {
+      year: currentYear,
+      totalAllowance,
+      usedDays,
+      remainingDays,
+      approvedRequests: approvedLeaves.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
