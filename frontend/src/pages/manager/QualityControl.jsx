@@ -22,6 +22,8 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import { toast } from 'react-toastify';
 import DataTable from '../../components/common/DataTable';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 import StatusBadge from '../../components/common/StatusBadge';
 import PerformanceChart from '../../components/charts/PerformanceChart';
 import GlassCard from '../../components/common/GlassCard';
@@ -139,10 +141,16 @@ export default function QualityControl() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700} color="#59171B">Quality Control Hub</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddDialogOpen(true)} sx={{ bgcolor: '#59171B', '&:hover': { bgcolor: '#7A2328' } }}>New Check</Button>
-      </Box>
+      <PageHeader
+        title="Quality Control & Inspection Hub"
+        subtitle="Review finished pieces, approve batches, or dispatch tasks for rework and stitching repair."
+        badge="Quality Gate"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={() => setAddDialogOpen(true)}>
+            New Check
+          </GradientButton>
+        }
+      />
 
       {/* Awaiting Inspection Section */}
       {tasksAwaiting.length > 0 && (
