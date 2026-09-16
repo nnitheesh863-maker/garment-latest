@@ -6,6 +6,7 @@ const { authorize } = require('../middleware/rbac');
 const { createOrderRules, updateOrderRules, validate } = require('../middleware/validate');
 
 router.post('/', protect, authorize('admin', 'manager'), createOrderRules, validate, orderController.createOrder);
+router.put('/batch/status', protect, authorize('admin', 'manager'), orderController.batchUpdateStatus);
 router.get('/', protect, orderController.getOrders);
 router.get('/analytics', protect, orderController.getOrderAnalytics);
 router.get('/:id', protect, orderController.getOrder);

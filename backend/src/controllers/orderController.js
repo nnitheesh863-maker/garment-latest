@@ -319,3 +319,28 @@ exports.predictOrder = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.batchUpdateStatus = async (req, res, next) => {
+  try {
+    const { orderIds, status } = req.body;
+    if (!orderIds || !Array.isArray(orderIds) || !orderIds.length || !status) {
+      return ApiResponse.badRequest(res, 'orderIds array and status are required');
+    }
+
+    const result = await Order.updateMany(
+      { _id: { $in: orderIds }, isDeleted: false },
+      { $set: { status, updatedAt: new Date() } }
+    );
+
+    emitToRoom('management', 'ordersBatchUpdated', { orderIds, status, count: result.modifiedCount });
+
+    return ApiResponse.success(res, {
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+      status,
+    }, 'Orders updated in batch');
+  } catch (err) {
+    next(err);
+  }
+};
+
