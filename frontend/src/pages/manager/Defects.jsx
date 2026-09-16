@@ -24,8 +24,10 @@ import {
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { defectApi } from '../../api/axios';
-import { formatDate, formatDateTime, timeAgo } from '../../utils/helpers';
 import DataTable from '../../components/common/DataTable';
+import PageHeader from '../../components/common/PageHeader';
+import GlassCard from '../../components/common/GlassCard';
+import { formatDate, formatDateTime, timeAgo } from '../../utils/helpers';
 
 const STATUS_COLORS = {
   pending: 'warning',
@@ -222,11 +224,11 @@ export default function Defects() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>
-          Defect Reports
-        </Typography>
-      </Box>
+      <PageHeader
+        title="Defect Reports & Resolution"
+        subtitle="Floor operator issue logs, photo attachments, and quality manager resolution statuses."
+        badge="Quality Assurance"
+      />
 
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} sm={6} md={3}>
