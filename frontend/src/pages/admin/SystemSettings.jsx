@@ -24,6 +24,8 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import { toast } from 'react-toastify';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 
 export default function SystemSettings() {
   const [saving, setSaving] = useState(false);
@@ -77,12 +79,20 @@ export default function SystemSettings() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>System Settings</Typography>
-        <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Changes'}
-        </Button>
-      </Box>
+      <PageHeader
+        title="Factory & System Settings"
+        subtitle="Configure shift boundaries, calendar holidays, and AI autonomous intelligence rules."
+        badge="Configuration"
+        actions={
+          <GradientButton
+            icon={<SaveIcon />}
+            onClick={handleSave}
+            loading={saving}
+          >
+            Save Changes
+          </GradientButton>
+        }
+      />
 
       {saved && <Alert severity="success" sx={{ mb: 2 }}>Settings saved successfully</Alert>}
 
