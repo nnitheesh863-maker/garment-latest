@@ -468,3 +468,78 @@ exports.getAllIssues = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getLeaderboard = async (req, res, next) => {
+  try {
+    const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 5));
+
+    const topPerformers = await Task.aggregate([
+      { $match: { isDeleted: false, status: "completed", assignedTo: { $ne: null } } },
+      {
+        $group: {
+          _id: "$assignedTo",
+          completedTasks: { $sum: 1 },
+          totalProduced: { $sum: "$quantity.produced" },
+          totalRejected: { $sum: "$quantity.rejected" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          _id: 1,
+          name: {
+            $concat: [
+              { $ifNull: ["$user.profile.firstName", ""] },
+              " ",
+              { $ifNull: ["$user.profile.lastName", ""] },
+            ],
+          },
+          email: "$user.email",
+          department: "$user.profile.department",
+          position: "$user.profile.position",
+          profileImage: "$user.profile.profileImage",
+          completedTasks: 1,
+          totalProduced: 1,
+          totalRejected: 1,
+          efficiencyScore: {
+            $cond: [
+              { $gt: ["$totalProduced", 0] },
+              {
+                $round: [
+                  {
+                    $multiply: [
+                      {
+                        $divide: [
+                          { $subtract: ["$totalProduced", "$totalRejected"] },
+                          "$totalProduced",
+                        ],
+                      },
+                      100,
+                    ],
+                  },
+                  1,
+                ],
+              },
+              100,
+            ],
+          },
+        },
+      },
+      { $sort: { completedTasks: -1, efficiencyScore: -1 } },
+      { $limit: limit },
+    ]);
+
+    return ApiResponse.success(res, topPerformers, "Top performers leaderboard retrieved");
+  } catch (err) {
+    next(err);
+  }
+};
+

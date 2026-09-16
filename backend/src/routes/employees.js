@@ -5,6 +5,7 @@ const { protect } = require("../middleware/auth");
 const { authorize } = require("../middleware/rbac");
 
 router.get("/", protect, employeeController.getEmployees);
+router.get("/leaderboard/top", protect, employeeController.getLeaderboard);
 router.get("/:id", protect, employeeController.getEmployee);
 router.put(
   "/:id",
