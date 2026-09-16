@@ -72,3 +72,31 @@ exports.getLineAnalytics = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.updateLineOutput = async (req, res, next) => {
+  try {
+    const { outputIncrement, newOutput } = req.body;
+    const line = await ProductionLine.findById(req.params.id);
+    if (!line) return ApiResponse.error(res, 'Production line not found', 404);
+
+    if (!line.capacity) line.capacity = { dailyTarget: 1000, currentOutput: 0 };
+    if (!line.metrics) line.metrics = { efficiency: 0, totalProduced: 0 };
+
+    if (newOutput !== undefined) {
+      line.capacity.currentOutput = Number(newOutput);
+    } else if (outputIncrement !== undefined) {
+      line.capacity.currentOutput += Number(outputIncrement);
+      line.metrics.totalProduced += Number(outputIncrement);
+    }
+
+    const target = line.capacity.dailyTarget || 1000;
+    line.metrics.efficiency = target > 0 ? Math.min(100, Math.round((line.capacity.currentOutput / target) * 100)) : 0;
+
+    await line.save();
+
+    return ApiResponse.success(res, line, 'Production line output telemetry updated');
+  } catch (err) {
+    next(err);
+  }
+};
+

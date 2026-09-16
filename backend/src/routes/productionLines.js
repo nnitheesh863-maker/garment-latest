@@ -9,6 +9,7 @@ router.post('/', protect, authorize('admin'), lineController.createLine);
 router.get('/analytics', protect, lineController.getLineAnalytics);
 router.get('/:id', protect, lineController.getLine);
 router.put('/:id', protect, authorize('admin'), lineController.updateLine);
+router.post('/:id/output', protect, authorize('admin', 'manager'), lineController.updateLineOutput);
 router.delete('/:id', protect, authorize('admin'), lineController.deleteLine);
 
 module.exports = router;
