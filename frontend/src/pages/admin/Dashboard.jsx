@@ -212,12 +212,30 @@ function StatusDonut({ items, labels, center, centerLabel }) {
 
 function SectionTitle({ icon, title, action, color = '#59171B' }) {
   return (
-    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2.25}>
       <Box display="flex" alignItems="center" gap={1.25}>
-        <Box sx={{ width: 32, height: 32, borderRadius: 2.5, background: `linear-gradient(135deg, ${color}, ${color}99)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 6px 16px ${color}33` }}>
+        <Box
+          sx={{
+            width: 34,
+            height: 34,
+            borderRadius: '10px',
+            background: `linear-gradient(135deg, ${color}, ${color}99)`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#FED7B8',
+            boxShadow: `0 6px 16px ${color}33`,
+            transition: 'transform 0.25s ease',
+            '&:hover': {
+              transform: 'scale(1.08) rotate(4deg)',
+            },
+          }}
+        >
           {icon}
         </Box>
-        <Typography variant="h6" fontWeight={700}>{title}</Typography>
+        <Typography variant="h6" fontWeight={800} sx={{ letterSpacing: '-0.01em', fontSize: '1.05rem' }}>
+          {title}
+        </Typography>
       </Box>
       {action}
     </Box>
