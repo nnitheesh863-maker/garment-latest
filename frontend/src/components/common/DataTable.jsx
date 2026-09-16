@@ -14,8 +14,10 @@ import {
   Skeleton,
   Typography,
   InputAdornment,
+  IconButton,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
 import InboxIcon from '@mui/icons-material/Inbox';
 import { motion } from 'framer-motion';
 
@@ -28,9 +30,9 @@ export default function DataTable({
   rowsPerPageOptions = [10, 25, 50],
   defaultRowsPerPage = 10,
   searchable = true,
-  searchPlaceholder = 'Search...',
+  searchPlaceholder = 'Search records...',
   onRowClick,
-  emptyMessage = 'No data available',
+  emptyMessage = 'No matching records found',
   stickyHeader = true,
   maxHeight,
   elevated = true,
@@ -65,12 +67,18 @@ export default function DataTable({
   const sortedRows = useMemo(() => {
     if (!filteredRows) return [];
     const sorted = [...filteredRows].sort((a, b) => {
-      const aVal = sortBy ? (columns.find((c) => c.id === sortBy)?.accessor?.(a) ?? a[sortBy]) : null;
-      const bVal = sortBy ? (columns.find((c) => c.id === sortBy)?.accessor?.(b) ?? b[sortBy]) : null;
+      const aVal = sortBy
+        ? columns.find((c) => c.id === sortBy)?.accessor?.(a) ?? a[sortBy]
+        : null;
+      const bVal = sortBy
+        ? columns.find((c) => c.id === sortBy)?.accessor?.(b) ?? b[sortBy]
+        : null;
       if (aVal == null) return 1;
       if (bVal == null) return -1;
       if (typeof aVal === 'string' || typeof bVal === 'string') {
-        return sortDir === 'asc' ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
+        return sortDir === 'asc'
+          ? String(aVal).localeCompare(String(bVal))
+          : String(bVal).localeCompare(String(aVal));
       }
       return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
     });
@@ -100,25 +108,34 @@ export default function DataTable({
       <Paper
         elevation={0}
         sx={{
-          borderRadius: 4,
-          border: (theme) => `1px solid ${theme.palette.mode === 'light' ? '#F1D5C0' : '#3A262B'}`,
+          borderRadius: '20px',
+          border: (theme) =>
+            `1px solid ${
+              theme.palette.mode === 'light' ? 'rgba(241, 213, 192, 0.7)' : '#3A262B'
+            }`,
           p: 2.5,
           bgcolor: 'background.paper',
         }}
       >
-        {searchable && <Skeleton variant="rectangular" height={46} sx={{ mb: 2.5, borderRadius: 3 }} />}
+        {searchable && (
+          <Skeleton
+            variant="rectangular"
+            height={46}
+            sx={{ mb: 2.5, borderRadius: '12px' }}
+          />
+        )}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, pb: 1 }}>
-          <Skeleton width="18%" height={22} />
-          <Skeleton width="22%" height={22} />
-          <Skeleton width="16%" height={22} />
-          <Skeleton width="20%" height={22} />
+          <Skeleton width="20%" height={24} />
+          <Skeleton width="25%" height={24} />
+          <Skeleton width="20%" height={24} />
+          <Skeleton width="25%" height={24} />
         </Box>
-        {[...Array(6)].map((_, i) => (
+        {[...Array(5)].map((_, i) => (
           <Skeleton
             key={i}
             variant="rectangular"
             height={52}
-            sx={{ mb: 1, borderRadius: 2.5, mx: 0.5 }}
+            sx={{ mb: 1, borderRadius: '12px', mx: 0.5 }}
           />
         ))}
       </Paper>
@@ -127,20 +144,23 @@ export default function DataTable({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
       <Paper
-        elevation={elevated ? 0 : 0}
+        elevation={0}
         sx={{
-          borderRadius: 4,
+          borderRadius: '20px',
           overflow: 'hidden',
-          border: (theme) => `1px solid ${theme.palette.mode === 'light' ? '#F1D5C0' : '#3A262B'}`,
+          border: (theme) =>
+            `1px solid ${
+              theme.palette.mode === 'light' ? 'rgba(241, 213, 192, 0.7)' : '#3A262B'
+            }`,
           boxShadow: (theme) =>
             theme.palette.mode === 'light'
-              ? '0 8px 32px rgba(89,23,27,0.06)'
-              : '0 8px 32px rgba(0,0,0,0.4)',
+              ? '0 8px 32px rgba(89, 23, 27, 0.05)'
+              : '0 8px 32px rgba(0, 0, 0, 0.4)',
           bgcolor: 'background.paper',
         }}
       >
@@ -150,15 +170,30 @@ export default function DataTable({
               size="small"
               placeholder={searchPlaceholder}
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
               fullWidth
               variant="outlined"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <SearchIcon sx={{ color: '#7A6A63', fontSize: 20 }} />
                   </InputAdornment>
                 ),
+                endAdornment: search ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setSearch('')}>
+                      <CloseIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
               }}
             />
           </Box>
@@ -171,7 +206,14 @@ export default function DataTable({
                   <TableCell
                     key={col.id}
                     align={col.align || 'left'}
-                    sx={{ fontWeight: 700, whiteSpace: 'nowrap', ...col.sx }}
+                    sx={{
+                      fontWeight: 800,
+                      whiteSpace: 'nowrap',
+                      py: 1.5,
+                      fontSize: '0.85rem',
+                      letterSpacing: '0.01em',
+                      ...col.sx,
+                    }}
                   >
                     {col.sortable !== false ? (
                       <TableSortLabel
@@ -179,7 +221,7 @@ export default function DataTable({
                         direction={sortBy === col.id ? sortDir : 'asc'}
                         onClick={() => handleSort(col.id)}
                         sx={{
-                          '&.MuiTableSortLabel-active': { color: 'inherit' },
+                          '&.MuiTableSortLabel-active': { color: 'primary.main', fontWeight: 800 },
                           '& .MuiTableSortLabel-icon': { opacity: 1, color: '#7A2328' },
                         }}
                       >
@@ -202,18 +244,20 @@ export default function DataTable({
                         height: 64,
                         mx: 'auto',
                         mb: 1.5,
-                        borderRadius: 4,
+                        borderRadius: '16px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         bgcolor: (theme) =>
-                          theme.palette.mode === 'light' ? 'rgba(254,215,184,0.35)' : 'rgba(164,90,74,0.2)',
+                          theme.palette.mode === 'light'
+                            ? 'rgba(254, 215, 184, 0.35)'
+                            : 'rgba(164, 90, 74, 0.2)',
                         color: '#7A6A63',
                       }}
                     >
                       <InboxIcon sx={{ fontSize: 30 }} />
                     </Box>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       {emptyMessage}
                     </Typography>
                   </TableCell>
@@ -226,11 +270,21 @@ export default function DataTable({
                     onClick={() => onRowClick && onRowClick(row)}
                     sx={{
                       cursor: onRowClick ? 'pointer' : 'default',
-                      '&:hover': { transition: 'background 200ms' },
+                      transition: 'background-color 0.2s ease, transform 0.15s ease',
+                      '&:hover': {
+                        bgcolor: (theme) =>
+                          theme.palette.mode === 'light'
+                            ? 'rgba(254, 215, 184, 0.18)'
+                            : 'rgba(255, 255, 255, 0.04)',
+                      },
                     }}
                   >
                     {columns.map((col) => (
-                      <TableCell key={col.id} align={col.align || 'left'} sx={col.sx}>
+                      <TableCell
+                        key={col.id}
+                        align={col.align || 'left'}
+                        sx={{ py: 1.25, fontSize: '0.875rem', ...col.sx }}
+                      >
                         {renderCell(row, col)}
                       </TableCell>
                     ))}
@@ -249,8 +303,11 @@ export default function DataTable({
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={rowsPerPageOptions}
           sx={{
-            borderTop: (theme) => `1px solid ${theme.palette.mode === 'light' ? '#F1D5C0' : '#3A262B'}`,
-            '& .MuiTablePagination-toolbar': { minHeight: 58 },
+            borderTop: (theme) =>
+              `1px solid ${
+                theme.palette.mode === 'light' ? 'rgba(241, 213, 192, 0.6)' : '#3A262B'
+              }`,
+            '& .MuiTablePagination-toolbar': { minHeight: 56 },
           }}
         />
       </Paper>
