@@ -7,6 +7,26 @@ class ApiResponse {
     });
   }
 
+  static created(res, data, message = 'Resource created successfully') {
+    return res.status(201).json({
+      success: true,
+      message,
+      data,
+    });
+  }
+
+  static badRequest(res, message = 'Bad Request', errors = null) {
+    return ApiResponse.error(res, message, 400, errors);
+  }
+
+  static unauthorized(res, message = 'Unauthorized access') {
+    return ApiResponse.error(res, message, 401);
+  }
+
+  static notFound(res, message = 'Resource not found') {
+    return ApiResponse.error(res, message, 404);
+  }
+
   static error(res, message = 'Internal Server Error', statusCode = 500, errors = null) {
     const response = {
       success: false,
