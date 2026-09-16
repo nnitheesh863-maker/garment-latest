@@ -7,6 +7,7 @@ const { createInspectionRules, validate } = require('../middleware/validate');
 router.post('/', protect, createInspectionRules, validate, qualityController.createInspection);
 router.get('/', protect, qualityController.getInspections);
 router.get('/analytics', protect, qualityController.getQualityAnalytics);
+router.get('/defects/distribution', protect, qualityController.getDefectDistribution);
 router.post('/:id/approve', protect, qualityController.approveQuality);
 router.post('/:id/rework', protect, qualityController.requestRework);
 router.post('/:id/reject', protect, qualityController.rejectQuality);

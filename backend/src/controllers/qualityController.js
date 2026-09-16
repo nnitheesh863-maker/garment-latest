@@ -423,3 +423,29 @@ exports.rejectQuality = async (req, res, next) => {
   }
 };
 
+exports.getDefectDistribution = async (req, res, next) => {
+  try {
+    const distribution = await Quality.aggregate([
+      { $unwind: '$defects' },
+      {
+        $group: {
+          _id: '$defects.type',
+          totalCount: { $sum: '$defects.count' },
+          severityBreakdown: {
+            $push: {
+              severity: '$defects.severity',
+              count: '$defects.count',
+            },
+          },
+        },
+      },
+      { $sort: { totalCount: -1 } },
+    ]);
+
+    return ApiResponse.success(res, distribution, 'Defect distribution retrieved');
+  } catch (err) {
+    next(err);
+  }
+};
+
+
