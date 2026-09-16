@@ -29,6 +29,8 @@ import { toast } from 'react-toastify';
 import api from '../../api/axios';
 import { orderApi, machineApi, qualityApi, aiApi } from '../../api/axios';
 import ProductionChart from '../../components/charts/ProductionChart';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 import { formatDate, downloadCSV } from '../../utils/helpers';
 
 export default function AdminAnalytics() {
@@ -159,18 +161,53 @@ export default function AdminAnalytics() {
   };
 
   const MetricCard = ({ title, value, icon, color, suffix }) => (
-    <Card>
-      <CardContent>
+    <Card
+      sx={{
+        borderRadius: '18px',
+        border: '1px solid rgba(241, 213, 192, 0.65)',
+        boxShadow: '0 4px 18px rgba(89, 23, 27, 0.05)',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'all 0.25s ease',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 10px 28px rgba(89, 23, 27, 0.12)',
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          bgcolor: color || 'primary.main',
+        },
+      }}
+    >
+      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start">
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom>{title}</Typography>
+            <Typography variant="caption" color="text.secondary" fontWeight={600} textTransform="uppercase" letterSpacing="0.04em">
+              {title}
+            </Typography>
             {loading ? (
-              <Skeleton width={80} height={36} />
+              <Skeleton width={80} height={40} sx={{ mt: 0.5, borderRadius: 2 }} />
             ) : (
-              <Typography variant="h4" fontWeight={700}>{value}{suffix}</Typography>
+              <Typography variant="h4" fontWeight={800} sx={{ mt: 0.5, letterSpacing: '-0.02em' }}>
+                {value}{suffix}
+              </Typography>
             )}
           </Box>
-          <Avatar sx={{ bgcolor: color || 'primary.main', width: 48, height: 48 }}>
+          <Avatar
+            sx={{
+              bgcolor: color ? `${color}18` : 'rgba(89,23,27,0.1)',
+              color: color || 'primary.main',
+              border: `1px solid ${color ? `${color}33` : 'rgba(89,23,27,0.2)'}`,
+              width: 48,
+              height: 48,
+              borderRadius: '14px',
+            }}
+          >
             {icon}
           </Avatar>
         </Box>
@@ -189,17 +226,20 @@ export default function AdminAnalytics() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>Analytics Dashboard</Typography>
-        <Button
-          variant="outlined"
-          startIcon={<DownloadIcon />}
-          onClick={handleDownloadReport}
-          disabled={loading}
-        >
-          Download Report
-        </Button>
-      </Box>
+      <PageHeader
+        title="Production Analytics & Intelligence"
+        subtitle="Deep throughput analysis, delivery forecasting, and line yield performance."
+        badge="Deep Insights"
+        actions={
+          <GradientButton
+            icon={<DownloadIcon />}
+            onClick={handleDownloadReport}
+            disabled={loading}
+          >
+            Download CSV Report
+          </GradientButton>
+        }
+      />
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
