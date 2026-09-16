@@ -23,6 +23,8 @@ import PauseIcon from '@mui/icons-material/Pause';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { toast } from 'react-toastify';
+import PageHeader from '../../components/common/PageHeader';
+import EmptyState from '../../components/common/EmptyState';
 import StatusBadge from '../../components/common/StatusBadge';
 import { TASK_STATUS } from '../../utils/constants';
 import { formatDate, getStatusColor } from '../../utils/helpers';
@@ -130,7 +132,12 @@ export default function TaskList() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={700} mb={3}>My Tasks</Typography>
+      <PageHeader
+        title="Assigned Work Orders & Tasks"
+        subtitle="Execute stitching batches, track quantity completion, and dispatch completed bundles to QC."
+        badge={`${tasks.filter(t => t.status === 'in_progress').length} In Progress`}
+        badgeColor="success"
+      />
 
       <TextField select size="small" label="Filter by Status" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} sx={{ mb: 3, minWidth: 200 }}>
         <MenuItem value="">All Tasks</MenuItem>
@@ -148,7 +155,11 @@ export default function TaskList() {
           ))}
         </Grid>
       ) : filteredTasks.length === 0 ? (
-        <Box py={6} textAlign="center"><Typography color="text.secondary">No tasks found</Typography></Box>
+        <EmptyState
+          icon={<CheckCircleIcon sx={{ fontSize: 60, color: 'primary.main' }} />}
+          title="No Tasks Found"
+          description="You currently have no tasks assigned matching this criteria."
+        />
       ) : (
         <Grid container spacing={2}>
           {filteredTasks.map((task) => {
