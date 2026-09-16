@@ -33,6 +33,9 @@ import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import GroupsIcon from "@mui/icons-material/Groups";
 import { toast } from "react-toastify";
 import { learningVideoApi, employeeApi } from "../../api/axios";
+import PageHeader from "../../components/common/PageHeader";
+import GradientButton from "../../components/common/GradientButton";
+import EmptyState from "../../components/common/EmptyState";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { formatDate } from "../../utils/helpers";
 
@@ -217,28 +220,16 @@ export default function LearningVideos() {
 
   return (
     <Box>
-      {/* Header */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-        flexDirection={{ xs: "column", sm: "row" }}
-        gap={{ xs: 1.5, sm: 0 }}
-      >
-        <Typography variant="h4" fontWeight={700} fontSize={{ xs: "1.5rem", sm: "2.125rem" }}>
-          Learning Videos
-        </Typography>
-        {!isMobile && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleOpenCreate}
-          >
-            Add Video
-          </Button>
-        )}
-      </Box>
+      <PageHeader
+        title="Training & SOP Academy"
+        subtitle="Manage instructional videos, equipment operating procedures, and worker skill modules."
+        badge="Knowledge Base"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleOpenCreate}>
+            Add Training Video
+          </GradientButton>
+        }
+      />
 
       {/* FAB for mobile */}
       {isMobile && (
@@ -268,21 +259,13 @@ export default function LearningVideos() {
           ))}
         </Grid>
       ) : videos.length === 0 ? (
-        /* Empty state */
-        <Box py={6} textAlign="center">
-          <PlayCircleIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No Learning Videos
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Click "Add Video" to create your first learning video.
-          </Typography>
-          {isMobile && (
-            <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>
-              Add Video
-            </Button>
-          )}
-        </Box>
+        <EmptyState
+          icon={<PlayCircleIcon sx={{ fontSize: 60, color: 'primary.main' }} />}
+          title="No Learning Videos Yet"
+          description="Build out your training curriculum by adding SOP walkthroughs and safety guidelines."
+          actionText="Add First Video"
+          onAction={handleOpenCreate}
+        />
       ) : (
         /* Video grid */
         <Grid container spacing={2}>
