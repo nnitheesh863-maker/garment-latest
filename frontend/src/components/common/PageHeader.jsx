@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Chip, Breadcrumbs, Link } from '@mui/material';
 import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 export default function PageHeader({
   title,
@@ -22,7 +22,7 @@ export default function PageHeader({
       <Box mb={3.5}>
         {breadcrumbs.length > 0 && (
           <Breadcrumbs
-            separator={<ChevronRight size={14} style={{ opacity: 0.5 }} />}
+            separator={<ChevronRightIcon sx={{ fontSize: 16, opacity: 0.5 }} />}
             sx={{ mb: 1, '& .MuiBreadcrumbs-li': { fontSize: '0.8rem', fontWeight: 500 } }}
           >
             {breadcrumbs.map((crumb, idx) =>

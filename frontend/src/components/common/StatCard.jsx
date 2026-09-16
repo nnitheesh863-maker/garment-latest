@@ -1,7 +1,9 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Chip, Skeleton } from '@mui/material';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import RemoveIcon from '@mui/icons-material/Remove';
 import AnimatedNumber from './AnimatedNumber';
 
 const MotionCard = motion.create(Card);
@@ -164,11 +166,11 @@ export default function StatCard({
             <Chip
               icon={
                 isPositive ? (
-                  <TrendingUp size={13} color={gradient ? '#FED7B8' : '#16A34A'} />
+                  <TrendingUpIcon sx={{ fontSize: '15px !important', color: gradient ? '#FED7B8 !important' : '#16A34A !important' }} />
                 ) : isNegative ? (
-                  <TrendingDown size={13} color={gradient ? '#FED7B8' : '#DC2626'} />
+                  <TrendingDownIcon sx={{ fontSize: '15px !important', color: gradient ? '#FED7B8 !important' : '#DC2626 !important' }} />
                 ) : (
-                  <Minus size={13} />
+                  <RemoveIcon sx={{ fontSize: '15px !important' }} />
                 )
               }
               label={trend}
