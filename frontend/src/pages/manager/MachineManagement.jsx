@@ -22,6 +22,8 @@ import BuildIcon from '@mui/icons-material/Build';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import { toast } from 'react-toastify';
 import DataTable from '../../components/common/DataTable';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 import StatusBadge from '../../components/common/StatusBadge';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import { MACHINE_STATUS } from '../../utils/constants';
@@ -117,10 +119,16 @@ export default function MachineManagement() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>Machine Management</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setAddDialogOpen(true)}>Add Machine</Button>
-      </Box>
+      <PageHeader
+        title="Machine Telemetry & Fleet"
+        subtitle="Manage equipment line assignments, efficiency utilization, and scheduled maintenance."
+        badge="IoT Fleet"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={() => setAddDialogOpen(true)}>
+            Add Machine
+          </GradientButton>
+        }
+      />
 
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} sm={3}>
