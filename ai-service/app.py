@@ -170,11 +170,14 @@ def create_app():
             return jsonify({'error': 'Failed to get dashboard data', 'message': str(e)}), 500
 
     @app.route('/health', methods=['GET'])
+    @app.route('/api/health', methods=['GET'])
     def health():
+        models_status = training_service.get_model_status()
         return jsonify({
             'status': 'healthy',
             'service': 'ai-service',
-            'version': '1.0.0'
+            'version': '1.0.0',
+            'models': models_status,
         }), 200
 
     return app
