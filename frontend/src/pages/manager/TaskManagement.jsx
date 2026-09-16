@@ -16,6 +16,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { toast } from 'react-toastify';
 import DataTable from '../../components/common/DataTable';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 import StatusBadge from '../../components/common/StatusBadge';
 import TaskForm from '../../components/forms/TaskForm';
 import DetailModal from '../../components/modals/DetailModal';
@@ -140,10 +142,16 @@ export default function TaskManagement() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>Task Management</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>New Task</Button>
-      </Box>
+      <PageHeader
+        title="Task Allocation & Progress"
+        subtitle="Live tracking of line operator tasks, piece counts, milestones, and status transitions."
+        badge="Floor Live"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleCreate}>
+            New Task
+          </GradientButton>
+        }
+      />
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={4}>
