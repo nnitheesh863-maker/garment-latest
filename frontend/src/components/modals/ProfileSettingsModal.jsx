@@ -37,6 +37,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { authApi } from "../../api/axios";
 import { toast } from "react-toastify";
 import { getInitials } from "../../utils/helpers";
+import GradientButton from "../common/GradientButton";
 
 const MAROON = "#59171B";
 const CREAM_BG = "#FFF8F2";
@@ -666,45 +667,29 @@ export default function ProfileSettingsModal({ open, onClose }) {
       </DialogContent>
 
       <DialogActions sx={{ px: 3, py: 2, bgcolor: CREAM_BG, borderTop: `1px solid ${BORDER}` }}>
-        <Button onClick={onClose} color="inherit" sx={{ textTransform: "none", fontWeight: 600 }}>
+        <Button onClick={onClose} color="inherit" sx={{ textTransform: "none", fontWeight: 600, borderRadius: 2 }}>
           Cancel
         </Button>
         {tabIndex === 0 ? (
-          <Button
-            variant="contained"
+          <GradientButton
+            variant="maroon"
             onClick={handleSaveProfile}
             disabled={saving}
             startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
-            sx={{
-              bgcolor: MAROON,
-              color: "#FED7B8",
-              textTransform: "none",
-              fontWeight: 700,
-              borderRadius: 2,
-              px: 3,
-              "&:hover": { bgcolor: "#7A2328" },
-            }}
+            sx={{ px: 3, py: 0.9 }}
           >
             {saving ? "Saving..." : "Save Profile"}
-          </Button>
+          </GradientButton>
         ) : (
-          <Button
-            variant="contained"
+          <GradientButton
+            variant="maroon"
             onClick={handleChangePassword}
             disabled={changingPass}
             startIcon={changingPass ? <CircularProgress size={16} color="inherit" /> : <LockResetIcon />}
-            sx={{
-              bgcolor: MAROON,
-              color: "#FED7B8",
-              textTransform: "none",
-              fontWeight: 700,
-              borderRadius: 2,
-              px: 3,
-              "&:hover": { bgcolor: "#7A2328" },
-            }}
+            sx={{ px: 3, py: 0.9 }}
           >
             {changingPass ? "Updating..." : "Update Password"}
-          </Button>
+          </GradientButton>
         )}
       </DialogActions>
     </Dialog>
