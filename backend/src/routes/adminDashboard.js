@@ -6,5 +6,6 @@ const { authorize } = require('../middleware/rbac');
 
 router.get('/summary', protect, authorize('admin', 'manager'), adminDashboardController.getSummary);
 router.get('/health', protect, authorize('admin', 'manager'), adminDashboardController.getHealth);
+router.get('/oee', protect, authorize('admin', 'manager'), adminDashboardController.getOeeTelemetry);
 
 module.exports = router;

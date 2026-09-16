@@ -505,3 +505,73 @@ exports.getHealth = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getOeeTelemetry = async (req, res, next) => {
+  try {
+    const lines = await ProductionLine.find().populate('supervisor', 'name email');
+    const [qualityStats, machineStats] = await Promise.all([
+      Quality.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalInspected: { $sum: '$sampleSize' },
+            totalPassed: { $sum: '$passedUnits' },
+            totalDefective: { $sum: '$defectiveUnits' },
+          },
+        },
+      ]),
+      Machine.aggregate([
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    const totalMachines = machineStats.reduce((sum, m) => sum + m.count, 0) || 1;
+    const runningMachines = machineStats.find((m) => m._id === 'in_use')?.count || 0;
+    const availability = Math.min(100, Math.round((runningMachines / totalMachines) * 100));
+
+    const totalInspected = qualityStats[0]?.totalInspected || 0;
+    const totalPassed = qualityStats[0]?.totalPassed || 0;
+    const qualityRate = totalInspected > 0 ? Math.round((totalPassed / totalInspected) * 100) : 98;
+
+    const lineMetrics = lines.map((line) => {
+      const target = line.capacity?.dailyTarget || 1000;
+      const actual = line.capacity?.currentOutput || 0;
+      const perf = target > 0 ? Math.min(100, Math.round((actual / target) * 100)) : 85;
+      const lineOee = Math.round((availability * (perf / 100) * (qualityRate / 100)));
+      return {
+        id: line._id,
+        name: line.name,
+        code: line.code,
+        status: line.status,
+        supervisor: line.supervisor?.name || 'Unassigned',
+        dailyTarget: target,
+        currentOutput: actual,
+        performance: perf,
+        oee: lineOee,
+      };
+    });
+
+    const avgPerformance =
+      lineMetrics.length > 0
+        ? Math.round(lineMetrics.reduce((sum, l) => sum + l.performance, 0) / lineMetrics.length)
+        : 85;
+
+    const overallOee = Math.round((availability * (avgPerformance / 100) * (qualityRate / 100)));
+
+    return ApiResponse.success(res, {
+      overallOee,
+      availability,
+      performance: avgPerformance,
+      quality: qualityRate,
+      lines: lineMetrics,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    next(err);
+  }
+};
