@@ -35,6 +35,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { toast } from 'react-toastify';
 import api from '../../api/axios';
 import DataTable from '../../components/common/DataTable';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 import ConfirmModal from '../../components/modals/ConfirmModal';
 import { formatDate } from '../../utils/helpers';
 
@@ -177,10 +179,16 @@ export default function ProductionLines() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>Production Lines</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenCreate}>Create Line</Button>
-      </Box>
+      <PageHeader
+        title="Production Lines"
+        subtitle="Manage factory floor line capacities, supervisors, and real-time efficiency telemetry."
+        badge="Industry 4.0"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleOpenCreate}>
+            Create Line
+          </GradientButton>
+        }
+      />
 
       <DataTable
         columns={columns}
