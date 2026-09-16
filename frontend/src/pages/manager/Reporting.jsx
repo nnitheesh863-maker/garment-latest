@@ -25,6 +25,9 @@ import DownloadIcon from "@mui/icons-material/Download";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import GenerateIcon from "@mui/icons-material/AutoAwesome";
 import { toast } from "react-toastify";
+import PageHeader from "../../components/common/PageHeader";
+import GradientButton from "../../components/common/GradientButton";
+import GlassCard from "../../components/common/GlassCard";
 import ProductionChart from "../../components/charts/ProductionChart";
 import { REPORT_TYPES } from "../../utils/constants";
 import { formatDate, downloadCSV } from "../../utils/helpers";
@@ -80,7 +83,7 @@ export default function Reporting() {
         body: tableData.slice(1),
         startY: 50,
         styles: { fontSize: 10 },
-        headStyles: { fillColor: [63, 81, 181] },
+        headStyles: { fillColor: [89, 23, 27] },
       });
 
       doc.save(`${reportType}-report-${Date.now()}.pdf`);
@@ -145,16 +148,18 @@ export default function Reporting() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={700} mb={3}>
-        Reports & Analytics
-      </Typography>
+      <PageHeader
+        title="Executive Reports & Telemetry"
+        subtitle="Compile automated shift summaries, line throughput audits, and custom data exports."
+        badge="Analytics Engine"
+      />
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                Generate Report
+          <Card sx={{ borderRadius: 3, border: '1px solid rgba(89,23,27,0.08)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight={700} mb={2.5} color="primary.main">
+                Configure Report Parameters
               </Typography>
               <Grid container spacing={2} mb={3}>
                 <Grid item xs={12} sm={4}>
@@ -196,25 +201,22 @@ export default function Reporting() {
                   />
                 </Grid>
               </Grid>
-              <Button
-                variant="contained"
-                startIcon={<GenerateIcon />}
+              <GradientButton
+                icon={<GenerateIcon />}
                 onClick={handleGenerate}
-                disabled={generating}
+                loading={generating}
               >
                 {generating ? "Generating..." : "Generate Report"}
-              </Button>
+              </GradientButton>
 
               {generated && (
                 <Box mt={3}>
-                  <Divider sx={{ mb: 2 }} />
-                  <Typography variant="subtitle1" fontWeight={600} mb={2}>
-                    Report Preview -{" "}
-                    {reportType.charAt(0).toUpperCase() + reportType.slice(1)}
+                  <Divider sx={{ mb: 2.5 }} />
+                  <Typography variant="subtitle1" fontWeight={700} mb={2}>
+                    Report Preview - {reportType.charAt(0).toUpperCase() + reportType.slice(1)}
                   </Typography>
-                  <Alert severity="success" sx={{ mb: 2 }}>
-                    Report generated for period {dateFrom || "N/A"} to{" "}
-                    {dateTo || "N/A"}
+                  <Alert severity="success" sx={{ mb: 2.5, borderRadius: 2 }}>
+                    Report synthesized for period {dateFrom || "Start"} to {dateTo || "Today"}
                   </Alert>
                   <ProductionChart
                     data={reportData.datasets}
@@ -222,30 +224,31 @@ export default function Reporting() {
                     height={250}
                   />
                   <Box mt={3} display="flex" gap={2}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<PictureAsPdfIcon />}
+                    <GradientButton
+                      icon={<PictureAsPdfIcon />}
                       onClick={handleDownloadPDF}
+                      variant="primary"
                     >
                       Export PDF
-                    </Button>
+                    </GradientButton>
                     <Button
                       variant="outlined"
                       startIcon={<DownloadIcon />}
                       onClick={handleDownloadCSV}
+                      sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
                     >
                       Export CSV
                     </Button>
                   </Box>
 
-                  <TableContainer component={Paper} sx={{ mt: 3 }}>
+                  <TableContainer component={Paper} sx={{ mt: 3, borderRadius: 2, border: '1px solid rgba(89,23,27,0.08)' }}>
                     <Table size="small">
-                      <TableHead>
+                      <TableHead sx={{ bgcolor: 'rgba(89,23,27,0.04)' }}>
                         <TableRow>
-                          <TableCell>Metric</TableCell>
-                          <TableCell align="right">Value</TableCell>
-                          <TableCell align="right">vs Target</TableCell>
-                          <TableCell align="right">Status</TableCell>
+                          <TableCell sx={{ fontWeight: 700 }}>Metric</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700 }}>Value</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700 }}>vs Target</TableCell>
+                          <TableCell align="right" sx={{ fontWeight: 700 }}>Status</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -275,8 +278,8 @@ export default function Reporting() {
                             status: "warning",
                           },
                         ].map((row) => (
-                          <TableRow key={row.metric}>
-                            <TableCell>{row.metric}</TableCell>
+                          <TableRow key={row.metric} hover>
+                            <TableCell sx={{ fontWeight: 500 }}>{row.metric}</TableCell>
                             <TableCell align="right">{row.value}</TableCell>
                             <TableCell align="right">{row.target}</TableCell>
                             <TableCell align="right">
@@ -299,10 +302,10 @@ export default function Reporting() {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                Scheduled Reports
+          <Card sx={{ borderRadius: 3, border: '1px solid rgba(89,23,27,0.08)', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h6" fontWeight={700} mb={2.5} color="primary.main">
+                Scheduled Automation
               </Typography>
               {scheduledReports.map((sr) => (
                 <Box
@@ -311,15 +314,24 @@ export default function Reporting() {
                   alignItems="center"
                   justifyContent="space-between"
                   mb={2}
-                  p={1.5}
-                  sx={{ bgcolor: "action.hover", borderRadius: 1 }}
+                  p={2}
+                  sx={{
+                    bgcolor: "action.hover",
+                    borderRadius: 2,
+                    border: '1px solid rgba(89,23,27,0.05)',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      boxShadow: '0 4px 12px rgba(89,23,27,0.08)',
+                      transform: 'translateY(-1px)',
+                    }
+                  }}
                 >
                   <Box>
-                    <Typography variant="body2" fontWeight={500}>
+                    <Typography variant="body2" fontWeight={600}>
                       {sr.name}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {sr.type}
+                      Recurrence: {sr.type}
                     </Typography>
                   </Box>
                   <FormControlLabel
@@ -328,6 +340,7 @@ export default function Reporting() {
                         checked={sr.active}
                         onChange={() => toggleScheduled(sr.id)}
                         size="small"
+                        color="primary"
                       />
                     }
                     label=""
