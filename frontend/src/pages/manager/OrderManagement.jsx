@@ -18,6 +18,8 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import { toast } from 'react-toastify';
 import DataTable from '../../components/common/DataTable';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 import StatusBadge from '../../components/common/StatusBadge';
 import OrderForm from '../../components/forms/OrderForm';
 import DetailModal from '../../components/modals/DetailModal';
@@ -153,10 +155,16 @@ export default function OrderManagement() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>Order Management</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>New Order</Button>
-      </Box>
+      <PageHeader
+        title="Production Orders & Routing"
+        subtitle="Manage client batches, garment specifications, delivery deadlines, and task splits."
+        badge="Manager Dispatch"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleCreate}>
+            New Order
+          </GradientButton>
+        }
+      />
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={4}>
