@@ -15,6 +15,8 @@ import {
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import SearchIcon from "@mui/icons-material/Search";
 import DataTable from "../../components/common/DataTable";
+import PageHeader from "../../components/common/PageHeader";
+import GlassCard from "../../components/common/GlassCard";
 import EmployeeDetailModal from "../../components/modals/EmployeeDetailModal";
 import { formatDate } from "../../utils/helpers";
 import api from "../../api/axios";
@@ -154,9 +156,11 @@ export default function EmployeeManagement() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={700} mb={3}>
-        Employee Management
-      </Typography>
+      <PageHeader
+        title="Floor Workforce & Operators"
+        subtitle="Active shift staff, skill proficiency matrix, and operator productivity scores."
+        badge="Workforce Matrix"
+      />
 
       {/* Stats Cards */}
       <Grid container spacing={3} mb={3}>
