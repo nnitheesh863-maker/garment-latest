@@ -28,9 +28,17 @@ const issueSchema = new mongoose.Schema({
     enum: ['open', 'in_progress', 'resolved'],
     default: 'open',
   },
+  resolvedAt: {
+    type: Date,
+  },
+  resolutionNotes: {
+    type: String,
+    default: '',
+  },
 }, { timestamps: true });
 
 issueSchema.index({ employee: 1, createdAt: -1 });
 issueSchema.index({ status: 1 });
+issueSchema.index({ priority: 1 });
 
 module.exports = mongoose.model('Issue', issueSchema);
