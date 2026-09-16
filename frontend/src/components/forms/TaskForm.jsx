@@ -15,6 +15,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
+import GradientButton from '../common/GradientButton';
 import { orderApi, employeeApi, machineApi, taskApi } from '../../api/axios';
 
 const validationSchema = yup.object({
@@ -86,10 +87,36 @@ export default function TaskForm({ open, onClose, onSubmit, initialValues, loadi
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6">{isEdit ? 'Edit Task' : 'Create Task'}</Typography>
-        <IconButton onClick={onClose} size="small"><CloseIcon /></IconButton>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 3.5,
+          border: '1px solid rgba(89,23,27,0.12)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.15)',
+          overflow: 'hidden',
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          px: 3,
+          py: 2,
+          background: 'linear-gradient(135deg, rgba(89,23,27,0.04), rgba(254,215,184,0.06))',
+        }}
+      >
+        <Typography variant="h6" fontWeight={800} color="primary.main">
+          {isEdit ? 'Edit Production Task' : 'Dispatch New Production Task'}
+        </Typography>
+        <IconButton onClick={onClose} size="small" sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'rgba(89,23,27,0.08)' } }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
       </DialogTitle>
       <Formik
         initialValues={defaultValues}
@@ -101,8 +128,11 @@ export default function TaskForm({ open, onClose, onSubmit, initialValues, loadi
       >
         {({ values, errors, touched, handleChange, handleBlur, setFieldValue }) => (
           <Form>
-            <DialogContent dividers>
-              <Grid container spacing={2}>
+            <DialogContent sx={{ p: 3 }}>
+              <Typography variant="subtitle2" fontWeight={700} color="primary.main" gutterBottom sx={{ textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.8rem' }}>
+                Task Identification & Target
+              </Typography>
+              <Grid container spacing={2} mb={3}>
                 <Grid item xs={12}>
                   <TextField fullWidth size="small" label="Task Title" name="title" value={values.title} onChange={handleChange} onBlur={handleBlur} error={touched.title && !!errors.title} helperText={touched.title && errors.title} />
                 </Grid>
@@ -161,16 +191,16 @@ export default function TaskForm({ open, onClose, onSubmit, initialValues, loadi
                     getOptionLabel={(option) => option.title || option._id}
                     value={existingTasks.filter((t) => (values.dependencies || []).includes(t._id || t.id))}
                     onChange={(_, newVal) => setFieldValue('dependencies', newVal.map((v) => v._id || v.id))}
-                    renderInput={(params) => <TextField {...params} size="small" label="Dependencies" />}
+                    renderInput={(params) => <TextField {...params} size="small" label="Task Dependencies" />}
                   />
                 </Grid>
               </Grid>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={onClose} disabled={loading}>Cancel</Button>
-              <Button type="submit" variant="contained" disabled={loading}>
-                {loading ? 'Saving...' : isEdit ? 'Update Task' : 'Create Task'}
-              </Button>
+            <DialogActions sx={{ px: 3, py: 2, bgcolor: 'action.hover', gap: 1 }}>
+              <Button onClick={onClose} disabled={loading} sx={{ textTransform: 'none', borderRadius: 2, fontWeight: 600, color: 'text.secondary' }}>Cancel</Button>
+              <GradientButton type="submit" loading={loading}>
+                {isEdit ? 'Update Task' : 'Dispatch Task'}
+              </GradientButton>
             </DialogActions>
           </Form>
         )}
