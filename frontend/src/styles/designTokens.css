@@ -1,19 +1,65 @@
 :root {
+  /* Brand Luxury Palette */
+  --maroon-dark: #3a0d10;
   --maroon: #59171b;
   --maroon-2: #7a2328;
   --maroon-3: #a45a4a;
+  --maroon-light: #c97b6a;
   --cream: #fed7b8;
+  --cream-soft: #fef0e3;
   --cream-light: #fff8f2;
+  --cream-card: rgba(255, 255, 255, 0.85);
   --border: #f1d5c0;
+  --border-subtle: rgba(241, 213, 192, 0.5);
+  --border-focus: #7a2328;
+
+  /* Typography Colors */
   --text-primary: #2c1a1a;
   --text-secondary: #7a6a63;
+  --text-muted: #a3928a;
+  --text-inverse: #fff8f2;
+
+  /* Semantic State Colors */
   --success: #16a34a;
+  --success-bg: rgba(22, 163, 74, 0.12);
+  --success-glow: rgba(22, 163, 74, 0.35);
   --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-glow: rgba(245, 158, 11, 0.35);
   --danger: #dc2626;
+  --danger-bg: rgba(220, 38, 38, 0.12);
+  --danger-glow: rgba(220, 38, 38, 0.35);
+  --info: #0284c7;
+  --info-bg: rgba(2, 132, 199, 0.12);
+  --info-glow: rgba(2, 132, 199, 0.35);
+
+  /* Shadows & Ambient Glows */
+  --shadow-xs: 0 1px 3px rgba(89, 23, 27, 0.04);
   --shadow-sm: 0 2px 12px rgba(89, 23, 27, 0.06);
   --shadow-md: 0 8px 32px rgba(89, 23, 27, 0.1);
   --shadow-lg: 0 20px 60px rgba(89, 23, 27, 0.16);
+  --shadow-glow-maroon: 0 0 24px rgba(122, 35, 40, 0.25);
+  --shadow-glow-cream: 0 0 24px rgba(254, 215, 184, 0.4);
+
+  /* Gradients */
   --grad-primary: linear-gradient(135deg, #59171b 0%, #7a2328 55%, #a45a4a 100%);
   --grad-warm: linear-gradient(135deg, #a45a4a 0%, #7a2328 50%, #59171b 100%);
   --grad-cream: linear-gradient(135deg, #fed7b8 0%, #fff8f2 100%);
+  --grad-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 248, 242, 0.65) 100%);
+  --grad-dark-glass: linear-gradient(135deg, rgba(35, 18, 22, 0.9) 0%, rgba(26, 16, 18, 0.7) 100%);
+
+  /* Animation Easings & Durations */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 150ms;
+  --dur-normal: 300ms;
+  --dur-slow: 500ms;
+
+  /* Border Radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
 }
