@@ -81,6 +81,10 @@ app.get("/api/health", (req, res) => {
   res.json({
     success: true,
     message: "Garment Production API is running",
+    version: "1.0.0",
+    environment: process.env.NODE_ENV || "development",
+    uptime: Math.floor(process.uptime()),
+    memoryUsage: process.memoryUsage(),
     timestamp: new Date().toISOString(),
   });
 });
