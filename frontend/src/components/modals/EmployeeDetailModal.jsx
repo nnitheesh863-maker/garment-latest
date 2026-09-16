@@ -46,6 +46,7 @@ import {
   formatHoursMinutes,
   getWorkingDuration,
 } from "../../utils/helpers";
+import GradientButton from "../common/GradientButton";
 
 const MAROON = "#59171B";
 const CREAM_BG = "#FFF8F2";
@@ -667,19 +668,18 @@ export default function EmployeeDetailModal({
         )}
       </DialogContent>
 
-      <Divider />
-      <DialogActions sx={{ px: 3, py: 2, justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
+      <DialogActions sx={{ px: 3, py: 2, bgcolor: CREAM_BG, justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
         <Box display="flex" gap={1} flexWrap="wrap">
           {onEdit && (
-            <Button
-              variant="outlined"
+            <GradientButton
+              variant="maroon"
               size="small"
               startIcon={<EditIcon />}
               onClick={() => onEdit(currentEmp)}
-              color="primary"
+              sx={{ px: 2, py: 0.6 }}
             >
               Edit User
-            </Button>
+            </GradientButton>
           )}
           {onToggleStatus && (
             <Button
@@ -688,6 +688,7 @@ export default function EmployeeDetailModal({
               startIcon={status === "active" ? <BlockIcon /> : <CheckCircleIcon />}
               onClick={() => onToggleStatus(currentEmp)}
               color={status === "active" ? "warning" : "success"}
+              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
             >
               {status === "active" ? "Disable User" : "Enable User"}
             </Button>
@@ -699,12 +700,13 @@ export default function EmployeeDetailModal({
               startIcon={<DeleteForeverIcon />}
               onClick={() => onDelete(currentEmp)}
               color="error"
+              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
             >
               Delete User
             </Button>
           )}
         </Box>
-        <Button variant="contained" onClick={onClose} color="inherit" sx={{ minWidth: 100 }}>
+        <Button variant="outlined" onClick={onClose} color="inherit" sx={{ minWidth: 90, borderRadius: 2, textTransform: "none", fontWeight: 600 }}>
           Close
         </Button>
       </DialogActions>
