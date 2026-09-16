@@ -99,6 +99,18 @@ exports.deleteNotification = async (req, res, next) => {
   }
 };
 
+exports.clearAllNotifications = async (req, res, next) => {
+  try {
+    await Notification.deleteMany({
+      recipient: req.user._id,
+    });
+
+    return ApiResponse.success(res, null, 'All notifications cleared');
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getUnreadCount = async (req, res, next) => {
   try {
     const count = await Notification.countDocuments({
