@@ -3,7 +3,7 @@ const ApiResponse = require('../utils/apiResponse');
 
 exports.createReport = async (req, res, next) => {
   try {
-    const { garmentType, description } = req.body;
+    const { garmentType, description, severity } = req.body;
 
     if (!garmentType || !description) {
       return ApiResponse.error(res, 'Please provide garmentType and description', 400);
@@ -18,6 +18,7 @@ exports.createReport = async (req, res, next) => {
       employee: req.user._id,
       garmentType,
       description,
+      severity: ['minor', 'major', 'critical'].includes(severity) ? severity : 'minor',
       photo: req.file ? req.file.path.replace(/\\/g, '/').replace(/^.*uploads[\\/]/, 'uploads/') : '',
     });
 
@@ -25,6 +26,18 @@ exports.createReport = async (req, res, next) => {
       .populate('employee', 'email profile');
 
     return ApiResponse.success(res, populated, 'Defect report created', 201);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteReport = async (req, res, next) => {
+  try {
+    const report = await DefectReport.findByIdAndDelete(req.params.id);
+    if (!report) {
+      return ApiResponse.error(res, 'Defect report not found', 404);
+    }
+    return ApiResponse.success(res, null, 'Defect report deleted');
   } catch (err) {
     next(err);
   }
