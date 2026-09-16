@@ -9,6 +9,8 @@ import {
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import DataTable from '../../components/common/DataTable';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 import { formatDateTime, downloadCSV } from '../../utils/helpers';
 
 const mockLogs = Array.from({ length: 50 }, (_, i) => ({
@@ -58,17 +60,20 @@ export default function AuditLogs() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>Audit Logs</Typography>
-        <Button
-          variant="outlined"
-          startIcon={<DownloadIcon />}
-          onClick={() => downloadCSV(filteredLogs, 'audit-logs.csv')}
-          disabled={filteredLogs.length === 0}
-        >
-          Export CSV
-        </Button>
-      </Box>
+      <PageHeader
+        title="System Audit & Security Logs"
+        subtitle="Immutable security trail documenting system actions, logins, and data transactions."
+        badge="Compliance"
+        actions={
+          <GradientButton
+            icon={<DownloadIcon />}
+            onClick={() => downloadCSV(filteredLogs, 'audit-logs.csv')}
+            disabled={filteredLogs.length === 0}
+          >
+            Export CSV
+          </GradientButton>
+        }
+      />
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={12} sm={3}>
