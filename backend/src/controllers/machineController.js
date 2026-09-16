@@ -268,3 +268,38 @@ exports.predictFailure = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.recordMaintenanceLog = async (req, res, next) => {
+  try {
+    const { type, notes, cost, performedBy, statusAfter = 'available' } = req.body;
+    const machine = await Machine.findOne({ _id: req.params.id, isDeleted: false });
+    if (!machine) {
+      return ApiResponse.error(res, 'Machine not found', 404);
+    }
+
+    if (!machine.maintenanceHistory) {
+      machine.maintenanceHistory = [];
+    }
+
+    const logEntry = {
+      date: new Date(),
+      type: type || 'routine',
+      notes: notes || 'Scheduled service performed',
+      cost: Number(cost) || 0,
+      performedBy: performedBy || req.user.name || 'Maintenance Tech',
+    };
+
+    machine.maintenanceHistory.push(logEntry);
+    machine.lastMaintenance = new Date();
+    machine.status = statusAfter;
+
+    await machine.save();
+
+    emitToRoom('management', 'machineStatusChanged', { action: 'maintenanceCompleted', machine });
+
+    return ApiResponse.success(res, machine, 'Maintenance log recorded successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+

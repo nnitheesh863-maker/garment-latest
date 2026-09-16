@@ -13,6 +13,7 @@ router.put('/:id', protect, authorize('admin'), machineController.updateMachine)
 router.delete('/:id', protect, authorize('admin'), machineController.deleteMachine);
 router.put('/:id/status', protect, authorize('admin', 'manager'), machineController.updateStatus);
 router.post('/:id/maintenance', protect, machineController.scheduleMaintenance);
+router.post('/:id/maintenance-log', protect, authorize('admin', 'manager'), machineController.recordMaintenanceLog);
 router.post('/:id/predict', protect, machineController.predictFailure);
 
 module.exports = router;
