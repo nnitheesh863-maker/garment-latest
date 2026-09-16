@@ -152,6 +152,27 @@ export function debounce(fn, delay = 300) {
   };
 }
 
+export function formatCurrency(amount, currency = 'USD') {
+  if (amount == null || isNaN(amount)) return '$0.00';
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 2,
+  }).format(amount);
+}
+
+export function formatPercentChange(current, previous) {
+  if (previous == null || previous === 0 || current == null) return '+0%';
+  const diff = ((current - previous) / previous) * 100;
+  const sign = diff >= 0 ? '+' : '';
+  return `${sign}${diff.toFixed(1)}%`;
+}
+
+export function formatScore(val, max = 100) {
+  if (val == null || isNaN(val)) return '0';
+  return `${Math.min(Math.max(0, Math.round(val)), max)}`;
+}
+
 export function downloadCSV(data, filename = 'export.csv') {
   if (!data || data.length === 0) return;
   const headers = Object.keys(data[0]);
