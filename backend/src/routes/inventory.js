@@ -6,6 +6,7 @@ const { authorize } = require('../middleware/rbac');
 const { createInventoryRules, updateStockRules, validate } = require('../middleware/validate');
 
 router.get('/', protect, inventoryController.getInventory);
+router.post('/bulk-stock', protect, authorize('admin', 'manager'), inventoryController.bulkStockAdjust);
 router.post('/', protect, authorize('admin'), createInventoryRules, validate, inventoryController.createItem);
 router.get('/reorder', protect, inventoryController.getReorderItems);
 router.get('/analytics', protect, inventoryController.getInventoryAnalytics);

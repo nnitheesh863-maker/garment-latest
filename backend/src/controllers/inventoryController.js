@@ -250,3 +250,35 @@ exports.getReorderItems = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.bulkStockAdjust = async (req, res, next) => {
+  try {
+    const { adjustments } = req.body;
+    if (!adjustments || !Array.isArray(adjustments) || !adjustments.length) {
+      return ApiResponse.badRequest(res, 'adjustments array is required');
+    }
+
+    const updated = [];
+    for (const adj of adjustments) {
+      const item = await Inventory.findById(adj.id);
+      if (!item) continue;
+
+      const qty = Number(adj.quantity) || 0;
+      if (adj.action === 'add') {
+        item.stockLevels.current += qty;
+      } else if (adj.action === 'subtract') {
+        item.stockLevels.current = Math.max(0, item.stockLevels.current - qty);
+      } else if (adj.action === 'set') {
+        item.stockLevels.current = Math.max(0, qty);
+      }
+
+      await item.save();
+      updated.push({ id: item._id, name: item.name, newStock: item.stockLevels.current });
+    }
+
+    return ApiResponse.success(res, { count: updated.length, updated }, 'Bulk stock adjustment completed');
+  } catch (err) {
+    next(err);
+  }
+};
+
