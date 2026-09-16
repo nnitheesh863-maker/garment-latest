@@ -40,11 +40,13 @@ const productionLineSchema = new mongoose.Schema({
     totalDefects: { type: Number, default: 0 },
     efficiency: { type: Number, default: 0 },
     utilization: { type: Number, default: 0 },
+    oee: { type: Number, default: 0 },
   },
   active: { type: Boolean, default: true },
 }, { timestamps: true });
 
 productionLineSchema.index({ code: 1 });
 productionLineSchema.index({ status: 1 });
+productionLineSchema.index({ supervisor: 1 });
 
 module.exports = mongoose.model('ProductionLine', productionLineSchema);
