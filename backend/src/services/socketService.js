@@ -102,10 +102,18 @@ function emitToRoom(room, event, data) {
   }
 }
 
+function emitToManagement(event, data) {
+  emitToRoom('management', event, data);
+}
+
+function emitToAdmin(event, data) {
+  emitToRoom('admin', event, data);
+}
+
 function emitToAll(event, data) {
   if (global.io) {
     global.io.emit(event, data);
   }
 }
 
-module.exports = { initSocket, emitToUser, emitToRoom, emitToAll };
+module.exports = { initSocket, emitToUser, emitToRoom, emitToManagement, emitToAdmin, emitToAll };
