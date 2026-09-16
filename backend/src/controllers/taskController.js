@@ -397,3 +397,49 @@ exports.getTaskAnalytics = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getTaskSummary = async (req, res, next) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [todayCounts, totalProgress] = await Promise.all([
+      Task.aggregate([
+        { $match: { isDeleted: false, createdAt: { $gte: today } } },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+      Task.aggregate([
+        { $match: { isDeleted: false, status: { $in: ['in_progress', 'completed'] } } },
+        {
+          $group: {
+            _id: null,
+            totalTarget: { $sum: '$quantity.target' },
+            totalProduced: { $sum: '$quantity.produced' },
+            totalRejected: { $sum: '$quantity.rejected' },
+          },
+        },
+      ]),
+    ]);
+
+    const countsMap = {};
+    todayCounts.forEach((c) => {
+      countsMap[c._id] = c.count;
+    });
+
+    const progress = totalProgress[0] || { totalTarget: 0, totalProduced: 0, totalRejected: 0 };
+    const completionRate =
+      progress.totalTarget > 0 ? Math.round((progress.totalProduced / progress.totalTarget) * 100) : 0;
+
+    return ApiResponse.success(res, {
+      todayCreated: Object.values(countsMap).reduce((a, b) => a + b, 0),
+      todayByStatus: countsMap,
+      productionProgress: {
+        ...progress,
+        completionRate,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+

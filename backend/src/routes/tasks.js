@@ -8,6 +8,7 @@ const { createTaskRules, updateTaskRules, validate } = require('../middleware/va
 router.post('/', protect, authorize('admin', 'manager'), createTaskRules, validate, taskController.createTask);
 router.get('/', protect, taskController.getTasks);
 router.get('/analytics', protect, taskController.getTaskAnalytics);
+router.get('/summary/today', protect, taskController.getTaskSummary);
 router.get('/employee/:id', protect, taskController.getEmployeeTasks);
 router.get('/:id', protect, taskController.getTask);
 router.put('/:id', protect, updateTaskRules, validate, taskController.updateTask);
