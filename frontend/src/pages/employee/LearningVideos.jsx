@@ -9,7 +9,9 @@ import {
   Skeleton,
   useMediaQuery,
   useTheme,
-} from "@mui/material";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import PageHeader from "../../components/common/PageHeader";
+import EmptyState from "../../components/common/EmptyState";
 import { learningVideoApi } from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
 import { formatDate } from "../../utils/helpers";
@@ -41,8 +43,6 @@ export default function LearningVideos() {
       try {
         const res = await learningVideoApi.list({ limit: 100 });
         const data = res.data?.data || [];
-        // Backend already filters: shows videos assigned to this employee
-        // OR videos assigned to all employees (empty assignedTo array)
         if (mounted) setVideos(Array.isArray(data) ? data : []);
       } catch {
         // Leave empty on error
@@ -60,14 +60,11 @@ export default function LearningVideos() {
   if (loading) {
     return (
       <Box>
-        <Typography
-          variant="h4"
-          fontWeight={700}
-          mb={3}
-          fontSize={{ xs: "1.5rem", sm: "2.125rem" }}
-        >
-          My Learning Videos
-        </Typography>
+        <PageHeader
+          title="Training & SOP Academy"
+          subtitle="Watch machine operating standards, safety procedures, and craftsmanship videos."
+          badge="Skill Library"
+        />
         <Grid container spacing={2}>
           {[...Array(4)].map((_, i) => (
             <Grid item xs={12} sm={6} md={4} key={i}>
@@ -92,24 +89,18 @@ export default function LearningVideos() {
 
   return (
     <Box>
-      <Typography
-        variant="h4"
-        fontWeight={700}
-        mb={3}
-        fontSize={{ xs: "1.5rem", sm: "2.125rem" }}
-      >
-        My Learning Videos
-      </Typography>
+      <PageHeader
+        title="Training & SOP Academy"
+        subtitle="Watch machine operating standards, safety procedures, and craftsmanship videos."
+        badge="Skill Library"
+      />
 
       {videos.length === 0 ? (
-        <Box py={6} textAlign="center">
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No Learning Videos Assigned
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            You don't have any learning videos assigned yet. Check back later.
-          </Typography>
-        </Box>
+        <EmptyState
+          icon={<PlayCircleIcon sx={{ fontSize: 60, color: 'primary.main' }} />}
+          title="No Learning Videos Assigned Yet"
+          description="Your supervisors will assign procedural tutorials and training modules here."
+        />
       ) : (
         <Grid container spacing={2}>
           {videos.map((video) => {
