@@ -45,7 +45,7 @@ const iconMap = {
   CameraAlt: CameraAltIcon,
 };
 
-export const DRAWER_WIDTH = 248;
+export const DRAWER_WIDTH = 252;
 export const DRAWER_COLLAPSED = 84;
 
 const MotionBox = motion.create(Box);
@@ -63,7 +63,10 @@ export default function Sidebar({ open, onClose, variant }) {
   const isActive = (path) =>
     location.pathname === path || location.pathname.startsWith(path + '/');
 
-  const displayName = `${user?.profile?.firstName || user?.firstName || ''} ${user?.profile?.lastName || user?.lastName || ''}`.trim() || 'User';
+  const displayName =
+    `${user?.profile?.firstName || user?.firstName || ''} ${
+      user?.profile?.lastName || user?.lastName || ''
+    }`.trim() || 'User';
 
   return (
     <Box
@@ -74,24 +77,26 @@ export default function Sidebar({ open, onClose, variant }) {
         mt: { xs: '66px', md: '72px' },
         ml: { xs: 1, md: 1.5 },
         mb: { xs: 1.5, md: 1.75 },
-        borderRadius: 4,
+        borderRadius: '24px',
         position: 'relative',
         overflow: 'hidden',
         background: (theme) =>
           theme.palette.mode === 'dark'
             ? 'linear-gradient(180deg, rgba(38,24,27,0.88) 0%, rgba(26,16,18,0.94) 100%)'
-            : 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,248,242,0.86) 100%)',
-        backdropFilter: 'blur(18px) saturate(160%)',
-        WebkitBackdropFilter: 'blur(18px) saturate(160%)',
+            : 'linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,248,242,0.88) 100%)',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         border: (theme) =>
-          `1px solid ${theme.palette.mode === 'dark' ? 'rgba(254,215,184,0.1)' : 'rgba(241,213,192,0.7)'}`,
+          `1px solid ${
+            theme.palette.mode === 'dark' ? 'rgba(254,215,184,0.1)' : 'rgba(241,213,192,0.7)'
+          }`,
         boxShadow: (theme) =>
           theme.palette.mode === 'dark'
             ? '0 18px 60px rgba(0,0,0,0.5)'
-            : '0 18px 50px rgba(89,23,27,0.1)',
+            : '0 18px 50px rgba(89,23,27,0.08)',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'width 280ms cubic-bezier(0.4,0,0.2,1)',
+        transition: 'width 280ms cubic-bezier(0.4, 0, 0.2, 1)',
         zIndex: 10,
       }}
     >
@@ -101,7 +106,7 @@ export default function Sidebar({ open, onClose, variant }) {
           top: 0,
           left: 0,
           right: 0,
-          height: 4,
+          height: '4px',
           background: 'linear-gradient(90deg, #59171B, #7A2328, #A45A4A, #FED7B8)',
         }}
       />
@@ -119,13 +124,20 @@ export default function Sidebar({ open, onClose, variant }) {
       >
         {!collapsed ? (
           <>
-            <Box display="flex" alignItems="center" gap={1.25} sx={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
+            <Box
+              display="flex"
+              alignItems="center"
+              gap={1.25}
+              sx={{ cursor: 'pointer' }}
+              onClick={() => navigate('/')}
+            >
               <MotionBox
-                whileHover={{ rotate: -8, scale: 1.05 }}
+                whileHover={{ rotate: -8, scale: 1.08 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 sx={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 2,
+                  width: 36,
+                  height: 36,
+                  borderRadius: '10px',
                   background: 'linear-gradient(135deg, #59171B, #7A2328, #A45A4A)',
                   display: 'flex',
                   alignItems: 'center',
@@ -133,15 +145,31 @@ export default function Sidebar({ open, onClose, variant }) {
                   boxShadow: '0 4px 14px rgba(89,23,27,0.35)',
                 }}
               >
-                <Typography variant="body1" fontWeight={800} sx={{ color: '#FED7B8', fontSize: 17, lineHeight: 1 }}>
-                  G
+                <Typography
+                  variant="body1"
+                  fontWeight={900}
+                  sx={{ color: '#FED7B8', fontSize: 18, lineHeight: 1 }}
+                >
+                  C
                 </Typography>
               </MotionBox>
               <Box>
-                <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: 16, letterSpacing: '-0.01em', color: 'text.primary', lineHeight: 1.1 }}>
-                  GarmentOS
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={800}
+                  sx={{
+                    fontSize: 15,
+                    letterSpacing: '-0.02em',
+                    color: 'text.primary',
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Couture MES
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: 10, color: '#7A6A63', fontWeight: 500 }}>
+                <Typography
+                  variant="caption"
+                  sx={{ fontSize: 10, color: '#7A6A63', fontWeight: 600 }}
+                >
                   Smart Factory Suite
                 </Typography>
               </Box>
@@ -149,7 +177,11 @@ export default function Sidebar({ open, onClose, variant }) {
             <IconButton
               size="small"
               onClick={() => setCollapsed(true)}
-              sx={{ color: '#7A6A63', '&:hover': { color: '#59171B', bgcolor: 'rgba(89,23,27,0.08)' } }}
+              sx={{
+                color: '#7A6A63',
+                borderRadius: '8px',
+                '&:hover': { color: '#59171B', bgcolor: 'rgba(89,23,27,0.08)' },
+              }}
             >
               <ChevronLeftIcon sx={{ fontSize: 18 }} />
             </IconButton>
@@ -158,7 +190,12 @@ export default function Sidebar({ open, onClose, variant }) {
           <IconButton
             size="small"
             onClick={() => setCollapsed(false)}
-            sx={{ color: '#7A6A63', '&:hover': { color: '#59171B' }, mx: 'auto' }}
+            sx={{
+              color: '#7A6A63',
+              borderRadius: '8px',
+              '&:hover': { color: '#59171B', bgcolor: 'rgba(89,23,27,0.08)' },
+              mx: 'auto',
+            }}
           >
             <ChevronRightIcon sx={{ fontSize: 18 }} />
           </IconButton>
@@ -180,22 +217,34 @@ export default function Sidebar({ open, onClose, variant }) {
             const Icon = iconMap[item.icon] || DashboardIcon;
             const active = isActive(item.path);
             return (
-              <Tooltip key={item.path} title={collapsed ? item.label : ''} placement="right" arrow>
+              <Tooltip
+                key={item.path}
+                title={collapsed ? item.label : ''}
+                placement="right"
+                arrow
+              >
                 <MotionBox
                   initial={{ opacity: 0, x: -14 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * index, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{
+                    delay: 0.04 * index,
+                    duration: 0.35,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
                   whileHover={{ x: collapsed ? 0 : 4 }}
-                  onClick={() => { navigate(item.path); if (onClose) onClose(); }}
+                  onClick={() => {
+                    navigate(item.path);
+                    if (onClose) onClose();
+                  }}
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1.5,
                     px: collapsed ? 0 : 1.5,
-                    py: 0.85,
+                    py: 1,
                     mx: collapsed ? 0.25 : 0,
                     my: 0.35,
-                    borderRadius: 2.5,
+                    borderRadius: '14px',
                     cursor: 'pointer',
                     color: active ? '#FED7B8' : 'text.secondary',
                     position: 'relative',
@@ -214,34 +263,20 @@ export default function Sidebar({ open, onClose, variant }) {
                               ? 'rgba(164,90,74,0.16)'
                               : 'rgba(254,215,184,0.35)',
                     },
-                    '&::before': active && !collapsed
-                      ? {
-                          content: '""',
-                          position: 'absolute',
-                          left: -12,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: 3.5,
-                          height: 22,
-                          borderRadius: 2,
-                          bgcolor: '#FED7B8',
-                          boxShadow: '0 0 10px rgba(254,215,184,0.8)',
-                        }
-                      : {},
                   }}
                 >
                   <motion.div
-                    animate={active ? { rotate: [0, -6, 6, 0] } : {}}
-                    transition={{ duration: 0.5 }}
+                    animate={active ? { scale: [1, 1.15, 1] } : {}}
+                    transition={{ duration: 0.3 }}
                     style={{ display: 'flex' }}
                   >
-                    <Icon sx={{ fontSize: collapsed ? 21 : 19 }} />
+                    <Icon sx={{ fontSize: collapsed ? 22 : 20 }} />
                   </motion.div>
                   {!collapsed && (
                     <Typography
                       variant="body2"
                       fontWeight={active ? 700 : 500}
-                      sx={{ fontSize: 13, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}
+                      sx={{ fontSize: 13.5, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}
                     >
                       {item.label}
                     </Typography>
@@ -253,33 +288,32 @@ export default function Sidebar({ open, onClose, variant }) {
         </AnimatePresence>
       </Box>
 
-      <Box
-        sx={{
-          px: collapsed ? 0.75 : 1.25,
-          pb: 1.5,
-        }}
-      >
+      <Box sx={{ px: collapsed ? 0.75 : 1.25, pb: 1.5 }}>
         <Tooltip title="Profile Settings & Photo" arrow placement="top">
           <Box
             onClick={() => setProfileModalOpen(true)}
             sx={{
               p: collapsed ? 0.75 : 1.25,
-              borderRadius: 3,
+              borderRadius: '16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: collapsed ? 'center' : 'flex-start',
               gap: 1.25,
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
+              transition: 'all 0.25s ease',
               background: (theme) =>
                 theme.palette.mode === 'dark'
                   ? 'linear-gradient(135deg, rgba(164,90,74,0.22), rgba(89,23,27,0.35))'
                   : 'linear-gradient(135deg, rgba(254,215,184,0.45), rgba(255,248,242,0.7))',
               border: (theme) =>
-                `1px solid ${theme.palette.mode === 'dark' ? 'rgba(254,215,184,0.14)' : 'rgba(241,213,192,0.7)'}`,
+                `1px solid ${
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(254,215,184,0.14)'
+                    : 'rgba(241,213,192,0.7)'
+                }`,
               '&:hover': {
                 transform: 'translateY(-2px)',
-                boxShadow: '0 6px 16px rgba(89,23,27,0.15)',
+                boxShadow: '0 8px 20px rgba(89,23,27,0.15)',
                 borderColor: '#59171B',
               },
             }}
@@ -315,10 +349,24 @@ export default function Sidebar({ open, onClose, variant }) {
                   />
                 </Box>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" fontWeight={700} noWrap sx={{ fontSize: 13, color: 'text.primary' }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={800}
+                    noWrap
+                    sx={{ fontSize: 13, color: 'text.primary' }}
+                  >
                     {displayName}
                   </Typography>
-                  <Typography variant="caption" noWrap sx={{ fontSize: 10.5, color: '#7A6A63', textTransform: 'capitalize' }}>
+                  <Typography
+                    variant="caption"
+                    noWrap
+                    sx={{
+                      fontSize: 10.5,
+                      color: '#7A6A63',
+                      textTransform: 'capitalize',
+                      fontWeight: 600,
+                    }}
+                  >
                     {user?.role} &bull; Edit
                   </Typography>
                 </Box>
@@ -326,32 +374,54 @@ export default function Sidebar({ open, onClose, variant }) {
             ) : (
               <Avatar
                 src={user?.profile?.profileImage || user?.profileImage || undefined}
-                sx={{ width: 36, height: 36, bgcolor: '#59171B', fontSize: 13, fontWeight: 800, color: '#FED7B8' }}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  bgcolor: '#59171B',
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: '#FED7B8',
+                }}
               >
                 {getInitials(displayName)}
               </Avatar>
             )}
           </Box>
         </Tooltip>
+
         <Box
           sx={{
             mt: 1,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'center',
+            justifyContent: 'center',
             gap: 0.75,
-            opacity: 0.85,
+            opacity: 0.9,
           }}
         >
-          <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#16A34A', flexShrink: 0, boxShadow: '0 0 8px rgba(22,163,74,0.5)', animation: 'pulseRing 2.4s ease-out infinite' }} />
+          <span className="live-dot active" />
           {!collapsed && (
-            <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10.5, fontWeight: 500 }}>
+            <Typography
+              variant="caption"
+              sx={{ color: '#7A6A63', fontSize: 10.5, fontWeight: 600 }}
+            >
               System Online
             </Typography>
           )}
           {!collapsed && (
-            <Typography variant="caption" sx={{ color: '#E8A06B', fontSize: 10.5, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 0.4, ml: 0.5 }}>
-              <AutoAwesomeIcon sx={{ fontSize: 11 }} /> AI
+            <Typography
+              variant="caption"
+              sx={{
+                color: '#E8A06B',
+                fontSize: 10.5,
+                fontWeight: 700,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.4,
+                ml: 0.5,
+              }}
+            >
+              <AutoAwesomeIcon sx={{ fontSize: 11 }} /> AI Active
             </Typography>
           )}
         </Box>
