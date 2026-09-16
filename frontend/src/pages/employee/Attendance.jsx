@@ -19,6 +19,11 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { toast } from "react-toastify";
+import PageHeader from "../../components/common/PageHeader";
+import StatCard from "../../components/common/StatCard";
+import GradientButton from "../../components/common/GradientButton";
+import GlassCard from "../../components/common/GlassCard";
+import StatusBadge from "../../components/common/StatusBadge";
 import { formatDate, formatDateTime, formatTime12, formatHoursMinutes, getWorkingDuration } from "../../utils/helpers";
 import { useAuth } from "../../hooks/useAuth";
 import api, { employeeApi } from "../../api/axios";
@@ -144,68 +149,53 @@ export default function Attendance() {
 
   return (
     <Box>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          Attendance
-        </Typography>
-        <Typography variant="body1">
-          {formatDate(new Date(), "MMMM yyyy")}
-        </Typography>
-      </Box>
+      <PageHeader
+        title="Attendance & Timecard"
+        subtitle={`Live clock logs and monthly schedule tracker for ${formatDate(new Date(), "MMMM yyyy")}.`}
+        badge={clockedIn && !clockedOut ? "On Duty" : clockedOut ? "Shift Completed" : "Not Clocked In"}
+        badgeColor={clockedIn && !clockedOut ? "success" : clockedOut ? "info" : "default"}
+      />
 
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} sm={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight={700} color="success.main">
-                {present}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Present
-              </Typography>
-            </CardContent>
-          </Card>
+        <Grid item xs={6} sm={3}>
+          <StatCard
+            title="Present Days"
+            value={present}
+            icon={<CheckCircleIcon />}
+            variant="green"
+            loading={loading}
+            subtitle="This month"
+          />
         </Grid>
-        <Grid item xs={12} sm={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight={700} color="error.main">
-                {absent}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Absent
-              </Typography>
-            </CardContent>
-          </Card>
+        <Grid item xs={6} sm={3}>
+          <StatCard
+            title="Absent Days"
+            value={absent}
+            icon={<CancelIcon />}
+            variant={absent > 0 ? "maroon" : "soft"}
+            loading={loading}
+            subtitle="Unplanned leaves"
+          />
         </Grid>
-        <Grid item xs={12} sm={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight={700} color="warning.main">
-                {late}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Late
-              </Typography>
-            </CardContent>
-          </Card>
+        <Grid item xs={6} sm={3}>
+          <StatCard
+            title="Late Check-ins"
+            value={late}
+            icon={<AccessTimeIcon />}
+            variant="gold"
+            loading={loading}
+            subtitle="Grace threshold exceeded"
+          />
         </Grid>
-        <Grid item xs={12} sm={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Typography variant="h3" fontWeight={700} color="primary.main">
-                {totalWorkDays - absent - late}/{totalWorkDays}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Attendance Rate
-              </Typography>
-            </CardContent>
-          </Card>
+        <Grid item xs={6} sm={3}>
+          <StatCard
+            title="Attendance Rate"
+            value={`${totalWorkDays > 0 ? Math.round(((totalWorkDays - absent) / totalWorkDays) * 100) : 100}%`}
+            icon={<CheckCircleIcon />}
+            variant="cream"
+            loading={loading}
+            subtitle={`${totalWorkDays - absent}/${totalWorkDays} workdays`}
+          />
         </Grid>
       </Grid>
 
