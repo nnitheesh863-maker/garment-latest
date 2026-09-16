@@ -147,10 +147,36 @@ export default function AdminOrders() {
   ];
 
   const StatCard = ({ label, value, color }) => (
-    <Card>
-      <CardContent sx={{ py: 1.5, textAlign: 'center' }}>
-        <Typography variant="h5" fontWeight={700} color={color}>{value}</Typography>
-        <Typography variant="caption" color="text.secondary">{label}</Typography>
+    <Card
+      sx={{
+        borderRadius: '16px',
+        border: '1px solid rgba(241, 213, 192, 0.65)',
+        boxShadow: '0 4px 16px rgba(89, 23, 27, 0.05)',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'all 0.25s ease',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 24px rgba(89, 23, 27, 0.12)',
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          bgcolor: color,
+        },
+      }}
+    >
+      <CardContent sx={{ py: 2, textAlign: 'center', '&:last-child': { pb: 2 } }}>
+        <Typography variant="h5" fontWeight={800} color={color} sx={{ letterSpacing: '-0.02em' }}>
+          {value}
+        </Typography>
+        <Typography variant="caption" color="text.secondary" fontWeight={600}>
+          {label}
+        </Typography>
       </CardContent>
     </Card>
   );
