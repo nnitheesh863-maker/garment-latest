@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Toolbar } from '@mui/material';
+import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../components/common/Header';
 import Sidebar from '../components/common/Sidebar';
 import VoiceAssistant from '../components/VoiceAssistant';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function MainLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (user?.role) {
@@ -49,7 +51,17 @@ export default function MainLayout({ children }) {
               width: '100%',
             }}
           >
-            {children}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
           </Box>
         </Box>
         <VoiceAssistant />
