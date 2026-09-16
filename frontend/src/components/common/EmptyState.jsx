@@ -1,71 +1,94 @@
 import React from 'react';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { motion } from 'framer-motion';
+import GradientButton from './GradientButton';
 
 export default function EmptyState({
   icon,
-  title = 'Nothing here yet',
-  message = 'There is no data to display right now.',
+  title = 'No records found',
+  message = 'There is currently no activity or data matching this query.',
   actionLabel,
   onAction,
+  actionIcon,
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.94 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       <Box
         textAlign="center"
-        py={6}
+        py={7}
         px={3}
         sx={{
           position: 'relative',
-          borderRadius: 4,
+          borderRadius: '24px',
+          border: (theme) =>
+            theme.palette.mode === 'light'
+              ? '1px dashed rgba(241, 213, 192, 0.8)'
+              : '1px dashed rgba(255, 255, 255, 0.12)',
           background: (theme) =>
             theme.palette.mode === 'light'
-              ? 'linear-gradient(180deg, rgba(254,215,184,0.22) 0%, rgba(255,248,242,0) 100%)'
-              : 'linear-gradient(180deg, rgba(164,90,74,0.14) 0%, rgba(26,16,18,0) 100%)',
+              ? 'linear-gradient(180deg, rgba(254, 215, 184, 0.18) 0%, rgba(255, 248, 242, 0.05) 100%)'
+              : 'linear-gradient(180deg, rgba(164, 90, 74, 0.1) 0%, rgba(26, 16, 18, 0) 100%)',
         }}
       >
         <Box
           sx={{
-            width: 84,
-            height: 84,
+            width: 88,
+            height: 88,
             mx: 'auto',
             mb: 2.5,
-            borderRadius: 5,
+            borderRadius: '24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             background: 'linear-gradient(135deg, #59171B, #7A2328, #A45A4A)',
             color: '#FED7B8',
-            boxShadow: '0 14px 40px rgba(89,23,27,0.3)',
+            boxShadow: '0 16px 36px rgba(89, 23, 27, 0.28)',
             position: 'relative',
+            animation: 'floatGentle 4s ease-in-out infinite',
           }}
         >
           <Box
             sx={{
               position: 'absolute',
               inset: -8,
-              borderRadius: 6,
-              border: '1.5px dashed rgba(89,23,27,0.25)',
-              animation: 'spinSlow 22s linear infinite',
+              borderRadius: '28px',
+              border: '1.5px dashed rgba(164, 90, 74, 0.35)',
+              animation: 'spinSlow 26s linear infinite',
             }}
           />
-          {React.cloneElement(icon || <AutoAwesomeIcon />, { sx: { fontSize: 40 } })}
+          {icon ? (
+            React.isValidElement(icon) ? (
+              React.cloneElement(icon, { sx: { fontSize: 40 } })
+            ) : (
+              icon
+            )
+          ) : (
+            <AutoAwesomeIcon sx={{ fontSize: 40 }} />
+          )}
         </Box>
-        <Typography variant="h6" fontWeight={700} sx={{ color: 'text.primary' }}>
+        <Typography
+          variant="h6"
+          fontWeight={800}
+          sx={{ color: 'text.primary', letterSpacing: '-0.01em' }}
+        >
           {title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420, mx: 'auto', mt: 0.75, mb: 2.5 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ maxWidth: 440, mx: 'auto', mt: 0.75, mb: actionLabel ? 3 : 0, lineHeight: 1.6 }}
+        >
           {message}
         </Typography>
         {actionLabel && (
-          <Button variant="contained" color="primary" onClick={onAction} sx={{ px: 4 }}>
+          <GradientButton onClick={onAction} icon={actionIcon} sx={{ px: 4 }}>
             {actionLabel}
-          </Button>
+          </GradientButton>
         )}
       </Box>
     </motion.div>
