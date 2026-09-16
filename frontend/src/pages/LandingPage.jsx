@@ -492,10 +492,13 @@ export default function LandingPage() {
                     letterSpacing: "0.05em",
                     px: 2.2,
                     py: 0.9,
-                    borderRadius: 0,
+                    borderRadius: "8px",
                     textTransform: "none",
+                    transition: "all 0.25s ease",
                     "&:hover": {
                       bgcolor: THEME.accentCamel,
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 18px rgba(168,131,98,0.35)",
                     },
                   }}
                 >
@@ -515,12 +518,14 @@ export default function LandingPage() {
                       letterSpacing: "0.06em",
                       px: 2,
                       py: 0.8,
-                      borderRadius: 0,
+                      borderRadius: "8px",
                       textTransform: "uppercase",
+                      transition: "all 0.25s ease",
                       "&:hover": {
                         borderColor: THEME.accentCamel,
                         color: THEME.accentCamel,
                         bgcolor: "transparent",
+                        transform: "translateY(-2px)",
                       },
                     }}
                   >
@@ -538,11 +543,14 @@ export default function LandingPage() {
                       letterSpacing: "0.06em",
                       px: 2,
                       py: 0.8,
-                      borderRadius: 0,
+                      borderRadius: "8px",
                       textTransform: "uppercase",
                       display: { xs: "none", sm: "inline-flex" },
+                      transition: "all 0.25s ease",
                       "&:hover": {
                         bgcolor: THEME.accentCamelHover,
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 6px 18px rgba(168,131,98,0.35)",
                       },
                     }}
                   >
