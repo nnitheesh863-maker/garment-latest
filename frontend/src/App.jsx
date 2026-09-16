@@ -15,6 +15,7 @@ import { EmployeeRouteElements } from "./routes/employeeRoutes";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
+import LandingPage from "./pages/LandingPage";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth();
@@ -68,41 +69,31 @@ function PublicRoute({ children }) {
   return children;
 }
 
-function RootRedirect() {
-  const { user, loading } = useAuth();
-  if (loading) return <LoadingSpinner />;
-  if (!user) return <Navigate to="/login" replace />;
-  const redirect =
-    user.role === "admin"
-      ? "/admin/dashboard"
-      : user.role === "manager"
-        ? "/manager/dashboard"
-        : "/employee/dashboard";
-  return <Navigate to={redirect} replace />;
-}
-
 export default function App() {
   return (
     <SocketProvider>
       <ErrorBoundary>
         <Routes>
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <Register />
-            </PublicRoute>
-          }
-        />
-        <Route path="/" element={<RootRedirect />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/home" element={<LandingPage />} />
+
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
 
         <Route
           path="/admin"

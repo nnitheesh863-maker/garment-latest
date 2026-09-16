@@ -108,7 +108,7 @@ async function getPrediction(type, data) {
       type,
       data
     }, { timeout: 4000 });
-    
+
     if (response.data && response.data.success) {
       const resultObj = response.data.result;
       const resultStr = typeof resultObj === 'string' ? resultObj : JSON.stringify(resultObj);
@@ -150,7 +150,7 @@ async function getPerformanceAnalysis(employeeData) {
       type: 'performance',
       data: employeeData
     }, { timeout: 4000 });
-    
+
     if (response.data && response.data.success) {
       const resultObj = response.data.result;
       const resultStr = typeof resultObj === 'string' ? resultObj : JSON.stringify(resultObj);

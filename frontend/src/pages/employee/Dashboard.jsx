@@ -10,6 +10,8 @@ import {
   LinearProgress,
   Divider,
   Grid,
+  Avatar,
+  Tooltip,
 } from "@mui/material";
 import { motion } from "framer-motion";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -29,16 +31,23 @@ import MicIcon from "@mui/icons-material/Mic";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import EditIcon from "@mui/icons-material/Edit";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
 import { toast } from "react-toastify";
 import {
   formatDate,
+  formatTime12,
+  formatHoursMinutes,
+  getWorkingDuration,
   getStatusColor,
   calculateProgress,
   timeAgo,
+  getInitials,
 } from "../../utils/helpers";
 import PerformanceChart from "../../components/charts/PerformanceChart";
+import ProfileSettingsModal from "../../components/modals/ProfileSettingsModal";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import { taskApi } from "../../api/axios";
@@ -119,6 +128,13 @@ export default function EmployeeDashboard() {
   const [issues, setIssues] = useState([]);
   const [leaves, setLeaves] = useState([]);
   const [stats, setStats] = useState({ completedToday: 0, hoursWorked: 0, qualityScore: 0 });
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchDashboardData = useCallback(async () => {
     if (!user?._id) return;
@@ -136,7 +152,14 @@ export default function EmployeeDashboard() {
       }
       if (attendanceRes.status === "fulfilled") {
         const d = attendanceRes.value.data;
-        setAttendance(d?.data || d?.attendance || null);
+        const list = d?.data || d?.attendance || [];
+        const todayRec = Array.isArray(list)
+          ? list.find(
+              (r) =>
+                new Date(r.date).toDateString() === new Date().toDateString(),
+            )
+          : (list && !Array.isArray(list) ? list : null);
+        setAttendance(todayRec || (Array.isArray(list) && list.length > 0 ? list[0] : null));
       }
       if (issuesRes.status === "fulfilled") {
         const d = issuesRes.value.data;
@@ -183,17 +206,23 @@ export default function EmployeeDashboard() {
       : 0;
     setStats({
       completedToday,
-      hoursWorked: attendance?.hoursWorked || attendance?.totalHours || 0,
+      hoursWorked: attendance?.workingHours || attendance?.hoursWorked || attendance?.totalHours || 0,
       qualityScore: completionRate,
     });
   }, [tasks, attendance]);
 
-  const isClockedIn = attendance?.clockIn && !attendance?.clockOut;
+  const isClockedIn = Boolean(attendance?.clockIn && !attendance?.clockOut);
   const totalTarget = tasks.reduce((s, t) => s + (t.quantityTarget || 0), 0);
   const totalCompleted = tasks.reduce((s, t) => s + (t.quantityCompleted || 0), 0);
   const completionPercent = totalTarget > 0 ? Math.round((totalCompleted / totalTarget) * 100) : 0;
   const recentIssues = issues.slice(0, 3);
   const recentLeaves = leaves.slice(0, 3);
+
+  const workingDuration = getWorkingDuration(
+    attendance?.clockIn,
+    attendance?.clockOut,
+    attendance?.workingHours || stats.hoursWorked
+  );
 
   const KPI_CARDS = [
     { label: "Target", value: `${totalTarget}`, suffix: " units", color: MAROON, bg: CREAM_BG, trend: "Today's goal" },
@@ -201,12 +230,13 @@ export default function EmployeeDashboard() {
     { label: "Machine", value: tasks.length > 0 ? `L${Math.floor(Math.random() * 8) + 1}` : "--", suffix: "", color: MAROON_LIGHT, bg: "#fef2f2", trend: "Operational" },
     { label: "Shift", value: attendance?.shift || "Day", suffix: "", color: "#9333ea", bg: "#faf5ff", trend: "08:00 - 17:00" },
     { label: "AI Score", value: `${stats.qualityScore}`, suffix: "%", color: "#0891b2", bg: "#ecfeff", trend: stats.qualityScore >= 70 ? "Good" : "Needs work" },
-    { label: "Hours", value: loading ? "--" : `${stats.hoursWorked}`, suffix: "h", color: "#d97706", bg: "#fffbeb", trend: "Today" },
+    { label: "Hours Worked", value: loading ? "--" : workingDuration.formatted, suffix: "", color: "#d97706", bg: "#fffbeb", trend: isClockedIn ? "Active (Live)" : attendance?.clockOut ? "Completed" : "Today" },
     { label: "Quality", value: `${completionPercent}`, suffix: "%", color: "#2563eb", bg: "#eff6ff", trend: completionPercent >= 80 ? "Excellent" : "Improving" },
     { label: "Attendance", value: isClockedIn ? "Active" : attendance?.clockOut ? "Done" : "---", suffix: "", color: isClockedIn ? "#16a34a" : "#dc2626", bg: isClockedIn ? "#f0fdf4" : "#fef2f2", trend: isClockedIn ? "Clocked In" : "Not started" },
   ];
 
   const QUICK_ACTIONS = [
+    { label: "Profile & Photo", icon: <ManageAccountsIcon />, path: null, color: "#59171B", isProfile: true },
     { label: "Attendance", icon: <CalendarTodayIcon />, path: "/employee/attendance", color: MAROON },
     { label: "Leave Request", icon: <ExitToAppIcon />, path: "/employee/leave-request", color: "#0891b2" },
     { label: "Report Issue", icon: <FlagIcon />, path: "/employee/report-issue", color: "#ea580c" },
@@ -344,17 +374,81 @@ export default function EmployeeDashboard() {
           }}
         >
           <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={1}>
-              <Box>
-                <Typography variant="h4" fontWeight={700} sx={{ lineHeight: 1.2 }}>
-                  {getTimeGreeting()}, {user?.profile?.firstName || user?.firstName || "Employee"}
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8, mt: 0.5 }}>
-                  {formatGreetingDate(new Date())}
-                </Typography>
-                <Typography variant="body1" sx={{ mt: 1.5, opacity: 0.85, fontStyle: 'italic', fontWeight: 400, fontSize: 15 }}>
-                  "{quote}"
-                </Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
+              <Box display="flex" alignItems="center" gap={2.5} flexWrap="wrap">
+                <Tooltip title="Click to view & edit profile photo" arrow>
+                  <Box
+                    onClick={() => setProfileModalOpen(true)}
+                    sx={{
+                      position: "relative",
+                      cursor: "pointer",
+                      "&:hover .edit-overlay": { opacity: 1 },
+                      "&:hover .avatar-ring": { transform: "scale(1.05)" },
+                    }}
+                  >
+                    <Avatar
+                      src={user?.profile?.profileImage || user?.profileImage || undefined}
+                      className="avatar-ring"
+                      sx={{
+                        width: { xs: 58, sm: 70 },
+                        height: { xs: 58, sm: 70 },
+                        bgcolor: "rgba(254,215,184,0.3)",
+                        color: "#FED7B8",
+                        fontSize: { xs: 20, sm: 26 },
+                        fontWeight: 800,
+                        border: "3px solid #FED7B8",
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.25)",
+                        transition: "all 0.25s ease",
+                      }}
+                    >
+                      {getInitials(`${user?.profile?.firstName || user?.firstName || "E"} ${user?.profile?.lastName || user?.lastName || ""}`)}
+                    </Avatar>
+                    <Box
+                      className="edit-overlay"
+                      sx={{
+                        position: "absolute",
+                        inset: 0,
+                        borderRadius: "50%",
+                        bgcolor: "rgba(0,0,0,0.45)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: 0,
+                        transition: "opacity 0.2s ease",
+                      }}
+                    >
+                      <EditIcon sx={{ fontSize: 18, color: "#FED7B8" }} />
+                    </Box>
+                  </Box>
+                </Tooltip>
+                <Box>
+                  <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                    <Typography variant="h4" fontWeight={700} sx={{ lineHeight: 1.2 }}>
+                      {getTimeGreeting()}, {user?.profile?.firstName || user?.firstName || "Employee"}
+                    </Typography>
+                    <Chip
+                      label="Edit Profile"
+                      size="small"
+                      icon={<EditIcon sx={{ fontSize: "14px !important", color: "#FED7B8 !important" }} />}
+                      onClick={() => setProfileModalOpen(true)}
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.18)",
+                        color: "#FED7B8",
+                        fontWeight: 600,
+                        fontSize: 11,
+                        cursor: "pointer",
+                        border: "1px solid rgba(254,215,184,0.4)",
+                        "&:hover": { bgcolor: "rgba(255,255,255,0.28)" },
+                      }}
+                    />
+                  </Box>
+                  <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.5 }}>
+                    {formatGreetingDate(new Date())} &bull; {user?.profile?.position || user?.position || "Sewing Operator"} &bull; {user?.profile?.department || user?.department || "Production"} Dept
+                  </Typography>
+                  <Typography variant="body1" sx={{ mt: 1, opacity: 0.85, fontStyle: 'italic', fontWeight: 400, fontSize: 14 }}>
+                    "{quote}"
+                  </Typography>
+                </Box>
               </Box>
               <Box
                 sx={{
@@ -368,24 +462,26 @@ export default function EmployeeDashboard() {
                   bgcolor: isClockedIn ? '#4ade80' : '#fbbf24',
                   animation: isClockedIn ? 'pulse-glow 2s infinite' : 'none',
                 }} />
-                <Typography variant="caption" sx={{ fontWeight: 500, fontSize: 12 }}>
-                  {isClockedIn ? `Active \u00B7 ${formatDate(attendance?.clockIn, 'hh:mm a')}`
-                    : attendance?.clockOut ? `Out \u00B7 ${formatDate(attendance?.clockOut, 'hh:mm a')}`
-                    : 'Not clocked in'}
+                <Typography variant="caption" sx={{ fontWeight: 600, fontSize: 12 }}>
+                  {isClockedIn ? `Active \u00B7 In at ${formatTime12(attendance?.clockIn)}`
+                    : attendance?.clockOut ? `Out \u00B7 ${formatTime12(attendance?.clockOut)}`
+                      : 'Not clocked in'}
                 </Typography>
               </Box>
             </Box>
-            {attendance?.workingHours && (
-              <Box display="flex" gap={2.5} mt={1.5} sx={{ opacity: 0.8 }}>
-                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <AccessTimeIcon sx={{ fontSize: 14 }} /> {attendance.workingHours}h worked
+            {(attendance?.clockIn || attendance?.workingHours > 0 || workingDuration.hours > 0 || workingDuration.minutes > 0) && (
+              <Box display="flex" gap={2.5} mt={1.5} sx={{ opacity: 0.9, flexWrap: 'wrap' }}>
+                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 600, color: isClockedIn ? '#86efac' : '#fff' }}>
+                  <AccessTimeIcon sx={{ fontSize: 14 }} /> {workingDuration.detailed} worked {isClockedIn ? '(Active)' : ''}
                 </Typography>
-                <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <TimerIcon sx={{ fontSize: 14 }} /> {attendance.breakTime || 0}h break
-                </Typography>
-                {attendance.overtime > 0 && (
-                  <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#fbbf24' }}>
-                    <ArrowUpwardIcon sx={{ fontSize: 14 }} /> {attendance.overtime}h OT
+                {attendance?.breakTime > 0 && (
+                  <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <TimerIcon sx={{ fontSize: 14 }} /> {formatHoursMinutes(attendance.breakTime, 'short')} break
+                  </Typography>
+                )}
+                {attendance?.overtime > 0 && (
+                  <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#fbbf24', fontWeight: 600 }}>
+                    <ArrowUpwardIcon sx={{ fontSize: 14 }} /> {formatHoursMinutes(attendance.overtime, 'short')} OT
                   </Typography>
                 )}
               </Box>
@@ -444,9 +540,9 @@ export default function EmployeeDashboard() {
             {(() => {
               const activeTask = tasks.find((t) => ['pending', 'accepted', 'in_progress', 'paused', 'rework', 'quality_check'].includes(t.status));
               if (!activeTask) return null;
-              
-              const pct = activeTask.quantity?.target > 0 
-                ? Math.round(((activeTask.quantity?.produced || 0) / activeTask.quantity.target) * 100) 
+
+              const pct = activeTask.quantity?.target > 0
+                ? Math.round(((activeTask.quantity?.produced || 0) / activeTask.quantity.target) * 100)
                 : 0;
 
               return (
@@ -612,7 +708,8 @@ export default function EmployeeDashboard() {
                           </Typography>
                         </Box>
                         <Chip label={PRIORITY_LABELS[task.priority] || task.priority} size="small"
-                          sx={{ height: 22, fontSize: 10, fontWeight: 600, width: 'fit-content',
+                          sx={{
+                            height: 22, fontSize: 10, fontWeight: 600, width: 'fit-content',
                             bgcolor: task.priority === 'urgent' ? '#fef2f2' : task.priority === 'high' ? '#fff7ed' : task.priority === 'medium' ? '#fffbeb' : '#f0fdf4',
                             color: task.priority === 'urgent' ? '#dc2626' : task.priority === 'high' ? '#ea580c' : task.priority === 'medium' ? '#d97706' : '#16a34a',
                           }} />
@@ -623,7 +720,8 @@ export default function EmployeeDashboard() {
                           {formatDate(task.updatedAt || task.createdAt, 'hh:mm a')}
                         </Typography>
                         <Chip label={task.status?.replace(/_/g, ' ')} size="small"
-                          sx={{ height: 22, fontSize: 10, fontWeight: 600, textTransform: 'capitalize', width: 'fit-content',
+                          sx={{
+                            height: 22, fontSize: 10, fontWeight: 600, textTransform: 'capitalize', width: 'fit-content',
                             bgcolor: `${getStatusColor(task.status)}22`, color: getStatusColor(task.status),
                           }} />
                       </Box>
@@ -641,41 +739,43 @@ export default function EmployeeDashboard() {
                     Recent Activity
                   </Typography>
                   {loading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} height={32} sx={{ mb: 0.5, borderRadius: 1 }} />)
-                  : recentIssues.length === 0 && recentLeaves.length === 0 ? (
-                    <Box textAlign="center" py={1.5}>
-                      <EventBusyIcon sx={{ fontSize: 28, color: BORDER, mb: 0.5 }} />
-                      <Typography variant="caption" sx={{ color: '#7A6A63' }}>No recent activity</Typography>
-                    </Box>
-                  ) : (
-                    <Box>
-                      {recentIssues.map((issue) => (
-                        <Box key={issue._id} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, borderBottom: `1px solid ${BORDER}40`, '&:last-child': { borderBottom: 'none' } }}>
-                          <FlagIcon sx={{ fontSize: 16, color: '#ef4444', flexShrink: 0 }} />
-                          <Box minWidth={0} flex={1}>
-                            <Typography variant="caption" fontWeight={500} noWrap sx={{ fontSize: 12, color: '#2C1A1A', display: 'block' }}>{issue.description}</Typography>
-                            <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>{timeAgo(issue.createdAt)}</Typography>
+                    : recentIssues.length === 0 && recentLeaves.length === 0 ? (
+                      <Box textAlign="center" py={1.5}>
+                        <EventBusyIcon sx={{ fontSize: 28, color: BORDER, mb: 0.5 }} />
+                        <Typography variant="caption" sx={{ color: '#7A6A63' }}>No recent activity</Typography>
+                      </Box>
+                    ) : (
+                      <Box>
+                        {recentIssues.map((issue) => (
+                          <Box key={issue._id} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, borderBottom: `1px solid ${BORDER}40`, '&:last-child': { borderBottom: 'none' } }}>
+                            <FlagIcon sx={{ fontSize: 16, color: '#ef4444', flexShrink: 0 }} />
+                            <Box minWidth={0} flex={1}>
+                              <Typography variant="caption" fontWeight={500} noWrap sx={{ fontSize: 12, color: '#2C1A1A', display: 'block' }}>{issue.description}</Typography>
+                              <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>{timeAgo(issue.createdAt)}</Typography>
+                            </Box>
+                            <Chip label={issue.status} size="small" sx={{
+                              height: 18, fontSize: 9, fontWeight: 600, textTransform: 'capitalize',
+                              bgcolor: issue.status === 'resolved' ? '#dcfce7' : issue.status === 'in_progress' ? '#fef9c3' : '#fee2e2',
+                              color: issue.status === 'resolved' ? '#16a34a' : issue.status === 'in_progress' ? '#ca8a04' : '#dc2626',
+                            }} />
                           </Box>
-                          <Chip label={issue.status} size="small" sx={{ height: 18, fontSize: 9, fontWeight: 600, textTransform: 'capitalize',
-                            bgcolor: issue.status === 'resolved' ? '#dcfce7' : issue.status === 'in_progress' ? '#fef9c3' : '#fee2e2',
-                            color: issue.status === 'resolved' ? '#16a34a' : issue.status === 'in_progress' ? '#ca8a04' : '#dc2626',
-                          }} />
-                        </Box>
-                      ))}
-                      {recentLeaves.map((leave) => (
-                        <Box key={leave._id} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, borderBottom: `1px solid ${BORDER}40`, '&:last-child': { borderBottom: 'none' } }}>
-                          <ExitToAppIcon sx={{ fontSize: 16, color: MAROON, flexShrink: 0 }} />
-                          <Box minWidth={0} flex={1}>
-                            <Typography variant="caption" fontWeight={500} noWrap sx={{ fontSize: 12, color: '#2C1A1A', display: 'block' }}>{leave.leaveType} leave</Typography>
-                            <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>{formatDate(leave.startDate)}</Typography>
+                        ))}
+                        {recentLeaves.map((leave) => (
+                          <Box key={leave._id} sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.5, borderBottom: `1px solid ${BORDER}40`, '&:last-child': { borderBottom: 'none' } }}>
+                            <ExitToAppIcon sx={{ fontSize: 16, color: MAROON, flexShrink: 0 }} />
+                            <Box minWidth={0} flex={1}>
+                              <Typography variant="caption" fontWeight={500} noWrap sx={{ fontSize: 12, color: '#2C1A1A', display: 'block' }}>{leave.leaveType} leave</Typography>
+                              <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>{formatDate(leave.startDate)}</Typography>
+                            </Box>
+                            <Chip label={leave.status} size="small" sx={{
+                              height: 18, fontSize: 9, fontWeight: 600, textTransform: 'capitalize',
+                              bgcolor: leave.status === 'approved' ? '#dcfce7' : leave.status === 'pending' ? '#fef9c3' : '#fee2e2',
+                              color: leave.status === 'approved' ? '#16a34a' : leave.status === 'pending' ? '#ca8a04' : '#dc2626',
+                            }} />
                           </Box>
-                          <Chip label={leave.status} size="small" sx={{ height: 18, fontSize: 9, fontWeight: 600, textTransform: 'capitalize',
-                            bgcolor: leave.status === 'approved' ? '#dcfce7' : leave.status === 'pending' ? '#fef9c3' : '#fee2e2',
-                            color: leave.status === 'approved' ? '#16a34a' : leave.status === 'pending' ? '#ca8a04' : '#dc2626',
-                          }} />
-                        </Box>
-                      ))}
-                    </Box>
-                  )}
+                        ))}
+                      </Box>
+                    )}
                 </CardContent>
               </Card>
 
@@ -689,41 +789,41 @@ export default function EmployeeDashboard() {
                     <MoreVertIcon sx={{ fontSize: 16, color: '#7A6A63', cursor: 'pointer' }} />
                   </Box>
                   {loading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} height={32} sx={{ mb: 0.5, borderRadius: 1 }} />)
-                  : (
-                    <Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 1, bgcolor: 'rgba(89,23,27,0.04)', borderRadius: 1.5, mb: 0.5 }}>
-                        <NotificationsIcon sx={{ fontSize: 16, color: MAROON, flexShrink: 0 }} />
-                        <Box minWidth={0} flex={1}>
-                          <Typography variant="caption" fontWeight={500} sx={{ fontSize: 11, color: '#2C1A1A', display: 'block' }}>
-                            Welcome to the dashboard
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>Just now</Typography>
+                    : (
+                      <Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 1, bgcolor: 'rgba(89,23,27,0.04)', borderRadius: 1.5, mb: 0.5 }}>
+                          <NotificationsIcon sx={{ fontSize: 16, color: MAROON, flexShrink: 0 }} />
+                          <Box minWidth={0} flex={1}>
+                            <Typography variant="caption" fontWeight={500} sx={{ fontSize: 11, color: '#2C1A1A', display: 'block' }}>
+                              Welcome to the dashboard
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>Just now</Typography>
+                          </Box>
                         </Box>
+                        {tasks.length > 0 && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 1, borderRadius: 1.5, mb: 0.5, '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}>
+                            <AssignmentIcon sx={{ fontSize: 16, color: '#0891b2', flexShrink: 0 }} />
+                            <Box minWidth={0} flex={1}>
+                              <Typography variant="caption" fontWeight={500} sx={{ fontSize: 11, color: '#2C1A1A', display: 'block' }}>
+                                {tasks.length} task(s) pending
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>Today</Typography>
+                            </Box>
+                          </Box>
+                        )}
+                        {attendance?.clockIn && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 1, borderRadius: 1.5, '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}>
+                            <AccessTimeIcon sx={{ fontSize: 16, color: '#16a34a', flexShrink: 0 }} />
+                            <Box minWidth={0} flex={1}>
+                              <Typography variant="caption" fontWeight={500} sx={{ fontSize: 11, color: '#2C1A1A', display: 'block' }}>
+                                Clocked in at {formatTime12(attendance.clockIn)} {isClockedIn ? `(${workingDuration.formatted})` : ''}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>Today</Typography>
+                            </Box>
+                          </Box>
+                        )}
                       </Box>
-                      {tasks.length > 0 && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 1, borderRadius: 1.5, mb: 0.5, '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}>
-                          <AssignmentIcon sx={{ fontSize: 16, color: '#0891b2', flexShrink: 0 }} />
-                          <Box minWidth={0} flex={1}>
-                            <Typography variant="caption" fontWeight={500} sx={{ fontSize: 11, color: '#2C1A1A', display: 'block' }}>
-                              {tasks.length} task(s) pending
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>Today</Typography>
-                          </Box>
-                        </Box>
-                      )}
-                      {attendance?.clockIn && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 0.75, px: 1, borderRadius: 1.5, '&:hover': { bgcolor: 'rgba(0,0,0,0.02)' } }}>
-                          <AccessTimeIcon sx={{ fontSize: 16, color: '#16a34a', flexShrink: 0 }} />
-                          <Box minWidth={0} flex={1}>
-                            <Typography variant="caption" fontWeight={500} sx={{ fontSize: 11, color: '#2C1A1A', display: 'block' }}>
-                              Clocked in {formatDate(attendance.clockIn, 'hh:mm a')}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: '#7A6A63', fontSize: 10 }}>Today</Typography>
-                          </Box>
-                        </Box>
-                      )}
-                    </Box>
-                  )}
+                    )}
                 </CardContent>
               </Card>
             </Box>
@@ -740,8 +840,8 @@ export default function EmployeeDashboard() {
                     sx={{ height: 24, fontSize: 11, fontWeight: 600, bgcolor: 'rgba(89,23,27,0.08)', color: MAROON, borderRadius: 1 }} />
                 </Box>
                 {loading ? <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 2 }} />
-                : <PerformanceChart data={[{ label: 'Performance', data: [65,70,75,72,80,85,82,88,90,87,92,95], borderColor: MAROON, backgroundColor: 'rgba(89,23,27,0.06)' }]}
-                    labels={['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']} height={200} />}
+                  : <PerformanceChart data={[{ label: 'Performance', data: [65, 70, 75, 72, 80, 85, 82, 88, 90, 87, 92, 95], borderColor: MAROON, backgroundColor: 'rgba(89,23,27,0.06)' }]}
+                    labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']} height={200} />}
               </CardContent>
             </Card>
 
@@ -752,8 +852,8 @@ export default function EmployeeDashboard() {
                   Today's Schedule
                 </Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 0.5, textAlign: 'center' }}>
-                  {['S','M','T','W','T','F','S'].map((d) => (
-                    <Typography key={d} variant="caption" fontWeight={600} sx={{ color: '#7A6A63', fontSize: 10, py: 0.5 }}>{d}</Typography>
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, idx) => (
+                    <Typography key={`${d}-${idx}`} variant="caption" fontWeight={600} sx={{ color: '#7A6A63', fontSize: 10, py: 0.5 }}>{d[0]}</Typography>
                   ))}
                   {Array.from({ length: 31 }).map((_, i) => {
                     const day = i + 1;
@@ -793,7 +893,13 @@ export default function EmployeeDashboard() {
                 </Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                   {QUICK_ACTIONS.map((a) => (
-                    <Box key={a.label} onClick={() => { if (a.voice) window.voiceAssistant?.toggle?.(); else navigate(a.path); }}
+                    <Box
+                      key={a.label}
+                      onClick={() => {
+                        if (a.isProfile) setProfileModalOpen(true);
+                        else if (a.voice) window.voiceAssistant?.toggle?.();
+                        else if (a.path) navigate(a.path);
+                      }}
                       sx={{
                         display: 'flex', alignItems: 'center', gap: 1, px: 1.25, py: 1,
                         borderRadius: 1.5, cursor: 'pointer',
@@ -812,6 +918,13 @@ export default function EmployeeDashboard() {
           </Box>
         </Box>
       </motion.div>
+      <ProfileSettingsModal
+        open={profileModalOpen}
+        onClose={() => {
+          setProfileModalOpen(false);
+          fetchDashboardData();
+        }}
+      />
     </Box>
   );
 }

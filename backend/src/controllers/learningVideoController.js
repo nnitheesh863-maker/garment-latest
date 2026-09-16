@@ -29,11 +29,13 @@ exports.getVideos = async (req, res, next) => {
     const { page = 1, limit = 10 } = req.query;
     let filter = {};
 
-    // Employees see videos assigned to them OR videos for all (empty assignedTo)
-    if (req.user.role === 'employee') {
+    // Employees see videos assigned to them OR videos for all (empty assignedTo or no assignedTo)
+    if (req.user && req.user.role === 'employee') {
       filter.$or = [
         { assignedTo: req.user._id },
-        { assignedTo: [] },
+        { assignedTo: { $size: 0 } },
+        { assignedTo: { $exists: false } },
+        { assignedTo: null },
       ];
     }
 
@@ -62,9 +64,12 @@ exports.getVideo = async (req, res, next) => {
     }
 
     // Employees can view videos assigned to them OR for all employees
-    if (req.user.role === 'employee') {
-      const isAssigned = video.assignedTo?.some((u) => u._id?.equals?.(req.user._id));
-      const isForAll = Array.isArray(video.assignedTo) && video.assignedTo.length === 0;
+    if (req.user && req.user.role === 'employee') {
+      const isAssigned = Array.isArray(video.assignedTo) && video.assignedTo.some((u) => {
+        const id = u?._id ? u._id.toString() : u?.toString?.();
+        return id === req.user._id.toString();
+      });
+      const isForAll = !video.assignedTo || (Array.isArray(video.assignedTo) && video.assignedTo.length === 0);
       if (!isAssigned && !isForAll) {
         return ApiResponse.error(res, 'Not authorized to view this video', 403);
       }

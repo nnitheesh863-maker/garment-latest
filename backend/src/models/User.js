@@ -41,6 +41,17 @@ const userSchema = new mongoose.Schema({
   refreshToken: { type: String, select: false },
   lastLogin: { type: Date },
   active: { type: Boolean, default: true },
+  isApproved: { type: Boolean, default: true },
+  approvalStatus: {
+    type: String,
+    enum: ['approved', 'pending', 'rejected'],
+    default: 'approved',
+  },
+  approvalDate: { type: Date },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {

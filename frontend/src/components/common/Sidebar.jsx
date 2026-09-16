@@ -24,6 +24,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { NAV_ITEMS } from '../../utils/constants';
 import { useAuth } from '../../hooks/useAuth';
 import { getInitials } from '../../utils/helpers';
+import ProfileSettingsModal from '../modals/ProfileSettingsModal';
 
 const iconMap = {
   Dashboard: DashboardIcon,
@@ -54,6 +55,7 @@ export default function Sidebar({ open, onClose, variant }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   const navItems = NAV_ITEMS[user?.role] || [];
   const width = collapsed ? DRAWER_COLLAPSED : DRAWER_WIDTH;
@@ -68,10 +70,10 @@ export default function Sidebar({ open, onClose, variant }) {
       sx={{
         width,
         flexShrink: 0,
-        height: { xs: 'calc(100vh - 20px)', md: 'calc(100vh - 24px)' },
-        my: { xs: 1, md: 1.5 },
+        height: { xs: 'calc(100vh - 80px)', md: 'calc(100vh - 88px)' },
+        mt: { xs: '66px', md: '72px' },
         ml: { xs: 1, md: 1.5 },
-        mb: { xs: 1, md: 1.5 },
+        mb: { xs: 1.5, md: 1.75 },
         borderRadius: 4,
         position: 'relative',
         overflow: 'hidden',
@@ -257,66 +259,80 @@ export default function Sidebar({ open, onClose, variant }) {
           pb: 1.5,
         }}
       >
-        <Box
-          sx={{
-            p: collapsed ? 0.75 : 1.25,
-            borderRadius: 3,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            gap: 1.25,
-            background: (theme) =>
-              theme.palette.mode === 'dark'
-                ? 'linear-gradient(135deg, rgba(164,90,74,0.22), rgba(89,23,27,0.35))'
-                : 'linear-gradient(135deg, rgba(254,215,184,0.45), rgba(255,248,242,0.7))',
-            border: (theme) =>
-              `1px solid ${theme.palette.mode === 'dark' ? 'rgba(254,215,184,0.14)' : 'rgba(241,213,192,0.7)'}`,
-          }}
-        >
-          {!collapsed ? (
-            <>
-              <Box sx={{ position: 'relative' }}>
-                <Avatar
-                  sx={{
-                    width: 38,
-                    height: 38,
-                    bgcolor: '#59171B',
-                    fontSize: 14,
-                    fontWeight: 800,
-                    color: '#FED7B8',
-                  }}
-                >
-                  {getInitials(displayName)}
-                </Avatar>
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: -1,
-                    right: -1,
-                    width: 11,
-                    height: 11,
-                    borderRadius: '50%',
-                    bgcolor: '#16A34A',
-                    border: '2px solid #FFF8F2',
-                    boxShadow: '0 0 6px rgba(22,163,74,0.5)',
-                  }}
-                />
-              </Box>
-              <Box sx={{ minWidth: 0 }}>
-                <Typography variant="body2" fontWeight={700} noWrap sx={{ fontSize: 13, color: 'text.primary' }}>
-                  {displayName}
-                </Typography>
-                <Typography variant="caption" noWrap sx={{ fontSize: 10.5, color: '#7A6A63', textTransform: 'capitalize' }}>
-                  {user?.role}
-                </Typography>
-              </Box>
-            </>
-          ) : (
-            <Avatar sx={{ width: 36, height: 36, bgcolor: '#59171B', fontSize: 13, fontWeight: 800, color: '#FED7B8' }}>
-              {getInitials(displayName)}
-            </Avatar>
-          )}
-        </Box>
+        <Tooltip title="Profile Settings & Photo" arrow placement="top">
+          <Box
+            onClick={() => setProfileModalOpen(true)}
+            sx={{
+              p: collapsed ? 0.75 : 1.25,
+              borderRadius: 3,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              gap: 1.25,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(135deg, rgba(164,90,74,0.22), rgba(89,23,27,0.35))'
+                  : 'linear-gradient(135deg, rgba(254,215,184,0.45), rgba(255,248,242,0.7))',
+              border: (theme) =>
+                `1px solid ${theme.palette.mode === 'dark' ? 'rgba(254,215,184,0.14)' : 'rgba(241,213,192,0.7)'}`,
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 16px rgba(89,23,27,0.15)',
+                borderColor: '#59171B',
+              },
+            }}
+          >
+            {!collapsed ? (
+              <>
+                <Box sx={{ position: 'relative' }}>
+                  <Avatar
+                    src={user?.profile?.profileImage || user?.profileImage || undefined}
+                    sx={{
+                      width: 38,
+                      height: 38,
+                      bgcolor: '#59171B',
+                      fontSize: 14,
+                      fontWeight: 800,
+                      color: '#FED7B8',
+                    }}
+                  >
+                    {getInitials(displayName)}
+                  </Avatar>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -1,
+                      right: -1,
+                      width: 11,
+                      height: 11,
+                      borderRadius: '50%',
+                      bgcolor: '#16A34A',
+                      border: '2px solid #FFF8F2',
+                      boxShadow: '0 0 6px rgba(22,163,74,0.5)',
+                    }}
+                  />
+                </Box>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body2" fontWeight={700} noWrap sx={{ fontSize: 13, color: 'text.primary' }}>
+                    {displayName}
+                  </Typography>
+                  <Typography variant="caption" noWrap sx={{ fontSize: 10.5, color: '#7A6A63', textTransform: 'capitalize' }}>
+                    {user?.role} &bull; Edit
+                  </Typography>
+                </Box>
+              </>
+            ) : (
+              <Avatar
+                src={user?.profile?.profileImage || user?.profileImage || undefined}
+                sx={{ width: 36, height: 36, bgcolor: '#59171B', fontSize: 13, fontWeight: 800, color: '#FED7B8' }}
+              >
+                {getInitials(displayName)}
+              </Avatar>
+            )}
+          </Box>
+        </Tooltip>
         <Box
           sx={{
             mt: 1,
@@ -340,6 +356,7 @@ export default function Sidebar({ open, onClose, variant }) {
           )}
         </Box>
       </Box>
+      <ProfileSettingsModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
     </Box>
   );
 }

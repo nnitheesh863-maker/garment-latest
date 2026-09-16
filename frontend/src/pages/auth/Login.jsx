@@ -3,16 +3,20 @@ import { Box, TextField, Button, Typography, Alert, InputAdornment, IconButton, 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import AuthShell, { authFieldSx } from "../../components/auth/AuthShell";
 
 export default function Login() {
   const { login, loading, error } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const queryParams = new URLSearchParams(location.search);
+  const isPendingManager = queryParams.get("pending") === "manager";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +46,12 @@ export default function Login() {
         </>
       }
     >
+      {isPendingManager && (
+        <Alert severity="info" sx={{ mb: 2.5, borderRadius: 2 }}>
+          Your Manager registration has been submitted and is pending Administrator approval. Once approved, you can sign in here.
+        </Alert>
+      )}
+
       {error && (
         <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>
           {error}

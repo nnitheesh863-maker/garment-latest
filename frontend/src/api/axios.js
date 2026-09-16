@@ -69,6 +69,9 @@ export const authApi = {
   getMe: () => api.get("/api/auth/me"),
   updateProfile: (data) => api.put("/api/auth/update", data),
   changePassword: (data) => api.post("/api/auth/change-password", data),
+  getPendingApprovals: () => api.get("/api/auth/pending-approvals"),
+  approveManager: (id) => api.put(`/api/auth/approve-manager/${id}`),
+  rejectManager: (id) => api.put(`/api/auth/reject-manager/${id}`),
 };
 
 export const orderApi = {

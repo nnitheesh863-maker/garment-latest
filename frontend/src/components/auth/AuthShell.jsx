@@ -1,11 +1,13 @@
 import React from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import { Link } from "react-router-dom";
+import { Box, Typography, Button, useTheme } from "@mui/material";
 import { motion } from "framer-motion";
 import FactoryIcon from "@mui/icons-material/Factory";
 import RadarIcon from "@mui/icons-material/Radar";
 import SpeedIcon from "@mui/icons-material/Speed";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import InsightsIcon from "@mui/icons-material/Insights";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const BRAND_FEATURES = [
   {
@@ -113,12 +115,16 @@ export default function AuthShell({ title, subtitle, footer, children }) {
           },
         }}
       >
-        <Box sx={{ position: "absolute", width: 420, height: 420, borderRadius: "50%",
+        <Box sx={{
+          position: "absolute", width: 420, height: 420, borderRadius: "50%",
           background: "radial-gradient(circle, rgba(254,215,184,0.16) 0%, transparent 70%)",
-          top: -80, left: -120, animation: "authOrb 10s ease-in-out infinite alternate", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", width: 360, height: 360, borderRadius: "50%",
+          top: -80, left: -120, animation: "authOrb 10s ease-in-out infinite alternate", pointerEvents: "none"
+        }} />
+        <Box sx={{
+          position: "absolute", width: 360, height: 360, borderRadius: "50%",
           background: "radial-gradient(circle, rgba(164,90,74,0.24) 0%, transparent 70%)",
-          bottom: -60, right: -100, animation: "authOrb 13s ease-in-out infinite alternate-reverse", pointerEvents: "none" }} />
+          bottom: -60, right: -100, animation: "authOrb 13s ease-in-out infinite alternate-reverse", pointerEvents: "none"
+        }} />
 
         <motion.div
           variants={container}
@@ -127,7 +133,23 @@ export default function AuthShell({ title, subtitle, footer, children }) {
           style={{ position: "relative", zIndex: 2, padding: "52px 56px 28px" }}
         >
           <motion.div variants={item}>
-            <Box display="flex" alignItems="center" gap={1.5} mb={5}>
+            <Box
+              component={Link}
+              to="/"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1.5,
+                mb: 5,
+                textDecoration: "none",
+                color: "inherit",
+                cursor: "pointer",
+                transition: "transform 0.2s ease",
+                "&:hover": {
+                  transform: "translateX(-2px)",
+                },
+              }}
+            >
               <Box
                 sx={{
                   width: 46,
@@ -219,10 +241,12 @@ export default function AuthShell({ title, subtitle, footer, children }) {
           bgcolor: "background.default",
         }}
       >
-        <Box sx={{ position: "absolute", width: 420, height: 420, borderRadius: "50%",
+        <Box sx={{
+          position: "absolute", width: 420, height: 420, borderRadius: "50%",
           background: isLight ? "radial-gradient(circle, rgba(254,215,184,0.35) 0%, transparent 70%)"
             : "radial-gradient(circle, rgba(122,35,40,0.18) 0%, transparent 70%)",
-          top: -160, right: -140, pointerEvents: "none" }} />
+          top: -160, right: -140, pointerEvents: "none"
+        }} />
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -230,13 +254,42 @@ export default function AuthShell({ title, subtitle, footer, children }) {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 440 }}
         >
-          <Box mb={4}>
+          {/* Back to Landing Page Button */}
+          <Box mb={2.5}>
+            <Button
+              component={Link}
+              to="/"
+              startIcon={<ArrowBackIcon sx={{ fontSize: 16 }} />}
+              sx={{
+                px: 1.8,
+                py: 0.65,
+                borderRadius: 2,
+                fontSize: 12.5,
+                fontWeight: 600,
+                textTransform: "none",
+                letterSpacing: "0.02em",
+                color: isLight ? "#7A2328" : "#FED7B8",
+                bgcolor: isLight ? "rgba(89,23,27,0.06)" : "rgba(254,215,184,0.08)",
+                border: `1px solid ${isLight ? "rgba(89,23,27,0.14)" : "rgba(254,215,184,0.18)"}`,
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  bgcolor: isLight ? "rgba(89,23,27,0.12)" : "rgba(254,215,184,0.16)",
+                  borderColor: isLight ? "#59171B" : "#FED7B8",
+                  transform: "translateX(-2px)",
+                },
+              }}
+            >
+              Back to Landing Page
+            </Button>
+          </Box>
+
+          <Box mb={3.5}>
             <Box
               sx={{
                 display: { lg: "none" },
                 alignItems: "center",
                 gap: 1.5,
-                mb: 4,
+                mb: 3,
               }}
             >
               <Box

@@ -19,7 +19,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { toast } from "react-toastify";
-import { formatDate, formatDateTime } from "../../utils/helpers";
+import { formatDate, formatDateTime, formatTime12, formatHoursMinutes, getWorkingDuration } from "../../utils/helpers";
 import { useAuth } from "../../hooks/useAuth";
 import api, { employeeApi } from "../../api/axios";
 
@@ -36,6 +36,7 @@ export default function Attendance() {
   const [loading, setLoading] = useState(true);
   const [clockInTime, setClockInTime] = useState(null);
   const [clockOutTime, setClockOutTime] = useState(null);
+  const [todayRecord, setTodayRecord] = useState(null);
   const [workingHours, setWorkingHours] = useState(0);
   const [breakTime, setBreakTime] = useState(0);
   const [overtime, setOvertime] = useState(0);
@@ -61,9 +62,21 @@ export default function Attendance() {
               new Date(r.date).toDateString() === new Date().toDateString(),
           )
         : null;
+      setTodayRecord(today);
       if (today) {
-        if (today.clockIn) setClockedIn(true);
-        if (today.clockOut) setClockedOut(true);
+        if (today.clockIn) {
+          setClockedIn(true);
+          setClockInTime(formatTime12(today.clockInTime || today.clockIn));
+        }
+        if (today.clockOut) {
+          setClockedOut(true);
+          setClockOutTime(formatTime12(today.clockOutTime || today.clockOut));
+        }
+        if (today.workingHours != null) setWorkingHours(today.workingHours);
+        if (today.breakTime != null) setBreakTime(today.breakTime);
+        if (today.overtime != null) setOvertime(today.overtime);
+        if (today.lateArrival != null) setLateArrival(today.lateArrival);
+        if (today.earlyLeaving != null) setEarlyLeaving(today.earlyLeaving);
       }
     } catch (err) {
       console.error("Failed to load attendance:", err);
@@ -75,7 +88,7 @@ export default function Attendance() {
 
   useEffect(() => {
     loadAttendance();
-    const interval = setInterval(() => setCurrentTime(new Date()), 60000);
+    const interval = setInterval(() => setCurrentTime(new Date()), 10000);
     return () => clearInterval(interval);
   }, [loadAttendance]);
 
@@ -90,12 +103,8 @@ export default function Attendance() {
         deviceTime: now.toISOString(),
       });
       setClockedIn(true);
-      setClockInTime(now.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }));
-      toast.success(`Clocked in at ${now.toLocaleTimeString()}`);
+      setClockInTime(formatTime12(now));
+      toast.success(`Clocked in at ${formatTime12(now)}`);
       loadAttendance();
     } catch (err) {
       toast.error("Failed to clock in");
@@ -110,11 +119,7 @@ export default function Attendance() {
         clockOut: now.toISOString(),
       });
       setClockedOut(true);
-      setClockOutTime(now.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }));
+      setClockOutTime(formatTime12(now));
       if (res.data?.data?.workingHours) {
         setWorkingHours(res.data.data.workingHours);
         setBreakTime(res.data.data.breakTime || 0);
@@ -122,7 +127,7 @@ export default function Attendance() {
         setLateArrival(res.data.data.lateArrival || 0);
         setEarlyLeaving(res.data.data.earlyLeaving || 0);
       }
-      toast.success(`Clocked out at ${now.toLocaleTimeString()}`);
+      toast.success(`Clocked out at ${formatTime12(now)}`);
       loadAttendance();
     } catch (err) {
       toast.error("Failed to clock out");
@@ -205,71 +210,78 @@ export default function Attendance() {
       </Grid>
 
       <Grid container spacing={3} mb={3}>
-       <Grid item xs={12} md={4}>
-         <Card>
-           <CardContent sx={{ textAlign: "center" }}>
-             <AccessTimeIcon
-               sx={{ fontSize: 48, color: "primary.main", mb: 1 }}
-             />
-             <Typography variant="h5" fontWeight={600}>
-               {currentTime.toLocaleTimeString([], {
-                 hour: "2-digit",
-                 minute: "2-digit",
-               })}
-             </Typography>
-             <Typography variant="body2" color="text.secondary" mb={2}>
-               Current Time
-             </Typography>
-             {(clockedIn || clockInTime) && (
-               <Box mb={2}>
-                 <Typography variant="body2" fontWeight={500}>
-                   {clockedIn || clockInTime
-                     ? `Clocked In: ${clockInTime || new Date().toLocaleTimeString([], {
-                         hour: "2-digit",
-                         minute: "2-digit",
-                         hour12: true,
-                       })}`
-                     : "Not Clocked In"}
-                 </Typography>
-                 {clockedOut && clockOutTime && (
-                   <Box mt={1}>
-                     <Typography variant="body2" fontWeight={500}>
-                       Clocked Out: {clockOutTime}
-                     </Typography>
-                     <Typography variant="caption" color="text.secondary">
-                       Working Hours: {workingHours}h | Break: {breakTime}h | Overtime: {overtime}h
-                     </Typography>
-                   </Box>
-                 )}
-               </Box>
-             )}
-             <Grid container spacing={1}>
-               <Grid item xs={6}>
-                 <Button
-                   fullWidth
-                   variant={clockedIn ? "outlined" : "contained"}
-                   color="primary"
-                   onClick={handleClockIn}
-                   disabled={clockedIn}
-                 >
-                   {clockedIn ? "Clocked In" : "Clock In"}
-                 </Button>
-               </Grid>
-               <Grid item xs={6}>
-                 <Button
-                   fullWidth
-                   variant={clockedOut ? "outlined" : "contained"}
-                   color="secondary"
-                   onClick={handleClockOut}
-                   disabled={clockedOut || !clockedIn}
-                 >
-                   {clockedOut ? "Clocked Out" : "Clock Out"}
-                 </Button>
-               </Grid>
-             </Grid>
-           </CardContent>
-         </Card>
-       </Grid>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent sx={{ textAlign: "center" }}>
+              <AccessTimeIcon
+                sx={{ fontSize: 48, color: "primary.main", mb: 1 }}
+              />
+              <Typography variant="h5" fontWeight={600}>
+                {currentTime.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                })}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Current Time
+              </Typography>
+              {(clockedIn || clockInTime) && (
+                <Box mb={2}>
+                  <Typography variant="body2" fontWeight={600} color="primary.main">
+                    Clocked In: {clockInTime || formatTime12(todayRecord?.clockIn)}
+                  </Typography>
+                  {clockedOut && clockOutTime ? (
+                    <Box mt={1}>
+                      <Typography variant="body2" fontWeight={600} color="secondary.main">
+                        Clocked Out: {clockOutTime || formatTime12(todayRecord?.clockOut)}
+                      </Typography>
+                      <Typography variant="body2" color="text.primary" fontWeight={600} mt={0.5}>
+                        Total Worked: {getWorkingDuration(todayRecord?.clockIn, todayRecord?.clockOut, workingHours).detailed}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Break: {formatHoursMinutes(breakTime, 'short')} | Overtime: {formatHoursMinutes(overtime, 'short')}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Box mt={1}>
+                      <Typography variant="body2" color="success.main" fontWeight={600}>
+                        Working: {getWorkingDuration(todayRecord?.clockIn || new Date()).detailed}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Shift: {todayRecord?.shift || shift || 'General'}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
+              <Grid container spacing={1}>
+                <Grid item xs={6}>
+                  <Button
+                    fullWidth
+                    variant={clockedIn ? "outlined" : "contained"}
+                    color="primary"
+                    onClick={handleClockIn}
+                    disabled={clockedIn}
+                  >
+                    {clockedIn ? "Clocked In" : "Clock In"}
+                  </Button>
+                </Grid>
+                <Grid item xs={6}>
+                  <Button
+                    fullWidth
+                    variant={clockedOut ? "outlined" : "contained"}
+                    color="secondary"
+                    onClick={handleClockOut}
+                    disabled={clockedOut || !clockedIn}
+                  >
+                    {clockedOut ? "Clocked Out" : "Clock Out"}
+                  </Button>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
         <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
@@ -392,35 +404,48 @@ export default function Attendance() {
                   <TableCell>Status</TableCell>
                   <TableCell>Clock In</TableCell>
                   <TableCell>Clock Out</TableCell>
+                  <TableCell>Working Hours</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {attendance
                   .filter((a) => a.status !== "weekend")
                   .slice(0, 30)
-                  .map((a) => (
-                    <TableRow key={a._id || a.date}>
-                      <TableCell>
-                        {formatDate(a.date, "MMM dd, yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={a.status}
-                          size="small"
-                          color={
-                            a.status === "present"
-                              ? "success"
-                              : a.status === "absent"
-                                ? "error"
-                                : "warning"
-                          }
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>{a.clockIn || "-"}</TableCell>
-                      <TableCell>{a.clockOut || "-"}</TableCell>
-                    </TableRow>
-                  ))}
+                  .map((a) => {
+                    const rowDuration = a.workingHours != null && a.workingHours > 0
+                      ? formatHoursMinutes(a.workingHours, 'long')
+                      : (a.clockIn && a.clockOut ? getWorkingDuration(a.clockIn, a.clockOut).detailed : '-');
+                    return (
+                      <TableRow key={a._id || a.date}>
+                        <TableCell>
+                          {formatDate(a.date, "MMM dd, yyyy")}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={a.status}
+                            size="small"
+                            color={
+                              a.status === "present" || a.status === "working"
+                                ? "success"
+                                : a.status === "absent"
+                                  ? "error"
+                                  : "warning"
+                            }
+                            variant="outlined"
+                          />
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500 }}>
+                          {formatTime12(a.clockIn || a.clockInTime)}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 500 }}>
+                          {formatTime12(a.clockOut || a.clockOutTime)}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: 'primary.main' }}>
+                          {rowDuration}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
               </TableBody>
             </Table>
           </TableContainer>

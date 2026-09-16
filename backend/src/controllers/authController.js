@@ -7,21 +7,51 @@ const {
   verifyToken,
 } = require("../config/jwt");
 
+const ADMIN_SECRET_CODE = process.env.ADMIN_SECRET_CODE || "ADMIN2026";
+
 exports.register = async (req, res, next) => {
   try {
-    const { email, password, role, profile } = req.body;
+    const { email, password, role = "employee", profile = {}, adminSecurityCode } = req.body;
 
     const exists = await User.findOne({ email });
     if (exists) {
       return ApiResponse.error(res, "Email already registered", 400);
     }
 
-    await User.create({ email, password, role, profile });
+    if (role === "admin") {
+      if (!adminSecurityCode || adminSecurityCode.trim() !== ADMIN_SECRET_CODE) {
+        return ApiResponse.error(
+          res,
+          "Invalid Admin Security Code. You need the authorized Admin Passcode (ADMIN2026) to register as an Administrator.",
+          403,
+        );
+      }
+    }
+
+    const isManagerRole = role === "manager";
+    const newUser = await User.create({
+      email,
+      password,
+      role,
+      profile,
+      isApproved: !isManagerRole,
+      approvalStatus: isManagerRole ? "pending" : "approved",
+      active: !isManagerRole,
+    });
+
+    if (isManagerRole) {
+      return ApiResponse.success(
+        res,
+        sanitizeUser(newUser),
+        "Manager registration submitted successfully! Your account is pending Administrator approval before you can sign in.",
+        201,
+      );
+    }
 
     return ApiResponse.success(
       res,
-      null,
-      "User created successfully. Please login.",
+      sanitizeUser(newUser),
+      "Account created successfully. Please sign in.",
       201,
     );
   } catch (err) {
@@ -40,8 +70,24 @@ exports.login = async (req, res, next) => {
       return ApiResponse.error(res, "Invalid email or password", 401);
     }
 
+    if (user.role === "manager" && (!user.isApproved || user.approvalStatus === "pending")) {
+      return ApiResponse.error(
+        res,
+        "Your Manager account is pending administrator approval. Please wait for an Administrator to approve your account before signing in.",
+        403,
+      );
+    }
+
+    if (user.role === "manager" && user.approvalStatus === "rejected") {
+      return ApiResponse.error(
+        res,
+        "Your Manager registration request was declined by the administrator. Please contact your organization administrator.",
+        403,
+      );
+    }
+
     if (!user.active) {
-      return ApiResponse.error(res, "Account deactivated", 401);
+      return ApiResponse.error(res, "Account deactivated. Please contact administrator.", 401);
     }
 
     const isMatch = await user.matchPassword(password);
@@ -175,20 +221,52 @@ exports.getUsers = async (req, res, next) => {
 
 exports.updateProfile = async (req, res, next) => {
   try {
-    const allowedFields = ["profile", "assignedLine", "managerId"];
-    const updates = {};
-    for (const field of allowedFields) {
-      if (req.body[field] !== undefined) {
-        updates[field] = req.body[field];
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return ApiResponse.error(res, "User not found", 404);
+    }
+
+    if (!user.profile) {
+      user.profile = {};
+    }
+
+    if (req.body.profile) {
+      Object.assign(user.profile, req.body.profile);
+    }
+
+    const directProfileFields = [
+      "firstName",
+      "lastName",
+      "contactNumber",
+      "phoneNumber",
+      "phone",
+      "department",
+      "position",
+      "profileImage",
+      "employeeId",
+    ];
+
+    for (const f of directProfileFields) {
+      if (req.body[f] !== undefined) {
+        if (f === "phone" || f === "phoneNumber") {
+          user.profile.contactNumber = req.body[f];
+        } else {
+          user.profile[f] = req.body[f];
+        }
       }
     }
 
-    const user = await User.findByIdAndUpdate(req.user._id, updates, {
-      new: true,
-      runValidators: true,
-    });
+    if (req.body.assignedLine !== undefined) user.assignedLine = req.body.assignedLine;
+    if (req.body.managerId !== undefined) user.managerId = req.body.managerId;
 
-    return ApiResponse.success(res, sanitizeUser(user), "Profile updated");
+    user.markModified("profile");
+    await user.save();
+
+    const updated = await User.findById(user._id)
+      .populate("assignedLine", "name")
+      .populate("managerId", "email profile");
+
+    return ApiResponse.success(res, sanitizeUser(updated), "Profile updated successfully");
   } catch (err) {
     next(err);
   }
@@ -218,6 +296,65 @@ exports.changePassword = async (req, res, next) => {
     await user.save();
 
     return ApiResponse.success(res, null, "Password changed successfully");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getPendingApprovals = async (req, res, next) => {
+  try {
+    const pending = await User.find({
+      $or: [
+        { approvalStatus: "pending" },
+        { role: "manager", isApproved: false, approvalStatus: { $ne: "rejected" } },
+      ],
+    }).sort({ createdAt: -1 });
+
+    return ApiResponse.success(res, pending.map(sanitizeUser), "Pending manager approvals retrieved");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.approveManager = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return ApiResponse.error(res, "User not found", 404);
+    }
+
+    user.isApproved = true;
+    user.approvalStatus = "approved";
+    user.active = true;
+    user.approvedBy = req.user._id;
+    user.approvalDate = new Date();
+    await user.save();
+
+    const name = `${user.profile?.firstName || user.firstName || ""} ${user.profile?.lastName || user.lastName || ""}`.trim() || user.email;
+    return ApiResponse.success(res, sanitizeUser(user), `Manager ${name} approved successfully`);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.rejectManager = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return ApiResponse.error(res, "User not found", 404);
+    }
+
+    user.isApproved = false;
+    user.approvalStatus = "rejected";
+    user.active = false;
+    user.approvedBy = req.user._id;
+    user.approvalDate = new Date();
+    await user.save();
+
+    const name = `${user.profile?.firstName || user.firstName || ""} ${user.profile?.lastName || user.lastName || ""}`.trim() || user.email;
+    return ApiResponse.success(res, sanitizeUser(user), `Manager ${name} registration application rejected`);
   } catch (err) {
     next(err);
   }

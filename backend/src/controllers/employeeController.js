@@ -83,12 +83,20 @@ exports.updateEmployee = async (req, res, next) => {
       "managerId",
       "assignedLine",
       "active",
+      "status",
     ];
     const updates = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) {
         updates[field] = req.body[field];
       }
+    }
+
+    if (req.body.status !== undefined) {
+      updates.active = req.body.status === "active";
+    }
+    if (req.body.active !== undefined) {
+      updates.active = Boolean(req.body.active);
     }
 
     const employee = await User.findByIdAndUpdate(req.params.id, updates, {
@@ -103,6 +111,32 @@ exports.updateEmployee = async (req, res, next) => {
     }
 
     return ApiResponse.success(res, sanitizeUser(employee), "Employee updated");
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteEmployee = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (req.user && req.user._id.toString() === id.toString()) {
+      return ApiResponse.error(res, "You cannot delete your own account", 400);
+    }
+
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return ApiResponse.error(res, "User not found", 404);
+    }
+
+    await Promise.allSettled([
+      Attendance.deleteMany({ employee: id }),
+      Task.deleteMany({ assignedTo: id }),
+      Issue.deleteMany({ reportedBy: id }),
+      Notification.deleteMany({ recipient: id }),
+    ]);
+
+    return ApiResponse.success(res, null, "User entirely deleted successfully");
   } catch (err) {
     next(err);
   }

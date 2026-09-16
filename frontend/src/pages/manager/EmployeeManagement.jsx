@@ -9,18 +9,13 @@ import {
   Tooltip,
   Avatar,
   Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton as DialogIconButton,
   TextField,
   MenuItem,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import DataTable from "../../components/common/DataTable";
-import PerformanceChart from "../../components/charts/PerformanceChart";
+import EmployeeDetailModal from "../../components/modals/EmployeeDetailModal";
 import { formatDate } from "../../utils/helpers";
 import api from "../../api/axios";
 
@@ -65,28 +60,36 @@ export default function EmployeeManagement() {
     {
       id: "name",
       label: "Employee",
-      render: (_, row) => (
-        <Box display="flex" alignItems="center" gap={1}>
-          <Avatar
-            sx={{
-              width: 32,
-              height: 32,
-              bgcolor: "primary.main",
-              fontSize: 12,
-            }}
-          >
-            {(row.firstName?.[0] || "") + (row.lastName?.[0] || "")}
-          </Avatar>
-          <Box>
-            <Typography variant="body2" fontWeight={500}>
-              {row.firstName || ""} {row.lastName || ""}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {row.position || row.designation || "-"}
-            </Typography>
+      render: (_, row) => {
+        const img = row.profile?.profileImage || row.profileImage;
+        const first = row.firstName || row.profile?.firstName || "";
+        const last = row.lastName || row.profile?.lastName || "";
+        const fullName = `${first} ${last}`.trim() || row.email || "Employee";
+        return (
+          <Box display="flex" alignItems="center" gap={1.25}>
+            <Avatar
+              src={img || undefined}
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: "primary.main",
+                fontSize: 12,
+                fontWeight: 700,
+              }}
+            >
+              {(first[0] || "") + (last[0] || "")}
+            </Avatar>
+            <Box>
+              <Typography variant="body2" fontWeight={600}>
+                {fullName}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {row.position || row.designation || row.profile?.position || "-"}
+              </Typography>
+            </Box>
           </Box>
-        </Box>
-      ),
+        );
+      },
     },
     {
       id: "email",
@@ -251,147 +254,15 @@ export default function EmployeeManagement() {
         rows={employees}
         loading={loading}
         searchPlaceholder="Search employees..."
+        onRowClick={(row) => handleViewProfile(row)}
       />
 
-      {/* Performance Dialog */}
-      <Dialog
+      {/* Employee Details Modal */}
+      <EmployeeDetailModal
         open={perfOpen}
         onClose={() => setPerfOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="h6">
-            {selectedEmployee?.firstName || ""}{" "}
-            {selectedEmployee?.lastName || ""} - Performance
-          </Typography>
-          <DialogIconButton onClick={() => setPerfOpen(false)} size="small">
-            <CloseIcon />
-          </DialogIconButton>
-        </DialogTitle>
-        <DialogContent>
-          {selectedEmployee && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
-                <Box textAlign="center" mb={3}>
-                  <Avatar
-                    sx={{
-                      width: 80,
-                      height: 80,
-                      mx: "auto",
-                      mb: 1,
-                      bgcolor: "primary.main",
-                      fontSize: 28,
-                    }}
-                  >
-                    {(selectedEmployee.firstName?.[0] || "") +
-                      (selectedEmployee.lastName?.[0] || "")}
-                  </Avatar>
-                  <Typography variant="h6">
-                    {selectedEmployee.firstName || ""}{" "}
-                    {selectedEmployee.lastName || ""}
-                  </Typography>
-                  <Chip
-                    label={
-                      selectedEmployee.position ||
-                      selectedEmployee.designation ||
-                      "Employee"
-                    }
-                    size="small"
-                    sx={{ mt: 0.5 }}
-                  />
-                </Box>
-                <Box>
-                  {[
-                    {
-                      label: "Department",
-                      value: selectedEmployee.department || "-",
-                    },
-                    { label: "Email", value: selectedEmployee.email || "-" },
-                    { label: "Role", value: selectedEmployee.role || "-" },
-                    {
-                      label: "Performance",
-                      value: `${
-                        selectedEmployee.performance ||
-                        selectedEmployee.performanceScore ||
-                        0
-                      }%`,
-                    },
-                    {
-                      label: "Attendance",
-                      value: selectedEmployee.attendance
-                        ? `${selectedEmployee.attendance}%`
-                        : "-",
-                    },
-                    {
-                      label: "Status",
-                      value: selectedEmployee.status || "active",
-                    },
-                  ].map((f) => (
-                    <Box
-                      key={f.label}
-                      display="flex"
-                      justifyContent="space-between"
-                      mb={1}
-                    >
-                      <Typography variant="body2" color="text.secondary">
-                        {f.label}
-                      </Typography>
-                      <Typography variant="body2" fontWeight={500}>
-                        {f.value}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={8}>
-                <Typography variant="subtitle1" fontWeight={600} mb={2}>
-                  Performance Trend
-                </Typography>
-                <PerformanceChart
-                  data={[
-                    {
-                      label: "Productivity",
-                      data: Array.from({ length: 12 }, () =>
-                        Math.floor(Math.random() * 40 + 60),
-                      ),
-                      borderColor: "#59171B",
-                    },
-                    {
-                      label: "Quality",
-                      data: Array.from({ length: 12 }, () =>
-                        Math.floor(Math.random() * 20 + 80),
-                      ),
-                      borderColor: "#E8A06B",
-                    },
-                  ]}
-                  labels={[
-                    "Jan",
-                    "Feb",
-                    "Mar",
-                    "Apr",
-                    "May",
-                    "Jun",
-                    "Jul",
-                    "Aug",
-                    "Sep",
-                    "Oct",
-                    "Nov",
-                    "Dec",
-                  ]}
-                  height={250}
-                />
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
-      </Dialog>
+        user={selectedEmployee}
+      />
     </Box>
   );
 }

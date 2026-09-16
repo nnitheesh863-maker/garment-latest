@@ -20,6 +20,10 @@ import { useAuth } from "../../hooks/useAuth";
 import { ROLES } from "../../utils/constants";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import VpnKeyIcon from "@mui/icons-material/VpnKey";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AuthShell, { authFieldSx } from "../../components/auth/AuthShell";
 
 const validationSchema = yup.object({
@@ -32,12 +36,17 @@ const validationSchema = yup.object({
     .oneOf([yup.ref("password")], "Passwords must match")
     .required("Please confirm your password"),
   role: yup.string().required("Role is required"),
+  adminSecurityCode: yup.string().when("role", {
+    is: ROLES.ADMIN,
+    then: (schema) => schema.required("Admin Security Code is required for Administrator role"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
 });
 
 const roles = [
-  { value: ROLES.ADMIN, label: "Admin" },
-  { value: ROLES.MANAGER, label: "Manager" },
-  { value: ROLES.EMPLOYEE, label: "Employee" },
+  { value: ROLES.ADMIN, label: "Administrator (Requires Passcode)" },
+  { value: ROLES.MANAGER, label: "Manager (Requires Admin Approval)" },
+  { value: ROLES.EMPLOYEE, label: "Employee (Direct Access)" },
 ];
 
 export default function Register() {
@@ -47,6 +56,7 @@ export default function Register() {
   const [loading, setLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState(false);
+  const [showAdminCode, setShowAdminCode] = React.useState(false);
   const navigate = useNavigate();
   const fieldSx = authFieldSx(theme);
 
@@ -54,18 +64,25 @@ export default function Register() {
     setError(null);
     setLoading(true);
     try {
-      await register({
+      const res = await register({
         email: values.email,
         password: values.password,
         role: values.role,
+        adminSecurityCode: values.role === ROLES.ADMIN ? values.adminSecurityCode : undefined,
         profile: {
           firstName: values.firstName,
           lastName: values.lastName,
           employeeId: `EMP-${Date.now()}`,
         },
       });
-      toast.success("Account created successfully. Please sign in.");
-      navigate("/login");
+
+      if (values.role === ROLES.MANAGER) {
+        toast.info("Manager registration submitted! Your account is pending Administrator approval before sign in.");
+        navigate("/login?pending=manager");
+      } else {
+        toast.success("Account created successfully. Please sign in.");
+        navigate("/login");
+      }
     } catch (err) {
       const msg = err.response?.data?.message || "Registration failed";
       setError(msg);
@@ -106,6 +123,7 @@ export default function Register() {
           password: "",
           confirmPassword: "",
           role: ROLES.EMPLOYEE,
+          adminSecurityCode: "",
         }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
@@ -156,11 +174,11 @@ export default function Register() {
                   sx={fieldSx}
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   size="small"
-                  label="Role"
+                  label="Account Role"
                   name="role"
                   select
                   value={values.role}
@@ -176,6 +194,77 @@ export default function Register() {
                   ))}
                 </TextField>
               </Grid>
+
+              {/* Admin Secret Passcode Field */}
+              {values.role === ROLES.ADMIN && (
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 2.5,
+                      bgcolor: "rgba(89,23,27,0.06)",
+                      border: "1.5px dashed #59171B",
+                    }}
+                  >
+                    <Box display="flex" alignItems="center" gap={1} mb={1}>
+                      <AdminPanelSettingsIcon sx={{ color: "primary.main", fontSize: 20 }} />
+                      <Typography variant="subtitle2" fontWeight={700} color="primary.main">
+                        Admin Secret Passcode Required
+                      </Typography>
+                    </Box>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Admin Secret Security Code"
+                      name="adminSecurityCode"
+                      type={showAdminCode ? "text" : "password"}
+                      value={values.adminSecurityCode}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Enter secret code (ADMIN2026)"
+                      error={touched.adminSecurityCode && !!errors.adminSecurityCode}
+                      helperText={
+                        (touched.adminSecurityCode && errors.adminSecurityCode) ||
+                        "Secret authorization code required to register Administrator accounts"
+                      }
+                      sx={fieldSx}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <VpnKeyIcon sx={{ fontSize: 18, color: "primary.main" }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setShowAdminCode(!showAdminCode)} edge="end" size="small">
+                              {showAdminCode ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              )}
+
+              {/* Manager Approval Notice */}
+              {values.role === ROLES.MANAGER && (
+                <Grid item xs={12}>
+                  <Alert
+                    severity="info"
+                    icon={<SupervisorAccountIcon fontSize="inherit" />}
+                    sx={{ borderRadius: 2, bgcolor: "rgba(8,145,178,0.08)", color: "#0e7490", border: "1px solid rgba(8,145,178,0.2)" }}
+                  >
+                    <Typography variant="caption" sx={{ fontWeight: 600, display: "block" }}>
+                      Manager Account Approval Notice:
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontSize: 11.5 }}>
+                      Manager accounts require Administrator authorization. After registering, your account will be placed in <strong>Pending Approval</strong> until an Admin activates your profile.
+                    </Typography>
+                  </Alert>
+                </Grid>
+              )}
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
@@ -200,7 +289,7 @@ export default function Register() {
                   }}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   size="small"

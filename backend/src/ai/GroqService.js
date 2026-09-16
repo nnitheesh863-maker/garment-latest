@@ -1,11 +1,11 @@
 const axios = require('axios');
 
 const API_KEY = process.env.GROQ_API_KEY || process.env.CEREBRAS_API_KEY;
-const BASE_URL = process.env.GROQ_API_KEY 
-  ? 'https://api.groq.com/openai/v1' 
+const BASE_URL = process.env.GROQ_API_KEY
+  ? 'https://api.groq.com/openai/v1'
   : (process.env.CEREBRAS_BASE_URL || 'https://api.cerebras.ai/v1');
-const MODEL = process.env.GROQ_API_KEY 
-  ? 'llama3-8b-8192' 
+const MODEL = process.env.GROQ_API_KEY
+  ? 'llama3-8b-8192'
   : (process.env.CEREBRAS_MODEL || 'llama3.1-70b');
 
 async function callLLM(messages, temperature = 0.1) {
@@ -40,11 +40,11 @@ async function callLLM(messages, temperature = 0.1) {
 // Rule-based parsing fallbacks in case API is unavailable or rate limited
 function parseAdminCommandFallback(text) {
   const t = text.toLowerCase();
-  
+
   if (t.includes('create') || t.includes('order')) {
     const qtyMatch = text.match(/(\d+)/);
     const quantity = qtyMatch ? parseInt(qtyMatch[1]) : null;
-    
+
     let garmentType = null;
     if (t.includes('t-shirt') || t.includes('tshirt')) garmentType = 'T-Shirt';
     else if (t.includes('shirt')) garmentType = 'Shirt';
@@ -217,10 +217,10 @@ exports.generateProductionPlan = async (order, factoryData) => {
   const recommendedMachines = ['M-12', 'M-14'];
   const recommendedEmployeesCount = Math.max(3, Math.ceil(quantity / 600));
   const estimatedDays = Math.max(1, Math.ceil(quantity / 2000));
-  
+
   const expectedComp = new Date();
   expectedComp.setDate(expectedComp.getDate() + estimatedDays);
-  
+
   const systemPrompt = `You are an AI Production Planner for a Garment Factory.
 Analyze the order details and current factory state (machines, employees, lines).
 Generate an optimal production plan.

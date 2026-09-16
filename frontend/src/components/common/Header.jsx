@@ -27,6 +27,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useThemeMode } from '../../context/ThemeContext';
 import { getInitials } from '../../utils/helpers';
 import NotificationBell from './NotificationBell';
+import ProfileSettingsModal from '../modals/ProfileSettingsModal';
 import { useNavigate } from 'react-router-dom';
 
 function useClock() {
@@ -50,14 +51,14 @@ export default function Header({ onToggleSidebar }) {
   const navigate = useNavigate();
   const now = useClock();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   const handleMenu = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   const handleProfile = () => {
     handleClose();
-    const base = isAdmin ? '/admin' : isManager ? '/manager' : '/employee';
-    navigate(`${base}/dashboard`);
+    setProfileModalOpen(true);
   };
 
   const handleLogout = () => {
@@ -231,7 +232,10 @@ export default function Header({ onToggleSidebar }) {
             '&:hover': { borderColor: 'primary.main' },
           }}
         >
-          <Avatar sx={{ width: 30, height: 30, bgcolor: '#59171B', fontSize: 12, fontWeight: 700, color: '#FED7B8' }}>
+          <Avatar
+            src={user?.profile?.profileImage || user?.profileImage || undefined}
+            sx={{ width: 30, height: 30, bgcolor: '#59171B', fontSize: 12, fontWeight: 700, color: '#FED7B8' }}
+          >
             {user ? getInitials(`${user.profile?.firstName || user.firstName} ${user.profile?.lastName || user.lastName}`) : 'U'}
           </Avatar>
         </IconButton>
@@ -261,7 +265,7 @@ export default function Header({ onToggleSidebar }) {
           </Box>
           <MenuItem onClick={handleProfile} sx={{ borderRadius: 2, mx: 0.75, my: 0.25 }}>
             <ListItemIcon><PersonIcon fontSize="small" sx={{ color: '#7A6A63' }} /></ListItemIcon>
-            <ListItemText sx={{ '& .MuiListItemText-primary': { fontSize: 13, fontWeight: 500 } }}>Profile</ListItemText>
+            <ListItemText sx={{ '& .MuiListItemText-primary': { fontSize: 13, fontWeight: 500 } }}>Profile Settings</ListItemText>
           </MenuItem>
           {isAdmin && (
             <MenuItem onClick={() => { handleClose(); navigate('/admin/settings'); }} sx={{ borderRadius: 2, mx: 0.75, my: 0.25 }}>
@@ -275,6 +279,7 @@ export default function Header({ onToggleSidebar }) {
           </MenuItem>
         </Menu>
       </Toolbar>
+      <ProfileSettingsModal open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
     </AppBar>
   );
 }

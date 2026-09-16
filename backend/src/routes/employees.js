@@ -12,6 +12,12 @@ router.put(
   authorize("admin", "manager"),
   employeeController.updateEmployee,
 );
+router.delete(
+  "/:id",
+  protect,
+  authorize("admin"),
+  employeeController.deleteEmployee,
+);
 router.get(
   "/:id/performance",
   protect,
