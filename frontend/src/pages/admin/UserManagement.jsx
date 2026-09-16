@@ -28,6 +28,8 @@ import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import { toast } from "react-toastify";
 import DataTable from "../../components/common/DataTable";
+import PageHeader from "../../components/common/PageHeader";
+import GradientButton from "../../components/common/GradientButton";
 import UserForm from "../../components/forms/UserForm";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import EmployeeDetailModal from "../../components/modals/EmployeeDetailModal";
@@ -435,23 +437,16 @@ export default function UserManagement() {
 
   return (
     <Box>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          User Management
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleCreate}
-        >
-          Add User
-        </Button>
-      </Box>
+      <PageHeader
+        title="Workforce & Access Control"
+        subtitle="Manage user credentials, role permissions, and manager registration authorizations."
+        badge="Enterprise RBAC"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleCreate}>
+            Add User
+          </GradientButton>
+        }
+      />
 
       {/* Pending Manager Approvals Section */}
       {pendingApprovals.length > 0 && (
