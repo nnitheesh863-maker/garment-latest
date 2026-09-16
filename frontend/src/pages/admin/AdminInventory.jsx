@@ -33,6 +33,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import { toast } from "react-toastify";
 import { inventoryApi } from "../../api/axios";
 import DataTable from "../../components/common/DataTable";
+import PageHeader from "../../components/common/PageHeader";
+import GradientButton from "../../components/common/GradientButton";
 import ConfirmModal from "../../components/modals/ConfirmModal";
 import { formatDate } from "../../utils/helpers";
 import { INVENTORY_CATEGORIES } from "../../utils/constants";
@@ -290,23 +292,16 @@ export default function AdminInventory() {
 
   return (
     <Box>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={3}
-      >
-        <Typography variant="h4" fontWeight={700}>
-          Inventory Management
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenCreate}
-        >
-          Create Item
-        </Button>
-      </Box>
+      <PageHeader
+        title="Inventory & Raw Materials"
+        subtitle="Track fabrics, threads, trims, and automated reorder points with stock alerts."
+        badge="Supply Chain"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleOpenCreate}>
+            Create Item
+          </GradientButton>
+        }
+      />
 
       <Box
         display="flex"
