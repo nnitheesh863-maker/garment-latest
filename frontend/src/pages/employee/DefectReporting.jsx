@@ -22,6 +22,9 @@ import { toast } from "react-toastify";
 import { defectApi } from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
 import { formatDate, formatDateTime, getStatusColor } from "../../utils/helpers";
+import PageHeader from "../../components/common/PageHeader";
+import GradientButton from "../../components/common/GradientButton";
+import StatusBadge from "../../components/common/StatusBadge";
 import DataTable from "../../components/common/DataTable";
 
 const GARMENT_TYPES = ["shirt", "t-shirt", "pant", "other"];
@@ -158,18 +161,7 @@ export default function DefectReporting() {
     {
       id: "status",
       label: "Status",
-      render: (val) => (
-        <Chip
-          label={val ? val.replace(/_/g, " ") : "Unknown"}
-          size="small"
-          sx={{
-            backgroundColor: getStatusColor(val),
-            color: "#fff",
-            fontWeight: 500,
-            textTransform: "capitalize",
-          }}
-        />
-      ),
+      render: (val) => <StatusBadge status={val} size="small" />,
     },
     {
       id: "createdAt",
@@ -182,9 +174,11 @@ export default function DefectReporting() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={700} mb={3}>
-        Report a Defect
-      </Typography>
+      <PageHeader
+        title="Defect Capture & Inspection Log"
+        subtitle="Log sewing, fabric, or color defects encountered on the active production line."
+        badge="Quality Gate"
+      />
 
       <Grid container spacing={3}>
         {/* Form Section */}
