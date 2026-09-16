@@ -31,6 +31,8 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import { toast } from 'react-toastify';
 import { qualityApi } from '../../api/axios';
 import DataTable from '../../components/common/DataTable';
+import PageHeader from '../../components/common/PageHeader';
+import GradientButton from '../../components/common/GradientButton';
 import ProductionChart from '../../components/charts/ProductionChart';
 import { formatDate } from '../../utils/helpers';
 import { getStatusColor } from '../../utils/helpers';
@@ -159,11 +161,41 @@ export default function AdminQuality() {
   };
 
   const StatCard = ({ label, value, color, subtitle }) => (
-    <Card>
-      <CardContent sx={{ py: 2 }}>
-        <Typography variant="h4" fontWeight={700} color={color}>{value}</Typography>
-        <Typography variant="body2" color="text.secondary">{label}</Typography>
-        {subtitle && <Typography variant="caption" color="text.secondary">{subtitle}</Typography>}
+    <Card
+      sx={{
+        borderRadius: '16px',
+        border: '1px solid rgba(241, 213, 192, 0.65)',
+        boxShadow: '0 4px 16px rgba(89, 23, 27, 0.05)',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'all 0.25s ease',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 24px rgba(89, 23, 27, 0.12)',
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '3px',
+          bgcolor: color,
+        },
+      }}
+    >
+      <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
+        <Typography variant="h4" fontWeight={800} color={color} sx={{ letterSpacing: '-0.02em' }}>
+          {value}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" fontWeight={600}>
+          {label}
+        </Typography>
+        {subtitle && (
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+            {subtitle}
+          </Typography>
+        )}
       </CardContent>
     </Card>
   );
@@ -189,10 +221,16 @@ export default function AdminQuality() {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={700}>Quality Control</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenForm}>New Inspection</Button>
-      </Box>
+      <PageHeader
+        title="Quality Control & Standards"
+        subtitle="Standardized inspections, Grade A-D compliance, and defect root-cause prevention."
+        badge="ISO 9001"
+        actions={
+          <GradientButton icon={<AddIcon />} onClick={handleOpenForm}>
+            New Inspection
+          </GradientButton>
+        }
+      />
 
       <Grid container spacing={2} mb={3}>
         <Grid item xs={6} sm={3}>
