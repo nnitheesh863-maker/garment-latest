@@ -15,6 +15,9 @@ import StarIcon from '@mui/icons-material/Star';
 import SpeedIcon from '@mui/icons-material/Speed';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PageHeader from '../../components/common/PageHeader';
+import StatCard from '../../components/common/StatCard';
+import GlassCard from '../../components/common/GlassCard';
 import PerformanceChart from '../../components/charts/PerformanceChart';
 
 export default function Performance() {
@@ -45,44 +48,53 @@ export default function Performance() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={700} mb={3}>My Performance</Typography>
+      <PageHeader
+        title="Personal Performance & Growth"
+        subtitle="Track your individual output, quality standards, and skill mastery milestones."
+        badge="Top 10% Operator"
+        badgeColor="success"
+      />
 
       <Grid container spacing={3} mb={3}>
         <Grid item xs={6} sm={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#59171B', width: 48, height: 48, mx: 'auto', mb: 1 }}><StarIcon /></Avatar>
-              <Typography variant="h4" fontWeight={700}>92%</Typography>
-              <Typography variant="body2" color="text.secondary">Performance Score</Typography>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Performance Score"
+            value="92%"
+            icon={<StarIcon />}
+            variant="maroon"
+            loading={loading}
+            subtitle="Overall rating"
+          />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#16A34A', width: 48, height: 48, mx: 'auto', mb: 1 }}><CheckCircleIcon /></Avatar>
-              <Typography variant="h4" fontWeight={700}>95%</Typography>
-              <Typography variant="body2" color="text.secondary">Quality Score</Typography>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Quality Score"
+            value="95%"
+            icon={<CheckCircleIcon />}
+            variant="green"
+            loading={loading}
+            subtitle="Zero-defect rate"
+          />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#E8A06B', width: 48, height: 48, mx: 'auto', mb: 1 }}><SpeedIcon /></Avatar>
-              <Typography variant="h4" fontWeight={700}>88%</Typography>
-              <Typography variant="body2" color="text.secondary">Efficiency</Typography>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Efficiency"
+            value="88%"
+            icon={<SpeedIcon />}
+            variant="gold"
+            loading={loading}
+            subtitle="Units per hour index"
+          />
         </Grid>
         <Grid item xs={6} sm={3}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center' }}>
-              <Avatar sx={{ bgcolor: '#2C8C8C', width: 48, height: 48, mx: 'auto', mb: 1 }}><TrendingUpIcon /></Avatar>
-              <Typography variant="h4" fontWeight={700}>+5%</Typography>
-              <Typography variant="body2" color="text.secondary">Last Month Growth</Typography>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Monthly Growth"
+            value="+5%"
+            icon={<TrendingUpIcon />}
+            variant="cream"
+            loading={loading}
+            subtitle="vs. previous cycle"
+          />
         </Grid>
       </Grid>
 
