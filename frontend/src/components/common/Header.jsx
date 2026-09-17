@@ -268,14 +268,18 @@ export default function Header({ onToggleSidebar }) {
             color="inherit"
             onClick={toggleTheme}
             sx={{
-              color: '#7A6A63',
-              bgcolor: isLight ? 'rgba(241, 213, 192, 0.3)' : 'rgba(255, 255, 255, 0.06)',
-              borderRadius: '12px',
-              p: 1.1,
-              transition: 'all 0.2s ease',
+              color: isLight ? '#59171B' : '#FED7B8',
+              bgcolor: isLight ? 'rgba(241, 213, 192, 0.4)' : 'rgba(255, 255, 255, 0.08)',
+              borderRadius: '14px',
+              p: 1.15,
+              transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                bgcolor: isLight ? 'rgba(241, 213, 192, 0.6)' : 'rgba(255, 255, 255, 0.12)',
-                transform: 'rotate(15deg)',
+                bgcolor: isLight ? 'rgba(241, 213, 192, 0.8)' : 'rgba(255, 255, 255, 0.16)',
+                transform: 'rotate(20deg) scale(1.08)',
+                boxShadow: '0 4px 14px rgba(89, 23, 27, 0.2)',
+              },
+              '&:active': {
+                transform: 'scale(0.9)',
               },
             }}
           >
@@ -295,13 +299,17 @@ export default function Header({ onToggleSidebar }) {
           sx={{
             ml: 0.25,
             border: '2px solid',
-            borderColor: isLight ? '#F1D5C0' : 'rgba(254, 215, 184, 0.2)',
-            borderRadius: '12px',
-            p: 0.35,
-            transition: 'all 0.25s ease',
+            borderColor: isLight ? '#F1D5C0' : 'rgba(254, 215, 184, 0.25)',
+            borderRadius: '14px',
+            p: 0.4,
+            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
               borderColor: 'primary.main',
-              transform: 'scale(1.05)',
+              transform: 'scale(1.08)',
+              boxShadow: '0 4px 14px rgba(89, 23, 27, 0.25)',
+            },
+            '&:active': {
+              transform: 'scale(0.92)',
             },
           }}
         >

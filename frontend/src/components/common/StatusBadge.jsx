@@ -1,6 +1,9 @@
 import React from 'react';
 import { Box } from '@mui/material';
+import { motion } from 'framer-motion';
 import { getStatusColor } from '../../utils/helpers';
+
+const MotionBox = motion.create(Box);
 
 export default function StatusBadge({
   status,
@@ -19,29 +22,35 @@ export default function StatusBadge({
     );
 
   return (
-    <Box
+    <MotionBox
       component="span"
+      whileHover={{ scale: 1.06, y: -1 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 20 }}
       sx={{
         display: 'inline-flex',
         alignItems: 'center',
-        gap: 0.75,
-        px: size === 'small' ? 1.25 : 1.75,
-        py: size === 'small' ? 0.35 : 0.55,
+        gap: 0.8,
+        px: size === 'small' ? 1.35 : 1.85,
+        py: size === 'small' ? 0.4 : 0.6,
         borderRadius: 999,
         fontSize: size === 'small' ? 11 : 12.5,
-        fontWeight: 700,
+        fontWeight: 750,
         lineHeight: 1.4,
         textTransform: 'capitalize',
-        letterSpacing: '0.02em',
+        letterSpacing: '0.025em',
         color: color,
-        background: `${color}18`,
-        border: `1px solid ${color}38`,
-        backdropFilter: 'blur(8px)',
+        background: `${color}1A`,
+        border: `1.5px solid ${color}40`,
+        backdropFilter: 'blur(10px)',
         whiteSpace: 'nowrap',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        cursor: 'default',
+        boxShadow: `0 2px 8px ${color}1F`,
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
         '&:hover': {
-          transform: 'scale(1.04)',
-          boxShadow: `0 2px 10px ${color}30`,
+          boxShadow: `0 4px 14px ${color}45`,
+          background: `${color}28`,
+          borderColor: color,
         },
         ...sx,
       }}
@@ -52,27 +61,27 @@ export default function StatusBadge({
         <Box
           sx={{
             position: 'relative',
-            width: 7,
-            height: 7,
+            width: 7.5,
+            height: 7.5,
             borderRadius: '50%',
             bgcolor: color,
             flexShrink: 0,
-            boxShadow: `0 0 8px ${color}99`,
+            boxShadow: `0 0 10px ${color}`,
             ...(isPulsing && {
               '&::after': {
                 content: '""',
                 position: 'absolute',
-                inset: -3,
+                inset: -3.5,
                 borderRadius: '50%',
                 border: `1.5px solid ${color}`,
                 animation: 'pulseRing 2s cubic-bezier(0.24, 0, 0.38, 1) infinite',
-                opacity: 0.75,
+                opacity: 0.8,
               },
             }),
           }}
         />
       )}
       {status ? String(status).replace(/_/g, ' ') : 'Unknown'}
-    </Box>
+    </MotionBox>
   );
 }
