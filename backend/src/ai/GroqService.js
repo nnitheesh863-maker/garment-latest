@@ -4,9 +4,7 @@ const API_KEY = process.env.GROQ_API_KEY || process.env.CEREBRAS_API_KEY;
 const BASE_URL = process.env.GROQ_API_KEY
   ? 'https://api.groq.com/openai/v1'
   : (process.env.CEREBRAS_BASE_URL || 'https://api.cerebras.ai/v1');
-const MODEL = process.env.GROQ_API_KEY
-  ? 'llama3-8b-8192'
-  : (process.env.CEREBRAS_MODEL || 'llama3.1-70b');
+const MODEL = process.env.GROQ_MODEL || process.env.CEREBRAS_MODEL || (process.env.GROQ_API_KEY ? 'llama-3.3-70b-versatile' : 'llama3.1-8b');
 
 async function callLLM(messages, temperature = 0.1) {
   if (!API_KEY) {
