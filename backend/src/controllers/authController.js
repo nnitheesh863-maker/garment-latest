@@ -6,6 +6,7 @@ const {
   generateRefreshToken,
   verifyToken,
 } = require("../config/jwt");
+const { logAudit } = require("../services/auditLogService");
 
 const ADMIN_SECRET_CODE = process.env.ADMIN_SECRET_CODE || "ADMIN2026";
 
@@ -101,6 +102,16 @@ exports.login = async (req, res, next) => {
     user.refreshToken = refreshToken;
     user.lastLogin = new Date();
     await user.save();
+
+    await logAudit({
+      req,
+      user,
+      action: 'LOGIN',
+      entityType: 'User',
+      entityId: user._id,
+      description: `User ${user.email} (${user.role}) logged in successfully.`,
+      severity: 'info',
+    });
 
     return ApiResponse.success(
       res,

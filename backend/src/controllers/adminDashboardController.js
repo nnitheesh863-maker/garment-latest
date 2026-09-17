@@ -575,3 +575,56 @@ exports.getOeeTelemetry = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getAuditLogs = async (req, res, next) => {
+  try {
+    const AuditLog = require('../models/AuditLog');
+    const {
+      page = 1,
+      limit = 50,
+      action,
+      entityType,
+      search,
+      user,
+      dateFrom,
+      dateTo,
+      severity,
+    } = req.query;
+
+    const filter = {};
+    if (action) filter.action = new RegExp(action, 'i');
+    if (entityType) filter.entityType = entityType;
+    if (severity) filter.severity = severity;
+    if (user) {
+      filter.$or = [
+        { userName: { $regex: user, $options: 'i' } },
+        { userRole: { $regex: user, $options: 'i' } },
+      ];
+    }
+    if (dateFrom || dateTo) {
+      filter.createdAt = {};
+      if (dateFrom) filter.createdAt.$gte = new Date(dateFrom);
+      if (dateTo) filter.createdAt.$lte = new Date(dateTo + 'T23:59:59.999Z');
+    }
+    if (search) {
+      filter.$or = [
+        { description: { $regex: search, $options: 'i' } },
+        { action: { $regex: search, $options: 'i' } },
+        { entityId: { $regex: search, $options: 'i' } },
+        { userName: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const total = await AuditLog.countDocuments(filter);
+    const logs = await AuditLog.find(filter)
+      .populate('user', 'email profile role')
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit));
+
+    return ApiResponse.paginated(res, logs, page, limit, total);
+  } catch (err) {
+    next(err);
+  }
+};
+

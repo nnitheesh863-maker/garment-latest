@@ -4,6 +4,7 @@ const ApiResponse = require('../utils/apiResponse');
 const { generateOrderNumber } = require('../utils/helpers');
 const { getDelayPrediction } = require('../services/aiService');
 const { emitToRoom, emitToUser } = require('../services/socketService');
+const { logAudit } = require('../services/auditLogService');
 
 exports.createOrder = async (req, res, next) => {
   try {
@@ -32,11 +33,22 @@ exports.createOrder = async (req, res, next) => {
 
     emitToRoom('management', 'orderUpdated', { action: 'created', order: populated });
 
+    await logAudit({
+      req,
+      action: 'ORDER_CREATED',
+      entityType: 'Order',
+      entityId: order._id,
+      description: `Order ${order.orderNumber} created for ${order.customer?.name || 'Customer'} (${order.orderDetails?.quantity || 0} units).`,
+      severity: 'success',
+      metadata: { orderNumber: order.orderNumber, garmentType: order.orderDetails?.garmentType },
+    });
+
     return ApiResponse.success(res, populated, 'Order created', 201);
   } catch (err) {
     next(err);
   }
 };
+
 
 exports.getOrders = async (req, res, next) => {
   try {
@@ -188,6 +200,15 @@ exports.deleteOrder = async (req, res, next) => {
     }
 
     emitToRoom('management', 'orderUpdated', { action: 'deleted', orderId: req.params.id });
+
+    await logAudit({
+      req,
+      action: 'ORDER_DELETED',
+      entityType: 'Order',
+      entityId: req.params.id,
+      description: `Order ${order.orderNumber} deleted. Associated tasks and machines were released.`,
+      severity: 'warning',
+    });
 
     return ApiResponse.success(res, null, 'Order deleted');
   } catch (err) {
