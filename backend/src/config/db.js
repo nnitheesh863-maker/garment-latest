@@ -1,20 +1,28 @@
 const mongoose = require('mongoose');
 
 const MAX_RETRIES = 5;
-const RETRY_INTERVAL = 5000;
+const RETRY_INTERVAL = 3000;
 
 let retryCount = 0;
 
 async function connectDB() {
-  const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/garment_production';
+  const primaryUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/garment_production';
+  const localFallbackUri = 'mongodb://127.0.0.1:27017/garment_production';
+
+  const uriToUse = (retryCount >= 2 && primaryUri !== localFallbackUri) ? localFallbackUri : primaryUri;
+
   try {
-    console.log('Attempting MongoDB connection...');
-    await mongoose.connect(uri);
+    console.log(`Attempting MongoDB connection to: ${uriToUse.includes('@') ? 'Cloud Cluster' : 'Local MongoDB'}...`);
+    await mongoose.connect(uriToUse, {
+      serverSelectionTimeoutMS: 5000,
+    });
     retryCount = 0;
     console.log(`MongoDB connected: ${mongoose.connection.host}`);
   } catch (err) {
     retryCount += 1;
     console.error(`MongoDB connection attempt ${retryCount} failed: ${err.message}`);
+    
+    // If cloud cluster DNS/SRV fails, try local fallback on next attempt
     if (retryCount < MAX_RETRIES) {
       console.log(`Retrying in ${RETRY_INTERVAL / 1000}s...`);
       await new Promise(resolve => setTimeout(resolve, RETRY_INTERVAL));

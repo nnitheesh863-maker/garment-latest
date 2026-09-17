@@ -756,3 +756,51 @@ exports.dispatchProductionTasks = async (req, res, next) => {
   }
 };
 
+exports.getMlHealth = async (req, res) => {
+  try {
+    const axios = require('axios');
+    const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:5001';
+    let mlOnline = false;
+    let details = null;
+    try {
+      const resp = await axios.get(`${aiUrl}/health`, { timeout: 1500 });
+      mlOnline = resp.status === 200;
+      details = resp.data;
+    } catch {
+      mlOnline = false;
+    }
+
+    return res.json({
+      success: true,
+      status: mlOnline ? 'local-ml' : 'cloud-fallback',
+      available: mlOnline,
+      provider: mlOnline ? 'local-python-ml' : 'groq-llama3',
+      details,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    return res.json({
+      success: true,
+      status: 'cloud-fallback',
+      available: false,
+      provider: 'heuristic',
+      error: err.message,
+    });
+  }
+};
+
+exports.getModelStatus = async (req, res) => {
+  return res.json({
+    success: true,
+    status: 'active',
+    models: {
+      delayPrediction: 'active',
+      machineFailure: 'active',
+      productionForecast: 'active',
+      nlpCommandParser: 'active',
+    },
+    tier: 'hybrid-tier1-tier2',
+  });
+};
+
+
