@@ -127,3 +127,23 @@ exports.deleteVideo = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getVideoMetrics = async (req, res, next) => {
+  try {
+    const [totalVideos, universalVideos] = await Promise.all([
+      LearningVideo.countDocuments(),
+      LearningVideo.countDocuments({
+        $or: [{ assignedTo: { $size: 0 } }, { assignedTo: { $exists: false } }, { assignedTo: null }],
+      }),
+    ]);
+
+    return ApiResponse.success(res, {
+      totalVideos,
+      universalVideos,
+      targetedVideos: totalVideos - universalVideos,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+

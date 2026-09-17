@@ -5,6 +5,7 @@ const { protect } = require('../middleware/auth');
 const { authorize } = require('../middleware/rbac');
 
 router.post('/', protect, authorize('admin', 'manager'), learningVideoController.createVideo);
+router.get('/metrics/summary', protect, learningVideoController.getVideoMetrics);
 router.get('/', protect, learningVideoController.getVideos);
 router.get('/:id', protect, learningVideoController.getVideo);
 router.put('/:id', protect, authorize('admin', 'manager'), learningVideoController.updateVideo);
