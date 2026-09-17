@@ -62,25 +62,28 @@ function getHealthColor(score) {
 function HealthGauge({ score, grade, label, generatedAt }) {
   const color = getHealthColor(score);
   const pct = Math.max(0, Math.min(100, score || 0));
-  const r = 84;
+  const r = 76;
   const circumference = 2 * Math.PI * r;
 
   return (
-    <Box display="flex" alignItems="center" gap={3}>
-      <Box sx={{ position: 'relative', width: 208, height: 208, flexShrink: 0 }}>
-        <svg viewBox="0 0 208 208" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-          <circle cx="104" cy="104" r={r} fill="none" stroke="rgba(89,23,27,0.08)" strokeWidth={14} />
+    <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" py={1}>
+      <Box sx={{ position: 'relative', width: 180, height: 180, mb: 2, flexShrink: 0 }}>
+        <svg viewBox="0 0 180 180" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+          <circle cx="90" cy="90" r={r} fill="none" stroke="rgba(89,23,27,0.06)" strokeWidth={12} />
           <circle
-            cx="104"
-            cy="104"
+            cx="90"
+            cy="90"
             r={r}
             fill="none"
             stroke={color}
-            strokeWidth={14}
+            strokeWidth={12}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - pct / 100)}
-            style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1), stroke 0.4s ease' }}
+            style={{
+              transition: 'stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1), stroke 0.4s ease',
+              filter: `drop-shadow(0 4px 12px ${color}44)`,
+            }}
           />
         </svg>
         <Box
@@ -91,67 +94,67 @@ function HealthGauge({ score, grade, label, generatedAt }) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            textAlign: 'center',
           }}
         >
-          <Typography variant="h2" sx={{ fontWeight: 900, lineHeight: 1, color: 'text.primary' }}>
+          <Typography variant="h3" sx={{ fontWeight: 900, lineHeight: 1, color: 'text.primary', letterSpacing: '-0.02em' }}>
             <AnimatedNumber value={score} />
           </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, letterSpacing: '0.08em' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, letterSpacing: '0.08em', mt: 0.5, fontSize: 10 }}>
             FACTORY HEALTH
           </Typography>
           <Chip
             label={`Grade ${grade} · ${label}`}
             size="small"
-            sx={{ mt: 0.75, height: 22, fontSize: 10.5, fontWeight: 700, bgcolor: `${color}1F`, color }}
+            sx={{
+              mt: 0.75,
+              height: 22,
+              fontSize: 11,
+              fontWeight: 800,
+              bgcolor: `${color}1F`,
+              color,
+              border: `1px solid ${color}33`,
+            }}
           />
         </Box>
       </Box>
-      <Box minWidth={0}>
-        <Box display="flex" alignItems="center" gap={1} mb={1}>
-          <Box sx={{ width: 30, height: 30, borderRadius: 2.5, background: 'linear-gradient(135deg, #59171B, #A45A4A)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <AutoAwesomeIcon sx={{ fontSize: 16, color: '#FED7B8' }} />
-          </Box>
-          <Typography variant="h6" fontWeight={800}>AI Health Assessment</Typography>
+
+      <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 320, fontSize: 12.5, lineHeight: 1.4 }}>
+        Computed from live IoT machinery, quality defect rates, inventory levels, and workforce telemetry.
+      </Typography>
+
+      {generatedAt && (
+        <Box mt={1.5} display="flex" alignItems="center" gap={1}>
+          <Chip
+            icon={<FiberManualRecordIcon sx={{ fontSize: 9 }} />}
+            label={`Synced ${timeAgo(generatedAt)}`}
+            size="small"
+            sx={{ height: 20, fontSize: 10.5, fontWeight: 600, bgcolor: 'rgba(44,140,140,0.1)', color: '#2C8C8C' }}
+          />
+          <Chip label="AI Diagnostic" size="small" sx={{ height: 20, fontSize: 10.5, fontWeight: 600, bgcolor: 'rgba(89,23,27,0.06)', color: 'primary.main' }} />
         </Box>
-        <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 460 }}>
-          Live factory health computed from real production, quality, machine,
-          inventory and workforce telemetry.
-        </Typography>
-        {generatedAt && (
-          <Box mt={1.25} display="flex" alignItems="center" gap={1}>
-            <Chip
-              icon={<FiberManualRecordIcon sx={{ fontSize: 10 }} />}
-              label={`Updated ${timeAgo(generatedAt)}`}
-              size="small"
-              sx={{ height: 22, fontSize: 11, fontWeight: 600, bgcolor: 'rgba(44,140,140,0.12)', color: '#2C8C8C' }}
-            />
-            <Chip label="AI-assisted" size="small" sx={{ height: 22, fontSize: 11, fontWeight: 600, bgcolor: 'rgba(89,23,27,0.08)', color: 'primary.main' }} />
-          </Box>
-        )}
-      </Box>
+      )}
     </Box>
   );
 }
 
 function ComponentBars({ componentScores }) {
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" justifyContent="space-between" height="100%">
       {componentScores.map((c) => (
-        <Box key={c.key} mb={1.35}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.4}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>{c.label}</Typography>
-            <Typography variant="caption" fontWeight={800} sx={{ color: getHealthColor(c.score) }}>{c.score}</Typography>
+        <Box key={c.key} mb={1.4}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={0.5}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: 12 }}>{c.label}</Typography>
+            <Typography variant="caption" fontWeight={800} sx={{ color: getHealthColor(c.score), fontSize: 12 }}>{c.score}%</Typography>
           </Box>
-          <Box sx={{ height: 8, borderRadius: 4, bgcolor: 'rgba(89,23,27,0.07)', overflow: 'hidden' }}>
+          <Box sx={{ height: 7, borderRadius: 3.5, bgcolor: 'rgba(89,23,27,0.06)', overflow: 'hidden' }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${c.score}%` }}
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 height: '100%',
-                borderRadius: 4,
-                background: `linear-gradient(90deg, ${getHealthColor(c.score)}cc, ${getHealthColor(c.score)})`,
+                borderRadius: 3.5,
+                background: `linear-gradient(90deg, ${getHealthColor(c.score)}99, ${getHealthColor(c.score)})`,
               }}
             />
           </Box>
@@ -399,13 +402,14 @@ export default function AdminDashboard() {
         </Box>
       )}
 
-      <Grid container spacing={3} mb={1}>
-        <Grid item xs={12} md={5}>
-          <GlassCard delay={0}>
+      <Grid container spacing={3} mb={3}>
+        <Grid item xs={12} md={4}>
+          <GlassCard delay={0} sx={{ height: '100%' }} cardContentSx={{ p: { xs: 2.5, md: 3 }, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <SectionTitle icon={<SpeedIcon sx={{ fontSize: 18, color: '#FED7B8' }} />} title="Factory Health Score" color="#59171B" />
             {loading && !data ? (
-              <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
-                <Skeleton variant="circular" width={180} height={180} />
-                <Box flex={1}><Skeleton height={20} /><Skeleton height={60} /><Skeleton height={16} /></Box>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+                <Skeleton variant="circular" width={160} height={160} />
+                <Skeleton width="60%" height={24} sx={{ mt: 2 }} />
               </Box>
             ) : health ? (
               <HealthGauge score={health.score} grade={health.grade} label={health.label} generatedAt={health.generatedAt} />
@@ -414,53 +418,94 @@ export default function AdminDashboard() {
             )}
           </GlassCard>
         </Grid>
-        <Grid item xs={12} md={7}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <GlassCard delay={0.05} cardContentSx={{ py: 2 }}>
-                <SectionTitle icon={<AutoAwesomeIcon sx={{ fontSize: 17, color: '#FED7B8' }} />} title="Component Health" color="#59171B" />
-                {loading && !data ? (
-                  <Box>{[...Array(6)].map((_, i) => <Skeleton key={i} height={18} sx={{ mb: 1.4 }} />)}</Box>
-                ) : health?.componentScores?.length ? (
-                  <ComponentBars componentScores={health.componentScores} />
-                ) : (
-                  <Typography variant="body2" color="text.secondary" py={3}>No component scores yet.</Typography>
-                )}
-              </GlassCard>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <GlassCard delay={0.1} cardContentSx={{ py: 2 }}>
-                <SectionTitle icon={<AutoAwesomeIcon sx={{ fontSize: 17, color: '#FED7B8' }} />} title="AI Recommendations" color="#2C8C8C" />
-                {loading && !data ? (
-                  <Box>{[...Array(3)].map((_, i) => <Skeleton key={i} height={52} sx={{ mb: 1 }} />)}</Box>
-                ) : health?.recommendations?.length ? (
-                  <Box>
-                    {health.recommendations.slice(0, 4).map((rec) => {
-                      const tone = SEVERITY_TONE[rec.severity] || SEVERITY_TONE.info;
-                      return (
-                        <Box key={rec.id} display="flex" alignItems="flex-start" gap={1} mb={1.1}>
-                          <Box sx={{ width: 8, height: 8, borderRadius: '50%', mt: 0.6, flexShrink: 0, bgcolor: tone.color, boxShadow: `0 0 8px ${tone.color}aa` }} />
-                          <Box minWidth={0}>
-                            <Typography variant="body2" fontWeight={700} sx={{ color: 'text.primary', fontSize: 12.5 }}>{rec.title}</Typography>
-                            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>{rec.description}</Typography>
-                          </Box>
-                        </Box>
-                      );
-                    })}
-                    {health.recommendations.length > 4 && (
-                      <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 700 }}>+{health.recommendations.length - 4} more recommendations</Typography>
-                    )}
-                  </Box>
-                ) : (
-                  <Typography variant="body2" color="text.secondary" py={3}>No recommendations yet.</Typography>
-                )}
-              </GlassCard>
-            </Grid>
-          </Grid>
+
+        <Grid item xs={12} md={4}>
+          <GlassCard delay={0.05} sx={{ height: '100%' }} cardContentSx={{ p: { xs: 2.5, md: 3 }, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <SectionTitle icon={<AutoAwesomeIcon sx={{ fontSize: 18, color: '#FED7B8' }} />} title="Operational Health" color="#A45A4A" />
+            {loading && !data ? (
+              <Box py={2}>{[...Array(6)].map((_, i) => <Skeleton key={i} height={26} sx={{ mb: 1.4 }} />)}</Box>
+            ) : health?.componentScores?.length ? (
+              <Box flex={1} display="flex" flexDirection="column" justifyContent="center">
+                <ComponentBars componentScores={health.componentScores} />
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" py={4} textAlign="center">No operational metrics available.</Typography>
+            )}
+          </GlassCard>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <GlassCard delay={0.1} sx={{ height: '100%' }} cardContentSx={{ p: { xs: 2.5, md: 3 }, height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <SectionTitle
+              icon={<AutoAwesomeIcon sx={{ fontSize: 18, color: '#FED7B8' }} />}
+              title="AI Recommendations"
+              color="#2C8C8C"
+              action={
+                health?.recommendations?.length > 0 && (
+                  <Chip
+                    label={`${health.recommendations.length} Active`}
+                    size="small"
+                    sx={{ height: 20, fontSize: 10.5, fontWeight: 700, bgcolor: 'rgba(44,140,140,0.12)', color: '#2C8C8C' }}
+                  />
+                )
+              }
+            />
+            {loading && !data ? (
+              <Box py={1}>{[...Array(3)].map((_, i) => <Skeleton key={i} height={56} sx={{ mb: 1.2, borderRadius: 2 }} />)}</Box>
+            ) : health?.recommendations?.length ? (
+              <Box flex={1} display="flex" flexDirection="column" gap={1.2} sx={{ maxHeight: 290, overflowY: 'auto', pr: 0.5 }}>
+                {health.recommendations.map((rec) => {
+                  const tone = SEVERITY_TONE[rec.severity] || SEVERITY_TONE.info;
+                  return (
+                    <Box
+                      key={rec.id}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2.5,
+                        bgcolor: 'rgba(255,255,255,0.75)',
+                        border: '1px solid rgba(89,23,27,0.06)',
+                        borderLeft: `3.5px solid ${tone.color}`,
+                        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                        '&:hover': {
+                          transform: 'translateX(2px)',
+                          boxShadow: '0 4px 12px rgba(89,23,27,0.06)',
+                        }
+                      }}
+                    >
+                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={0.4}>
+                        <Typography variant="body2" fontWeight={700} sx={{ color: 'text.primary', fontSize: 12.5 }} noWrap>
+                          {rec.title}
+                        </Typography>
+                        <Chip
+                          label={rec.severity || 'info'}
+                          size="small"
+                          sx={{
+                            height: 18,
+                            fontSize: 9.5,
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            bgcolor: tone.bg,
+                            color: tone.color,
+                            flexShrink: 0,
+                            ml: 1,
+                          }}
+                        />
+                      </Box>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', lineHeight: 1.35 }}>
+                        {rec.description}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" py={4} textAlign="center">All factory operations within optimal thresholds.</Typography>
+            )}
+          </GlassCard>
         </Grid>
       </Grid>
 
-      <Grid container spacing={3} mb={1} mt={0}>
+      <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard title="Active Orders" value={kpis?.activeOrders ?? 0} icon={<ShoppingCartIcon />} variant="maroon" loading={loading && !data} delay={0.1} subtitle={`${kpis?.ordersTotal ?? 0} total · ${(kpis?.unitsInProduction ?? 0).toLocaleString()} units in production`} />
         </Grid>
@@ -487,7 +532,7 @@ export default function AdminDashboard() {
         </Grid>
       </Grid>
 
-      <Grid container spacing={3} mt={0}>
+      <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12} md={8}>
           <GlassCard delay={0.2}>
             <SectionTitle
@@ -526,7 +571,7 @@ export default function AdminDashboard() {
         </Grid>
       </Grid>
 
-      <Grid container spacing={3} mt={0}>
+      <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12} md={8}>
           <GlassCard delay={0.32}>
             <SectionTitle
@@ -626,7 +671,7 @@ export default function AdminDashboard() {
         </Grid>
       </Grid>
 
-      <Grid container spacing={3} mt={0}>
+      <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12} md={4}>
           <GlassCard delay={0.44}>
             <SectionTitle icon={<InventoryIcon sx={{ fontSize: 17, color: '#FED7B8' }} />} title="Material Alerts" color="#A45A4A" />
@@ -725,7 +770,7 @@ export default function AdminDashboard() {
         </Grid>
       </Grid>
 
-      <Grid container spacing={3} mt={0}>
+      <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12}>
           <GlassCard delay={0.62} whileHover={undefined} sx={{ border: '1px solid rgba(89,23,27,0.1)' }}>
             <SectionTitle

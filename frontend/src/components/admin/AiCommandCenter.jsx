@@ -259,40 +259,63 @@ export default function AiCommandCenter({ onOrderCreated }) {
   };
 
   return (
-    <Box mb={4}>
+    <Box mb={3.5}>
       <Paper
         elevation={0}
         sx={{
-          p: 3,
-          borderRadius: 3,
-          background: 'rgba(89, 23, 27, 0.03)',
+          p: { xs: 2.5, md: 3 },
+          borderRadius: 3.5,
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(254,247,240,0.85) 100%)',
           border: '1px solid rgba(89, 23, 27, 0.08)',
-          backdropFilter: 'blur(20px)',
+          boxShadow: '0 10px 30px -10px rgba(89, 23, 27, 0.06), 0 2px 6px -2px rgba(89, 23, 27, 0.04)',
+          backdropFilter: 'blur(24px)',
           position: 'relative',
           overflow: 'hidden',
+          transition: 'box-shadow 0.3s ease',
+          '&:hover': {
+            boxShadow: '0 16px 36px -12px rgba(89, 23, 27, 0.1), 0 4px 12px -2px rgba(89, 23, 27, 0.06)',
+          }
         }}
       >
-        <Box display="flex" alignItems="center" gap={1.5} mb={2}>
-          <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              bgcolor: 'rgba(89, 23, 27, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <AutoAwesomeIcon sx={{ fontSize: 18, color: '#59171B' }} />
+        <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1.5} mb={2}>
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <Box
+              sx={{
+                width: 38,
+                height: 38,
+                borderRadius: '12px',
+                background: 'linear-gradient(135deg, #59171B, #A45A4A)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 14px rgba(89, 23, 27, 0.25)',
+              }}
+            >
+              <AutoAwesomeIcon sx={{ fontSize: 19, color: '#FED7B8' }} />
+            </Box>
+            <Box>
+              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#59171B', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+                Couture AI Orchestrator
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                Natural Language Factory Command & Order Automation
+              </Typography>
+            </Box>
           </Box>
-          <Box>
-            <Typography variant="subtitle1" fontWeight={800} color="#59171B">
-              Couture AI Command Center
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Natural Language Factory Orchestration
-            </Typography>
+
+          <Box display="flex" alignItems="center" gap={1}>
+            <Chip
+              label="Groq LLaMA 3.3 Active"
+              size="small"
+              sx={{
+                height: 22,
+                fontSize: 11,
+                fontWeight: 700,
+                bgcolor: 'rgba(89, 23, 27, 0.06)',
+                color: '#59171B',
+                border: '1px solid rgba(89, 23, 27, 0.1)',
+              }}
+            />
           </Box>
         </Box>
 
@@ -344,25 +367,26 @@ export default function AiCommandCenter({ onOrderCreated }) {
                   size="medium"
                   placeholder={
                     missingField 
-                      ? `Type missing information: ${missingField.replace(/([A-Z])/g, ' $1')}` 
-                      : 'e.g. "Create an order for ABC Fashion, 5000 cotton shirts, delivery on August 25."'
+                      ? `Type missing info: ${missingField.replace(/([A-Z])/g, ' $1')}...` 
+                      : 'e.g. "Create order for Zenith Wear, 5000 silk blouses, delivery on Oct 30."'
                   }
                   value={command}
                   onChange={(e) => setCommand(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendCommand()}
                   sx={{
                     '& .MuiOutlinedInput-root': {
-                      borderRadius: 2.5,
-                      bgcolor: 'background.paper',
+                      borderRadius: 3,
+                      bgcolor: '#FFFFFF',
+                      boxShadow: '0 2px 10px rgba(89, 23, 27, 0.04)',
                       '& fieldset': { borderColor: 'rgba(89, 23, 27, 0.12)' },
                       '&:hover fieldset': { borderColor: '#59171B' },
-                      '&.Mui-focused fieldset': { borderColor: '#59171B' },
+                      '&.Mui-focused fieldset': { borderColor: '#59171B', borderWidth: '1.5px' },
                     }
                   }}
                   InputProps={{
                     endAdornment: (
-                      <IconButton onClick={toggleListening} color={listening ? 'error' : 'default'}>
-                        {listening ? <MicOffIcon sx={{ color: '#DC2626' }} /> : <MicIcon />}
+                      <IconButton onClick={toggleListening} color={listening ? 'error' : 'default'} sx={{ mr: 0.5 }}>
+                        {listening ? <MicOffIcon sx={{ color: '#DC2626' }} /> : <MicIcon sx={{ color: '#59171B' }} />}
                       </IconButton>
                     )
                   }}
@@ -372,16 +396,55 @@ export default function AiCommandCenter({ onOrderCreated }) {
                   onClick={handleSendCommand}
                   disabled={loading}
                   sx={{
-                    bgcolor: '#59171B',
+                    background: 'linear-gradient(135deg, #59171B 0%, #7A2328 100%)',
                     color: '#FED7B8',
-                    px: 3,
+                    px: 3.5,
                     height: 52,
-                    borderRadius: 2.5,
-                    '&:hover': { bgcolor: '#7A2328' }
+                    borderRadius: 3,
+                    boxShadow: '0 6px 18px rgba(89, 23, 27, 0.28)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #7A2328 0%, #A45A4A 100%)',
+                      boxShadow: '0 8px 24px rgba(89, 23, 27, 0.35)',
+                    }
                   }}
                 >
                   {loading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
                 </Button>
+              </Box>
+
+              {/* Quick AI Suggestions */}
+              <Box display="flex" flexWrap="wrap" gap={1} mt={1.5} alignItems="center">
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, mr: 0.5 }}>
+                  Quick commands:
+                </Typography>
+                {[
+                  'Create order for Vogue Line, 3000 cotton shirts',
+                  'Check machine maintenance schedule',
+                  'Show low stock inventory alerts',
+                ].map((promptText, idx) => (
+                  <Chip
+                    key={idx}
+                    label={promptText}
+                    size="small"
+                    onClick={() => {
+                      setCommand(promptText);
+                    }}
+                    sx={{
+                      cursor: 'pointer',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      bgcolor: 'rgba(254, 215, 184, 0.25)',
+                      color: '#59171B',
+                      border: '1px solid rgba(89, 23, 27, 0.08)',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(89, 23, 27, 0.08)',
+                        borderColor: '#59171B',
+                        transform: 'translateY(-1px)',
+                      }
+                    }}
+                  />
+                ))}
               </Box>
             </motion.div>
           )}
