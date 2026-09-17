@@ -32,7 +32,7 @@ const server = http.createServer(app);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 1000,
+  max: process.env.NODE_ENV === "production" ? 1000 : 10000,
   message: {
     success: false,
     message: "Too many requests, please try again later.",
@@ -41,7 +41,7 @@ const limiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: process.env.NODE_ENV === "production" ? 200 : 5000,
   message: {
     success: false,
     message: "Too many requests, please try again later.",

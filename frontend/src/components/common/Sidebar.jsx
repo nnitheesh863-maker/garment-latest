@@ -212,80 +212,64 @@ export default function Sidebar({ open, onClose, variant }) {
           '&::-webkit-scrollbar-thumb': { bgcolor: '#E8C0A8', borderRadius: 2 },
         }}
       >
-        <AnimatePresence initial={false}>
-          {navItems.map((item, index) => {
-            const Icon = iconMap[item.icon] || DashboardIcon;
-            const active = isActive(item.path);
-            return (
-              <Tooltip
-                key={item.path}
-                title={collapsed ? item.label : ''}
-                placement="right"
-                arrow
-              >
-                <MotionBox
-                  initial={{ opacity: 0, x: -14 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{
-                    delay: 0.04 * index,
-                    duration: 0.35,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
-                  whileHover={{ x: collapsed ? 0 : 4 }}
-                  onClick={() => {
-                    navigate(item.path);
-                    if (onClose) onClose();
-                  }}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    px: collapsed ? 0 : 1.5,
-                    py: 1,
-                    mx: collapsed ? 0.25 : 0,
-                    my: 0.35,
-                    borderRadius: '14px',
-                    cursor: 'pointer',
-                    color: active ? '#FED7B8' : 'text.secondary',
-                    position: 'relative',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    transition: 'all 220ms ease',
+        {navItems.map((item) => {
+          const Icon = iconMap[item.icon] || DashboardIcon;
+          const active = isActive(item.path);
+          return (
+            <Tooltip
+              key={item.path}
+              title={collapsed ? item.label : ''}
+              placement="right"
+              arrow
+            >
+              <Box
+                onClick={() => {
+                  navigate(item.path);
+                  if (onClose) onClose();
+                }}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  px: collapsed ? 0 : 1.5,
+                  py: 1,
+                  mx: collapsed ? 0.25 : 0,
+                  my: 0.35,
+                  borderRadius: '14px',
+                  cursor: 'pointer',
+                  color: active ? '#FED7B8' : 'text.secondary',
+                  position: 'relative',
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  transition: 'background-color 0.15s ease, color 0.15s ease, transform 0.15s ease',
+                  background: active
+                    ? 'linear-gradient(135deg, #59171B 0%, #7A2328 60%, #A45A4A 100%)'
+                    : 'transparent',
+                  boxShadow: active ? '0 6px 18px rgba(89,23,27,0.25)' : 'none',
+                  '&:hover': {
+                    color: active ? '#FED7B8' : 'primary.main',
                     background: active
                       ? 'linear-gradient(135deg, #59171B 0%, #7A2328 60%, #A45A4A 100%)'
-                      : 'transparent',
-                    boxShadow: active ? '0 8px 22px rgba(89,23,27,0.32)' : 'none',
-                    '&:hover': {
-                      color: active ? '#FED7B8' : 'primary.main',
-                      background: active
-                        ? 'linear-gradient(135deg, #59171B 0%, #7A2328 60%, #A45A4A 100%)'
-                        : (theme) =>
-                            theme.palette.mode === 'dark'
-                              ? 'rgba(164,90,74,0.16)'
-                              : 'rgba(254,215,184,0.35)',
-                    },
-                  }}
-                >
-                  <motion.div
-                    animate={active ? { scale: [1, 1.15, 1] } : {}}
-                    transition={{ duration: 0.3 }}
-                    style={{ display: 'flex' }}
+                      : (theme) =>
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(164,90,74,0.16)'
+                            : 'rgba(254,215,184,0.35)',
+                  },
+                }}
+              >
+                <Icon sx={{ fontSize: collapsed ? 22 : 20 }} />
+                {!collapsed && (
+                  <Typography
+                    variant="body2"
+                    fontWeight={active ? 700 : 500}
+                    sx={{ fontSize: 13.5, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}
                   >
-                    <Icon sx={{ fontSize: collapsed ? 22 : 20 }} />
-                  </motion.div>
-                  {!collapsed && (
-                    <Typography
-                      variant="body2"
-                      fontWeight={active ? 700 : 500}
-                      sx={{ fontSize: 13.5, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}
-                    >
-                      {item.label}
-                    </Typography>
-                  )}
-                </MotionBox>
-              </Tooltip>
-            );
-          })}
-        </AnimatePresence>
+                    {item.label}
+                  </Typography>
+                )}
+              </Box>
+            </Tooltip>
+          );
+        })}
       </Box>
 
       <Box sx={{ px: collapsed ? 0.75 : 1.25, pb: 1.5 }}>

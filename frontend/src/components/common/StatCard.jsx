@@ -1,12 +1,9 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Chip, Skeleton } from '@mui/material';
-import { motion } from 'framer-motion';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AnimatedNumber from './AnimatedNumber';
-
-const MotionCard = motion.create(Card);
 
 const VARIANT_COLORS = {
   maroon: '#59171B',
@@ -29,7 +26,6 @@ export default function StatCard({
   trend,
   trendDirection = 'up',
   gradient = false,
-  delay = 0,
   suffix = '',
   prefix = '',
   sx,
@@ -40,11 +36,8 @@ export default function StatCard({
   const isNegative = trendDirection === 'down';
 
   return (
-    <MotionCard
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, delay, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -6, transition: { duration: 0.25 } }}
+    <Card
+      elevation={0}
       sx={{
         borderRadius: '20px',
         position: 'relative',
@@ -59,13 +52,14 @@ export default function StatCard({
             ? '1px solid rgba(241, 213, 192, 0.7)'
             : '1px solid #3A262B',
         boxShadow: gradient
-          ? '0 16px 44px rgba(89, 23, 27, 0.32)'
-          : '0 6px 26px rgba(89, 23, 27, 0.06)',
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+          ? '0 10px 30px rgba(89, 23, 27, 0.25)'
+          : '0 4px 16px rgba(89, 23, 27, 0.05)',
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
         '&:hover': {
+          transform: 'translateY(-2px)',
           boxShadow: gradient
-            ? '0 20px 50px rgba(89, 23, 27, 0.42)'
-            : '0 12px 36px rgba(89, 23, 27, 0.12)',
+            ? '0 14px 36px rgba(89, 23, 27, 0.35)'
+            : '0 8px 24px rgba(89, 23, 27, 0.1)',
         },
         '&::after': gradient
           ? {
@@ -201,6 +195,6 @@ export default function StatCard({
           </Box>
         )}
       </CardContent>
-    </MotionCard>
+    </Card>
   );
 }

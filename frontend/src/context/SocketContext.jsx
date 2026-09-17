@@ -15,12 +15,8 @@ export function SocketProvider({ children }) {
   useEffect(() => {
     const handleStorage = () => setToken(localStorage.getItem('token'));
     window.addEventListener('storage', handleStorage);
-    const interval = setInterval(() => {
-      const current = localStorage.getItem('token');
-      if (current !== token) setToken(current);
-    }, 500);
-    return () => { window.removeEventListener('storage', handleStorage); clearInterval(interval); };
-  }, [token]);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   useEffect(() => {
     if (!token) {

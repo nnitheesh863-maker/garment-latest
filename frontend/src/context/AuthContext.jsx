@@ -25,11 +25,13 @@ export function AuthProvider({ children }) {
       setUser(userData);
       setToken(storedToken);
     } catch (err) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
-      setToken(null);
-      setUser(null);
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+        setToken(null);
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }

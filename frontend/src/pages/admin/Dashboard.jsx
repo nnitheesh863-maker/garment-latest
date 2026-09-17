@@ -25,7 +25,6 @@ import SpeedIcon from '@mui/icons-material/Speed';
 import FactoryIcon from '@mui/icons-material/Factory';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useSocket } from '../../hooks/useSocket';
 import { adminDashboardApi } from '../../api/axios';
 import ProductionChart from '../../components/charts/ProductionChart';
@@ -147,14 +146,13 @@ function ComponentBars({ componentScores }) {
             <Typography variant="caption" fontWeight={800} sx={{ color: getHealthColor(c.score), fontSize: 12 }}>{c.score}%</Typography>
           </Box>
           <Box sx={{ height: 7, borderRadius: 3.5, bgcolor: 'rgba(89,23,27,0.06)', overflow: 'hidden' }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${c.score}%` }}
-              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              style={{
+            <Box
+              sx={{
+                width: `${c.score}%`,
                 height: '100%',
                 borderRadius: 3.5,
                 background: `linear-gradient(90deg, ${getHealthColor(c.score)}99, ${getHealthColor(c.score)})`,
+                transition: 'width 0.3s ease',
               }}
             />
           </Box>
@@ -534,7 +532,7 @@ export default function AdminDashboard() {
 
       <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12} md={8}>
-          <GlassCard delay={0.2}>
+          <GlassCard delay={0.08}>
             <SectionTitle
               icon={<FactoryIcon sx={{ fontSize: 17, color: '#FED7B8' }} />}
               title="Production Trend"
@@ -558,7 +556,7 @@ export default function AdminDashboard() {
           </GlassCard>
         </Grid>
         <Grid item xs={12} md={4}>
-          <GlassCard delay={0.26}>
+          <GlassCard delay={0.1}>
             <SectionTitle icon={<ShoppingCartIcon sx={{ fontSize: 17, color: '#FED7B8' }} />} title="Order Status" color="#A45A4A" />
             {loading && !data ? (
               <Skeleton variant="circular" width={170} height={170} sx={{ mx: 'auto', my: 2 }} />
@@ -573,7 +571,7 @@ export default function AdminDashboard() {
 
       <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12} md={8}>
-          <GlassCard delay={0.32}>
+          <GlassCard delay={0.12}>
             <SectionTitle
               icon={<FactoryIcon sx={{ fontSize: 17, color: '#FED7B8' }} />}
               title="Production Lines"
@@ -625,7 +623,7 @@ export default function AdminDashboard() {
           </GlassCard>
         </Grid>
         <Grid item xs={12} md={4}>
-          <GlassCard delay={0.38}>
+          <GlassCard delay={0.14}>
             <SectionTitle icon={<PrecisionManufacturingIcon sx={{ fontSize: 17, color: '#FED7B8' }} />} title="Machine Health" color="#7A2328" />
             {loading && !data ? (
               <Box>{[...Array(5)].map((_, i) => <Skeleton key={i} height={24} sx={{ mb: 1.4 }} />)}</Box>
@@ -673,7 +671,7 @@ export default function AdminDashboard() {
 
       <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12} md={4}>
-          <GlassCard delay={0.44}>
+          <GlassCard delay={0.16}>
             <SectionTitle icon={<InventoryIcon sx={{ fontSize: 17, color: '#FED7B8' }} />} title="Material Alerts" color="#A45A4A" />
             {loading && !data ? (
               <Box>{[...Array(3)].map((_, i) => <Skeleton key={i} height={48} sx={{ mb: 1 }} />)}</Box>
@@ -699,7 +697,7 @@ export default function AdminDashboard() {
           </GlassCard>
         </Grid>
         <Grid item xs={12} md={4}>
-          <GlassCard delay={0.5}>
+          <GlassCard delay={0.18}>
             <SectionTitle icon={<VerifiedIcon sx={{ fontSize: 17, color: '#FED7B8' }} />} title="Quality Snapshot" color="#2C8C8C" />
             {loading && !data ? (
               <Box>{[...Array(4)].map((_, i) => <Skeleton key={i} height={26} sx={{ mb: 1.5 }} />)}</Box>
@@ -735,7 +733,7 @@ export default function AdminDashboard() {
           </GlassCard>
         </Grid>
         <Grid item xs={12} md={4}>
-          <GlassCard delay={0.56}>
+          <GlassCard delay={0.2}>
             <SectionTitle icon={<PeopleIcon sx={{ fontSize: 17, color: '#FED7B8' }} />} title="Workforce" color="#59171B" />
             {loading && !data ? (
               <Box>{[...Array(4)].map((_, i) => <Skeleton key={i} height={26} sx={{ mb: 1.5 }} />)}</Box>
@@ -772,7 +770,7 @@ export default function AdminDashboard() {
 
       <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12}>
-          <GlassCard delay={0.62} whileHover={undefined} sx={{ border: '1px solid rgba(89,23,27,0.1)' }}>
+          <GlassCard delay={0.22} whileHover={undefined} sx={{ border: '1px solid rgba(89,23,27,0.1)' }}>
             <SectionTitle
               icon={<NotificationsActiveIcon sx={{ fontSize: 17, color: '#FED7B8' }} />}
               title="Live Decision Stream"
@@ -797,27 +795,25 @@ export default function AdminDashboard() {
               <EmptyState icon={<NotificationsActiveIcon />} title="No live events yet" message="Order, task, machine, quality and employee events will stream here in real time over Socket.IO." />
             ) : (
               <>
-                <AnimatePresence initial={false}>
-                  {stream.map((e, i) => {
-                    const tone = SEVERITY_TONE[e.severity] || SEVERITY_TONE.info;
-                    return (
-                      <motion.div key={e.id} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.35 }}>
-                        <Box display="flex" alignItems="center" gap={1.5} py={0.8}>
-                          <Box sx={{ width: 26, height: 26, borderRadius: 2, bgcolor: tone.bg, color: tone.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                            {e.severity === 'critical' ? <WarningAmberIcon sx={{ fontSize: 15 }} /> : <FiberManualRecordIcon sx={{ fontSize: 12 }} />}
-                          </Box>
-                          <Box minWidth={0} flex={1}>
-                            <Typography variant="body2" fontWeight={700} sx={{ color: 'text.primary', fontSize: 13 }}>{e.title}</Typography>
-                            {e.description && <Typography variant="caption" sx={{ color: 'text.secondary' }} noWrap>{e.description}</Typography>}
-                          </Box>
-                          <Chip label={e.type.replace(/_/g, ' ')} size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 700, bgcolor: 'rgba(89,23,27,0.06)', color: 'text.secondary' }} />
-                          <Typography variant="caption" sx={{ color: 'text.secondary', width: 74, textAlign: 'right', flexShrink: 0 }}>{timeAgo(e.time)}</Typography>
+                {stream.map((e, i) => {
+                  const tone = SEVERITY_TONE[e.severity] || SEVERITY_TONE.info;
+                  return (
+                    <Box key={e.id}>
+                      <Box display="flex" alignItems="center" gap={1.5} py={0.8}>
+                        <Box sx={{ width: 26, height: 26, borderRadius: 2, bgcolor: tone.bg, color: tone.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {e.severity === 'critical' ? <WarningAmberIcon sx={{ fontSize: 15 }} /> : <FiberManualRecordIcon sx={{ fontSize: 12 }} />}
                         </Box>
-                        {i < stream.length - 1 && <Divider sx={{ borderColor: 'rgba(89,23,27,0.06)' }} />}
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
+                        <Box minWidth={0} flex={1}>
+                          <Typography variant="body2" fontWeight={700} sx={{ color: 'text.primary', fontSize: 13 }}>{e.title}</Typography>
+                          {e.description && <Typography variant="caption" sx={{ color: 'text.secondary' }} noWrap>{e.description}</Typography>}
+                        </Box>
+                        <Chip label={e.type.replace(/_/g, ' ')} size="small" sx={{ height: 18, fontSize: 9.5, fontWeight: 700, bgcolor: 'rgba(89,23,27,0.06)', color: 'text.secondary' }} />
+                        <Typography variant="caption" sx={{ color: 'text.secondary', width: 74, textAlign: 'right', flexShrink: 0 }}>{timeAgo(e.time)}</Typography>
+                      </Box>
+                      {i < stream.length - 1 && <Divider sx={{ borderColor: 'rgba(89,23,27,0.06)' }} />}
+                    </Box>
+                  );
+                })}
                 {stream.length === 0 && notifications.length > 0 && (
                   <Typography variant="body2" color="text.secondary" py={2}>
                     Recent notifications will stream live as events occur. Showing {notifications.length} recent notification(s) from the system.
