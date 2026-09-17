@@ -33,9 +33,13 @@ export function SocketProvider({ children }) {
       return;
     }
 
-    const newSocket = io(API_BASE_URL.replace('/api', ''), {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+    const newSocket = io(socketUrl, {
       auth: { token },
       transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
     socketRef.current = newSocket;
