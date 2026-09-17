@@ -214,4 +214,6 @@ export const notificationApi = {
 export const adminDashboardApi = {
   summary: (params) => api.get("/api/admin/dashboard/summary", { params }),
   health: (params) => api.get("/api/admin/dashboard/health", { params }),
+  getAuditLogs: (params) => api.get("/api/admin/dashboard/audit-logs", { params }),
 };
+
