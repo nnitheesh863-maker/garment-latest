@@ -10,11 +10,7 @@ export default defineConfig({
   workers: 1,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  reporter: [
-    ['list'],
-    ['html', { open: 'never', outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'playwright-results.json' }],
-  ],
+  reporter: 'list',
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
