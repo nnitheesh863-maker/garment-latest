@@ -814,7 +814,7 @@ export default function ManagerDashboard() {
               <FormControl fullWidth size="small" sx={{ mb: 3, mt: 1 }}>
                 <InputLabel>Production Line</InputLabel>
                 <Select
-                  value={selectedLineId}
+                  value={selectedLineId || ""}
                   label="Production Line"
                   onChange={(e) => setSelectedLineId(e.target.value)}
                 >
@@ -834,7 +834,7 @@ export default function ManagerDashboard() {
                     <FormControl fullWidth size="small">
                       <InputLabel>Operator</InputLabel>
                       <Select
-                        value={split.assignedTo}
+                        value={split.assignedTo || ""}
                         label="Operator"
                         onChange={(e) => handleUpdateSplit(index, 'assignedTo', e.target.value)}
                       >
@@ -851,7 +851,7 @@ export default function ManagerDashboard() {
                     <FormControl fullWidth size="small">
                       <InputLabel>Reserved Machine</InputLabel>
                       <Select
-                        value={split.machineId}
+                        value={split.machineId || ""}
                         label="Reserved Machine"
                         onChange={(e) => handleUpdateSplit(index, 'machineId', e.target.value)}
                       >
