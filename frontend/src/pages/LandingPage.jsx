@@ -42,6 +42,9 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import PinterestIcon from "@mui/icons-material/Pinterest";
 import YouTubeIcon from "@mui/icons-material/YouTube";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import SensorsIcon from "@mui/icons-material/Sensors";
+import { motion } from "framer-motion";
 import { useAuth } from "../hooks/useAuth";
 
 // High quality images
@@ -577,21 +580,26 @@ export default function LandingPage() {
           <Grid container spacing={{ xs: 4, md: 6 }} alignItems="center">
             {/* Left Content */}
             <Grid item xs={12} md={6}>
-              <Box sx={{ maxWidth: 560, mx: { xs: "auto", md: 0 } }}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    letterSpacing: "0.25em",
-                    textTransform: "uppercase",
-                    color: THEME.accentCamel,
-                    fontWeight: 700,
-                    fontSize: 11.5,
-                    display: "block",
-                    mb: 1.5,
-                  }}
-                >
-                  ✦ AUTUMN / SPRING 2026 ATELIER COLLECTION
-                </Typography>
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Box sx={{ maxWidth: 560, mx: { xs: "auto", md: 0 } }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      letterSpacing: "0.25em",
+                      textTransform: "uppercase",
+                      color: THEME.accentCamel,
+                      fontWeight: 700,
+                      fontSize: 11.5,
+                      display: "block",
+                      mb: 1.5,
+                    }}
+                  >
+                    ✦ AUTUMN / SPRING 2026 ATELIER COLLECTION
+                  </Typography>
 
                 <Typography
                   variant="h1"
@@ -729,102 +737,110 @@ export default function LandingPage() {
                   </Box>
                 </Box>
               </Box>
+              </motion.div>
             </Grid>
 
             {/* Right Hero Image (Flowing Silk Dress) */}
             <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  position: "relative",
-                  display: "flex",
-                  justifyContent: "center",
-                }}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
-                {/* Floating Silk Card */}
                 <Box
                   sx={{
-                    width: "100%",
-                    maxWidth: 540,
-                    height: { xs: 460, sm: 580, md: 660 },
                     position: "relative",
-                    borderRadius: "4px",
-                    overflow: "hidden",
-                    boxShadow: "0 24px 60px rgba(35, 31, 32, 0.12)",
-                    "&:hover img": {
-                      transform: "scale(1.03)",
-                    },
+                    display: "flex",
+                    justifyContent: "center",
                   }}
                 >
+                  {/* Floating Silk Card */}
                   <Box
-                    component="img"
-                    src={heroSilkImg}
-                    alt="Wear the Story - Flowing Silk Dress"
                     sx={{
                       width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "top center",
-                      transition: "transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                    }}
-                  />
-
-                  {/* Subtle Badge Overlay */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: 24,
-                      left: 24,
-                      right: 24,
-                      bgcolor: "rgba(255, 255, 255, 0.92)",
-                      backdropFilter: "blur(12px)",
-                      p: 2,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      border: "1px solid rgba(255,255,255,0.8)",
+                      maxWidth: 540,
+                      height: { xs: 460, sm: 580, md: 660 },
+                      position: "relative",
+                      borderRadius: "4px",
+                      overflow: "hidden",
+                      boxShadow: "0 24px 60px rgba(35, 31, 32, 0.12)",
+                      "&:hover img": {
+                        transform: "scale(1.03)",
+                      },
                     }}
                   >
-                    <Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: THEME.accentCamel,
-                          fontWeight: 700,
-                          letterSpacing: "0.1em",
-                        }}
-                      >
-                        FEATURED ATELIER PIECE
-                      </Typography>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontFamily: "'Cormorant Garamond', serif",
-                          fontSize: 18,
-                          fontWeight: 700,
-                          color: THEME.textPrimary,
-                        }}
-                      >
-                        Ethereal Mulberry Silk Gown
-                      </Typography>
-                    </Box>
-                    <Button
-                      onClick={() => addToBag(PRODUCTS[2])}
-                      size="small"
+                    <Box
+                      component="img"
+                      src={heroSilkImg}
+                      alt="Wear the Story - Flowing Silk Dress"
                       sx={{
-                        bgcolor: THEME.textPrimary,
-                        color: "#fff",
-                        fontSize: 11,
-                        letterSpacing: "0.05em",
-                        borderRadius: 0,
-                        px: 2,
-                        "&:hover": { bgcolor: THEME.accentCamel },
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "top center",
+                        transition: "transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      }}
+                    />
+
+                    {/* Subtle Badge Overlay */}
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        bottom: 24,
+                        left: 24,
+                        right: 24,
+                        bgcolor: "rgba(255, 255, 255, 0.92)",
+                        backdropFilter: "blur(12px)",
+                        p: 2,
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        border: "1px solid rgba(255,255,255,0.8)",
                       }}
                     >
-                      ADD TO BAG $149
-                    </Button>
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: THEME.accentCamel,
+                            fontWeight: 700,
+                            letterSpacing: "0.1em",
+                          }}
+                        >
+                          FEATURED ATELIER PIECE
+                        </Typography>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            fontFamily: "'Cormorant Garamond', serif",
+                            fontWeight: 600,
+                            fontSize: "1.1rem",
+                            color: THEME.textPrimary,
+                          }}
+                        >
+                          Mulberry Silk Wrap Dress
+                        </Typography>
+                      </Box>
+                      <Button
+                        onClick={() => handleAddToCart(PRODUCTS[2])}
+                        variant="contained"
+                        sx={{
+                          bgcolor: THEME.textPrimary,
+                          color: "#FFFFFF",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          letterSpacing: "0.05em",
+                          borderRadius: 0,
+                          px: 2,
+                          "&:hover": { bgcolor: THEME.accentCamel },
+                        }}
+                      >
+                        ADD TO BAG $149
+                      </Button>
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
+              </motion.div>
             </Grid>
           </Grid>
         </Container>
