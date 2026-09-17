@@ -9,6 +9,7 @@ router.post('/analyze', protect, aiController.getAnalysis);
 router.get('/recommendations', protect, aiController.getRecommendations);
 router.post('/train', protect, authorize('admin'), aiController.triggerTraining);
 router.get('/model-status', protect, aiController.getModelStatus);
+router.get('/ml-health', protect, aiController.getMlHealth);
 router.get('/dashboard', protect, aiController.getDashboardData);
 router.post('/command', protect, aiController.processCommand);
 router.post('/production-plan/:id/approve', protect, aiController.approveProductionPlan);

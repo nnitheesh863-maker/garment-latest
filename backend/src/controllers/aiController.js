@@ -129,6 +129,38 @@ exports.getModelStatus = async (req, res, next) => {
   }
 };
 
+exports.getMlHealth = async (req, res, next) => {
+  try {
+    const axios = require('axios');
+    const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5001';
+    let mlServiceOnline = false;
+    let mlInfo = null;
+
+    try {
+      const mlRes = await axios.get(`${AI_SERVICE_URL}/api/model-status`, { timeout: 2000 });
+      if (mlRes.data) {
+        mlServiceOnline = true;
+        mlInfo = mlRes.data.result || mlRes.data;
+      }
+    } catch {
+      mlServiceOnline = false;
+    }
+
+    return ApiResponse.success(res, {
+      status: mlServiceOnline ? 'available' : 'unavailable',
+      provider: mlServiceOnline ? 'local-ml' : 'cloud-fallback',
+      service: 'Python Flask ML Service',
+      port: 5001,
+      modelsLoaded: mlServiceOnline,
+      details: mlInfo,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 exports.getDashboardData = async (req, res, next) => {
   try {
     const [

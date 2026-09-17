@@ -10,6 +10,7 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const MONGO_PORT = 27017;
 const BACKEND_PORT = 5000;
 const FRONTEND_PORT = 3000;
+const AI_SERVICE_PORT = 5001;
 
 const MONGOD_CANDIDATES = [
   process.env.MONGOD_BIN,
@@ -99,6 +100,25 @@ function spawnChild(name, color, args) {
   children.push(child);
 }
 
+function spawnPython(name, color, script) {
+  const pythonCmd = process.platform === "win32" ? "python" : "python3";
+  const child = spawn(pythonCmd, [script], {
+    cwd: path.join(projectRoot, name),
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  child.stdout.on("data", makePrefixed(name, color));
+  child.stderr.on("data", makePrefixed(name, color));
+  child.on("error", (err) => {
+    console.warn(`[${name}] Python ML service not available (${err.message}) - Node.js will use Cloud LLM fallback.`);
+  });
+  child.on("exit", (code) => {
+    if (code !== 0 && !shuttingDown) {
+      console.warn(`[${name}] exited with code ${code}`);
+    }
+  });
+  children.push(child);
+}
+
 let shuttingDown = false;
 function shutdown(code = 0) {
   if (shuttingDown) return;
@@ -126,6 +146,12 @@ try {
     spawnChild("backend", "\x1b[36m", ["dev"]);
   }
 
+  if (await isPortOpen(AI_SERVICE_PORT)) {
+    console.log("[ai]    Port 5001 already in use - ML service ready");
+  } else {
+    spawnPython("ai-service", "\x1b[33m", "app.py");
+  }
+
   if (await isPortOpen(FRONTEND_PORT)) {
     console.log("[web]   Port 3000 already in use - skipping frontend (already running?)");
   } else {
@@ -138,8 +164,9 @@ try {
   }
 
   console.log("\n------------------------------------------------------------");
-  console.log("  Frontend:  http://localhost:3000");
-  console.log("  Backend:   http://localhost:5000/api/health");
+  console.log("  Frontend:   http://localhost:3000");
+  console.log("  Backend:    http://localhost:5000/api/health");
+  console.log("  AI ML Svc:  http://localhost:5001/api/health");
   console.log("  Press Ctrl+C to stop everything");
   console.log("------------------------------------------------------------\n");
 } catch (err) {
