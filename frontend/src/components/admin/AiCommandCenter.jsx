@@ -204,6 +204,45 @@ export default function AiCommandCenter({ onOrderCreated }) {
     }
   };
 
+  const handleConfirmOrder = async () => {
+    setLoading(true);
+    setDirectError(null);
+    setDirectSuccess(null);
+    try {
+      const response = await api.post('/api/ai/command', {
+        command: '',
+        context,
+        confirm: true,
+      });
+
+      const resData = response.data?.data || response.data;
+      const created = resData.order || resData;
+      setDirectSuccess(`Order #${created?.orderNumber || 'GOS'} created successfully via AI Copilot!`);
+      if (onOrderCreated) onOrderCreated(created);
+
+      setShowConfirmation(false);
+      setContext({});
+      setConversation((prev) => [
+        ...prev,
+        { sender: 'ai', text: `✅ Order #${created?.orderNumber || ''} has been confirmed and placed into production!` },
+      ]);
+    } catch (err) {
+      console.error('Confirm Order Error:', err);
+      setDirectError(err.response?.data?.message || 'Failed to confirm order.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = () => {
+    setShowConfirmation(false);
+    setContext({});
+    setConversation((prev) => [
+      ...prev,
+      { sender: 'ai', text: '🛑 Order creation cancelled.' },
+    ]);
+  };
+
   return (
     <Paper
       elevation={0}
@@ -527,6 +566,91 @@ export default function AiCommandCenter({ onOrderCreated }) {
                 </Box>
               ))}
               <div ref={conversationEndRef} />
+            </Box>
+          )}
+
+          {/* AI Order Confirmation & Risk Review Card */}
+          {showConfirmation && (
+            <Box
+              sx={{
+                mt: 2,
+                p: 2.5,
+                bgcolor: '#FFFFFF',
+                borderRadius: '12px',
+                border: '1.5px solid #59171B',
+                boxShadow: '0 4px 20px rgba(89,23,27,0.08)',
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1} mb={1.5}>
+                <AutoAwesomeIcon sx={{ color: '#59171B', fontSize: 20 }} />
+                <Typography variant="subtitle2" fontWeight={800} color="#59171B">
+                  Order Review & AI Factory Allocation
+                </Typography>
+              </Box>
+
+              <Grid container spacing={1.5} mb={2}>
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" color="text.secondary" display="block">Garment Type</Typography>
+                  <Typography variant="body2" fontWeight={700}>{context?.parameters?.garmentType || 'T-Shirt'}</Typography>
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" color="text.secondary" display="block">Batch Quantity</Typography>
+                  <Typography variant="body2" fontWeight={700}>{context?.parameters?.quantity || 500} Units</Typography>
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" color="text.secondary" display="block">Customer</Typography>
+                  <Typography variant="body2" fontWeight={700}>{context?.parameters?.customerName || 'Direct Client'}</Typography>
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <Typography variant="caption" color="text.secondary" display="block">AI Line & Delay Risk</Typography>
+                  <Chip
+                    size="small"
+                    label={`${context?.aiPlan?.delayProbability || 12}% Risk · Line ${context?.aiPlan?.recommendedLine || 3}`}
+                    sx={{
+                      height: 22,
+                      fontSize: 11,
+                      fontWeight: 800,
+                      bgcolor: (context?.aiPlan?.delayProbability || 12) > 30 ? 'rgba(220,38,38,0.12)' : 'rgba(22,163,74,0.12)',
+                      color: (context?.aiPlan?.delayProbability || 12) > 30 ? '#DC2626' : '#16A34A',
+                    }}
+                  />
+                </Grid>
+              </Grid>
+
+              <Box display="flex" gap={1.5} justifyContent="flex-end">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleCancelOrder}
+                  disabled={loading}
+                  sx={{
+                    color: '#6E6966',
+                    borderColor: '#E8E2DC',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    '&:hover': { borderColor: '#DC2626', color: '#DC2626' },
+                  }}
+                >
+                  Cancel / Stop
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleConfirmOrder}
+                  disabled={loading}
+                  startIcon={loading ? <CircularProgress size={14} color="inherit" /> : <CheckCircleOutlineIcon />}
+                  sx={{
+                    bgcolor: '#59171B',
+                    color: '#FED7B8',
+                    fontWeight: 800,
+                    px: 2.5,
+                    borderRadius: '8px',
+                    '&:hover': { bgcolor: '#7A2328' },
+                  }}
+                >
+                  {loading ? 'Creating...' : 'Confirm & Create Order'}
+                </Button>
+              </Box>
             </Box>
           )}
         </Box>
