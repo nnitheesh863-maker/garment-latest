@@ -32,7 +32,7 @@ export function SocketProvider({ children }) {
     const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
     const newSocket = io(socketUrl, {
       auth: { token },
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
