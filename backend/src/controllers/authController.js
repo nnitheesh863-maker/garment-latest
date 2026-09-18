@@ -210,9 +210,10 @@ exports.getUsers = async (req, res, next) => {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit = 500,
       role,
       active,
+      status,
       search,
       sortBy = "createdAt",
       sortOrder = -1,
@@ -221,6 +222,7 @@ exports.getUsers = async (req, res, next) => {
     const filter = {};
     if (role) filter.role = role;
     if (active !== undefined) filter.active = active === "true";
+    if (status) filter.status = status;
     if (search) {
       filter.$or = [
         { email: { $regex: search, $options: "i" } },

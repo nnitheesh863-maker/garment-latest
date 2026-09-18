@@ -155,7 +155,8 @@ export default function EmployeeDetailModal({
     "";
   const fullName = `${firstName} ${lastName}`.trim() || currentEmp?.email || "Employee";
   const role = currentEmp?.role || "employee";
-  const status = currentEmp?.status || "active";
+  const isActive = currentEmp?.active !== false && currentEmp?.status !== "inactive" && currentEmp?.status !== "disabled";
+  const status = isActive ? "active" : "inactive";
   const department =
     currentEmp?.department ||
     currentEmp?.profile?.department ||
@@ -690,7 +691,7 @@ export default function EmployeeDetailModal({
               color={status === "active" ? "warning" : "success"}
               sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
             >
-              {status === "active" ? "Disable User" : "Enable User"}
+              {status === "active" ? "Deactivate Account" : "Reactivate Account"}
             </Button>
           )}
           {onDelete && (

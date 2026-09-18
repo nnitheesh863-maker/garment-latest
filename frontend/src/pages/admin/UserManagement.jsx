@@ -82,7 +82,7 @@ export default function UserManagement() {
   const loadUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await api.get("/api/auth/users");
+      const res = await api.get("/api/auth/users?limit=500");
       const data = res.data?.data || res.data?.users || res.data || [];
       setUsers(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -349,11 +349,20 @@ export default function UserManagement() {
         const active = isUserActive(row);
         return (
           <Chip
-            label={active ? "Active" : "Disabled"}
+            label={active ? "Active" : "Deactivated"}
             size="small"
-            color={active ? "success" : "default"}
+            color={active ? "success" : "error"}
             variant={active ? "filled" : "outlined"}
-            sx={{ fontWeight: 600 }}
+            sx={{
+              fontWeight: 700,
+              ...(active
+                ? {}
+                : {
+                    bgcolor: "rgba(220,38,38,0.08)",
+                    color: "#dc2626",
+                    borderColor: "rgba(220,38,38,0.3)",
+                  }),
+            }}
           />
         );
       },
@@ -428,8 +437,22 @@ export default function UserManagement() {
                 <EditIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title={active ? "Disable / Deactivate User" : "Enable / Activate User"}>
-              <IconButton size="small" onClick={() => handleToggleStatus(row)}>
+            <Tooltip title={active ? "Deactivate / Suspend Account" : "Reactivate / Enable Account"}>
+              <IconButton
+                size="small"
+                onClick={() => handleToggleStatus(row)}
+                sx={
+                  !active
+                    ? {
+                        color: "success.main",
+                        bgcolor: "rgba(22,163,74,0.1)",
+                        "&:hover": { bgcolor: "rgba(22,163,74,0.2)" },
+                      }
+                    : {
+                        color: "warning.main",
+                      }
+                }
+              >
                 {active ? (
                   <BlockIcon fontSize="small" color="warning" />
                 ) : (

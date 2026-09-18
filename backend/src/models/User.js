@@ -41,6 +41,11 @@ const userSchema = new mongoose.Schema({
   refreshToken: { type: String, select: false },
   lastLogin: { type: Date },
   active: { type: Boolean, default: true },
+  status: {
+    type: String,
+    enum: ['active', 'inactive', 'on_leave', 'disabled'],
+    default: 'active',
+  },
   isApproved: { type: Boolean, default: true },
   approvalStatus: {
     type: String,

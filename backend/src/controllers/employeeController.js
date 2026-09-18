@@ -12,10 +12,11 @@ exports.getEmployees = async (req, res, next) => {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit = 500,
       department,
       role,
       active,
+      status,
       search,
       sortBy = "createdAt",
       sortOrder = -1,
@@ -25,6 +26,7 @@ exports.getEmployees = async (req, res, next) => {
     if (department) filter["profile.department"] = department;
     if (role) filter.role = role;
     if (active !== undefined) filter.active = active === "true";
+    if (status) filter.status = status;
     if (search) {
       filter.$or = [
         { email: { $regex: search, $options: "i" } },
@@ -84,6 +86,8 @@ exports.updateEmployee = async (req, res, next) => {
       "assignedLine",
       "active",
       "status",
+      "isApproved",
+      "approvalStatus",
     ];
     const updates = {};
     for (const field of allowedFields) {
@@ -93,10 +97,13 @@ exports.updateEmployee = async (req, res, next) => {
     }
 
     if (req.body.status !== undefined) {
+      updates.status = req.body.status;
       updates.active = req.body.status === "active";
     }
     if (req.body.active !== undefined) {
       updates.active = Boolean(req.body.active);
+      if (updates.active && !updates.status) updates.status = "active";
+      if (!updates.active && !updates.status) updates.status = "inactive";
     }
 
     const employee = await User.findByIdAndUpdate(req.params.id, updates, {
