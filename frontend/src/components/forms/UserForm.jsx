@@ -74,6 +74,7 @@ export default function UserForm({ open, onClose, onSubmit, initialValues, loadi
       }}
     >
       <DialogTitle
+        component="div"
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -83,7 +84,7 @@ export default function UserForm({ open, onClose, onSubmit, initialValues, loadi
           background: 'linear-gradient(135deg, rgba(89,23,27,0.04), rgba(254,215,184,0.06))',
         }}
       >
-        <Typography variant="h6" fontWeight={800} color="primary.main">
+        <Typography component="span" variant="h6" fontWeight={800} color="primary.main">
           {isCreate ? 'Create Staff Account' : 'Edit Staff Account'}
         </Typography>
         <IconButton onClick={onClose} size="small" sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'rgba(89,23,27,0.08)' } }}>

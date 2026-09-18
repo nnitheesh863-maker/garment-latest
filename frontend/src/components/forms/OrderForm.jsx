@@ -29,7 +29,41 @@ const validationSchema = yup.object({
   requiredDate: yup.date().required('Required date is required'),
 });
 
-const garmentTypes = ['T-Shirt', 'Shirt', 'Pant', 'Jacket', 'Dress', 'Skirt', 'Uniform', 'Other'];
+const garmentTypes = [
+  'T-Shirt',
+  'Shirt',
+  'Pant',
+  'Jacket',
+  'Dress',
+  'Skirt',
+  'Uniform',
+  'Linen Dress',
+  'Tailored Blazer',
+  'Silk Blouse',
+  'Cashmere Trench',
+  'Poplin Shirt',
+  'Cotton Trouser',
+  'Other',
+];
+
+const normalizeGarmentType = (gt) => {
+  if (!gt) return 'T-Shirt';
+  const str = String(gt).trim();
+  const match = garmentTypes.find((t) => t.toLowerCase() === str.toLowerCase());
+  return match || str;
+};
+
+const formatAddress = (addr) => {
+  if (!addr) return '';
+  if (typeof addr === 'string') return addr;
+  return [addr.street, addr.city, addr.state, addr.zip, addr.country].filter(Boolean).join(', ');
+};
+
+const formatSpecs = (specs) => {
+  if (!specs) return '';
+  if (typeof specs === 'string') return specs;
+  return Object.entries(specs).map(([k, v]) => `${k}: ${v}`).join(', ');
+};
 
 const priorities = [
   { value: 'low', label: 'Low' },
@@ -39,27 +73,31 @@ const priorities = [
 ];
 
 const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-const colors = ['White', 'Black', 'Blue', 'Red', 'Green', 'Yellow', 'Grey', 'Navy', 'Maroon', 'Beige'];
+const colors = ['White', 'Black', 'Blue', 'Red', 'Green', 'Yellow', 'Grey', 'Navy', 'Maroon', 'Beige', 'Champagne Pearl'];
 
 export default function OrderForm({ open, onClose, onSubmit, initialValues, loading = false }) {
   const isEdit = !!initialValues;
 
+  const rawGarmentType = initialValues?.orderDetails?.garmentType || initialValues?.garmentType;
+  const normalizedGarmentType = normalizeGarmentType(rawGarmentType);
+
   const defaultValues = {
-    customerName: '',
-    company: '',
-    email: '',
-    phone: '',
-    address: '',
-    garmentType: '',
-    description: '',
-    quantity: '',
-    sizes: [],
-    colors: [],
-    priority: 'medium',
-    requiredDate: '',
-    materialSpecs: '',
-    ...initialValues,
+    customerName: initialValues?.customer?.name || initialValues?.customerName || '',
+    company: initialValues?.customer?.company || initialValues?.company || 'Direct Client',
+    email: initialValues?.customer?.email || initialValues?.email || '',
+    phone: initialValues?.customer?.phone || initialValues?.phone || '',
+    address: formatAddress(initialValues?.customer?.address || initialValues?.address),
+    garmentType: normalizedGarmentType,
+    description: typeof initialValues?.description === 'string' ? initialValues.description : (typeof initialValues?.orderDetails?.description === 'string' ? initialValues.orderDetails.description : ''),
+    quantity: initialValues?.orderDetails?.quantity || initialValues?.quantity || 100,
+    sizes: Array.isArray(initialValues?.orderDetails?.sizes) ? initialValues.orderDetails.sizes : (Array.isArray(initialValues?.sizes) ? initialValues.sizes : ['M']),
+    colors: Array.isArray(initialValues?.orderDetails?.colors) ? initialValues.orderDetails.colors : (Array.isArray(initialValues?.colors) ? initialValues.colors : ['Champagne Pearl']),
+    priority: initialValues?.priority === 'normal' ? 'medium' : (initialValues?.priority || 'medium'),
+    requiredDate: initialValues?.requiredDate ? new Date(initialValues.requiredDate).toISOString().split('T')[0] : '',
+    materialSpecs: formatSpecs(initialValues?.orderDetails?.specifications || initialValues?.materialSpecs),
   };
+
+  const availableGarmentTypes = Array.from(new Set([...garmentTypes, normalizedGarmentType])).filter(Boolean);
 
   return (
     <Dialog
@@ -77,6 +115,7 @@ export default function OrderForm({ open, onClose, onSubmit, initialValues, load
       }}
     >
       <DialogTitle
+        component="div"
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -86,7 +125,7 @@ export default function OrderForm({ open, onClose, onSubmit, initialValues, load
           background: 'linear-gradient(135deg, rgba(89,23,27,0.04), rgba(254,215,184,0.06))',
         }}
       >
-        <Typography variant="h6" fontWeight={800} color="primary.main">
+        <Typography component="span" variant="h6" fontWeight={800} color="primary.main">
           {isEdit ? 'Edit Production Order' : 'Create New Production Order'}
         </Typography>
         <IconButton onClick={onClose} size="small" sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'rgba(89,23,27,0.08)' } }}>
@@ -95,6 +134,7 @@ export default function OrderForm({ open, onClose, onSubmit, initialValues, load
       </DialogTitle>
       <Formik
         initialValues={defaultValues}
+        enableReinitialize
         validationSchema={validationSchema}
         onSubmit={(values, { setSubmitting }) => {
           onSubmit(values);
@@ -109,19 +149,19 @@ export default function OrderForm({ open, onClose, onSubmit, initialValues, load
               </Typography>
               <Grid container spacing={2} mb={3}>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth size="small" label="Customer Name" name="customerName" value={values.customerName} onChange={handleChange} onBlur={handleBlur} error={touched.customerName && !!errors.customerName} helperText={touched.customerName && errors.customerName} />
+                  <TextField fullWidth size="small" label="Customer Name" name="customerName" value={values.customerName || ''} onChange={handleChange} onBlur={handleBlur} error={touched.customerName && !!errors.customerName} helperText={touched.customerName && errors.customerName} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth size="small" label="Company" name="company" value={values.company} onChange={handleChange} onBlur={handleBlur} error={touched.company && !!errors.company} helperText={touched.company && errors.company} />
+                  <TextField fullWidth size="small" label="Company" name="company" value={values.company || ''} onChange={handleChange} onBlur={handleBlur} error={touched.company && !!errors.company} helperText={touched.company && errors.company} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth size="small" label="Email" name="email" type="email" value={values.email} onChange={handleChange} onBlur={handleBlur} error={touched.email && !!errors.email} helperText={touched.email && errors.email} />
+                  <TextField fullWidth size="small" label="Email" name="email" type="email" value={values.email || ''} onChange={handleChange} onBlur={handleBlur} error={touched.email && !!errors.email} helperText={touched.email && errors.email} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth size="small" label="Phone" name="phone" value={values.phone} onChange={handleChange} onBlur={handleBlur} error={touched.phone && !!errors.phone} helperText={touched.phone && errors.phone} />
+                  <TextField fullWidth size="small" label="Phone" name="phone" value={values.phone || ''} onChange={handleChange} onBlur={handleBlur} error={touched.phone && !!errors.phone} helperText={touched.phone && errors.phone} />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField fullWidth size="small" label="Address" name="address" multiline rows={2} value={values.address} onChange={handleChange} onBlur={handleBlur} error={touched.address && !!errors.address} helperText={touched.address && errors.address} />
+                  <TextField fullWidth size="small" label="Address" name="address" multiline rows={2} value={values.address || ''} onChange={handleChange} onBlur={handleBlur} error={touched.address && !!errors.address} helperText={touched.address && errors.address} />
                 </Grid>
               </Grid>
 
@@ -130,20 +170,20 @@ export default function OrderForm({ open, onClose, onSubmit, initialValues, load
               </Typography>
               <Grid container spacing={2} mb={1}>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth size="small" label="Garment Type" name="garmentType" select value={values.garmentType} onChange={handleChange} onBlur={handleBlur} error={touched.garmentType && !!errors.garmentType} helperText={touched.garmentType && errors.garmentType}>
-                    {garmentTypes.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+                  <TextField fullWidth size="small" label="Garment Type" name="garmentType" select value={values.garmentType || 'T-Shirt'} onChange={handleChange} onBlur={handleBlur} error={touched.garmentType && !!errors.garmentType} helperText={touched.garmentType && errors.garmentType}>
+                    {availableGarmentTypes.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth size="small" label="Quantity (Units)" name="quantity" type="number" value={values.quantity} onChange={handleChange} onBlur={handleBlur} error={touched.quantity && !!errors.quantity} helperText={touched.quantity && errors.quantity} />
+                  <TextField fullWidth size="small" label="Quantity (Units)" name="quantity" type="number" value={values.quantity ?? 100} onChange={handleChange} onBlur={handleBlur} error={touched.quantity && !!errors.quantity} helperText={touched.quantity && errors.quantity} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth size="small" label="Priority" name="priority" select value={values.priority} onChange={handleChange} onBlur={handleBlur} error={touched.priority && !!errors.priority} helperText={touched.priority && errors.priority}>
+                  <TextField fullWidth size="small" label="Priority" name="priority" select value={values.priority || 'medium'} onChange={handleChange} onBlur={handleBlur} error={touched.priority && !!errors.priority} helperText={touched.priority && errors.priority}>
                     {priorities.map((p) => <MenuItem key={p.value} value={p.value}>{p.label}</MenuItem>)}
                   </TextField>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField fullWidth size="small" label="Required Delivery Date" name="requiredDate" type="date" value={values.requiredDate} onChange={handleChange} onBlur={handleBlur} error={touched.requiredDate && !!errors.requiredDate} helperText={touched.requiredDate && errors.requiredDate} InputLabelProps={{ shrink: true }} />
+                  <TextField fullWidth size="small" label="Required Delivery Date" name="requiredDate" type="date" value={values.requiredDate || ''} onChange={handleChange} onBlur={handleBlur} error={touched.requiredDate && !!errors.requiredDate} helperText={touched.requiredDate && errors.requiredDate} InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField fullWidth size="small" label="Sizes" name="sizes" select SelectProps={{ multiple: true }} value={values.sizes || []} onChange={(e) => setFieldValue('sizes', e.target.value)}>
@@ -156,10 +196,10 @@ export default function OrderForm({ open, onClose, onSubmit, initialValues, load
                   </TextField>
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField fullWidth size="small" label="Description / Special Instructions" name="description" multiline rows={2} value={values.description} onChange={handleChange} onBlur={handleBlur} />
+                  <TextField fullWidth size="small" label="Description / Special Instructions" name="description" multiline rows={2} value={values.description || ''} onChange={handleChange} onBlur={handleBlur} />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField fullWidth size="small" label="Material Specifications" name="materialSpecs" multiline rows={2} value={values.materialSpecs} onChange={handleChange} onBlur={handleBlur} />
+                  <TextField fullWidth size="small" label="Material Specifications" name="materialSpecs" multiline rows={2} value={values.materialSpecs || ''} onChange={handleChange} onBlur={handleBlur} />
                 </Grid>
               </Grid>
             </DialogContent>
