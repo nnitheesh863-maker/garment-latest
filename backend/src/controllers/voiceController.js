@@ -632,6 +632,8 @@ exports.processVoiceCommand = async (req, res) => {
           language: lang, action: 'navigate', navigate: `/${req.user.role}/attendance`,
         },
       });
+    }
+
     // 1. Check logged in users / attendance / who is working today
     if (/which user|who logged in|logged in today|who is online|who is present|active users|logged in|attendance today/.test(cmd)) {
       const User = require('../models/User');

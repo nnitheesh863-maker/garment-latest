@@ -429,8 +429,9 @@ export default function ThreeGarmentCanvas({ height = "100%" }) {
         const theta = Math.atan2(bz, bx);
         const radius = Math.sqrt(bx * bx + bz * bz);
 
-        // Lower hem has wider drape ripples
-        const drapeFactor = Math.pow((1.35 - by) / 2.7, 1.4);
+        // Lower hem has wider drape ripples (clamp to prevent negative base in Math.pow producing NaN)
+        const normalizedHeight = Math.max(0, (1.35 - by) / 2.7);
+        const drapeFactor = Math.pow(normalizedHeight, 1.4);
         const wave = Math.sin(theta * folds + elapsed * 1.8 + by * 2.2) * (amp * drapeFactor);
         const microFlax = Math.cos(theta * 12 + elapsed * 3.0) * (0.02 * drapeFactor);
 
