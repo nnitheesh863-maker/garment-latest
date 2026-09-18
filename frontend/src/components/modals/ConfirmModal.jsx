@@ -40,7 +40,7 @@ export default function ConfirmModal({
         },
       }}
     >
-      <DialogTitle sx={{ pb: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <DialogTitle component="div" sx={{ pb: 1, display: 'flex', alignItems: 'center', gap: 1.5 }}>
         {isDanger && (
           <Box
             sx={{
@@ -57,7 +57,7 @@ export default function ConfirmModal({
             <WarningAmberRoundedIcon sx={{ fontSize: 22 }} />
           </Box>
         )}
-        <Typography variant="h6" fontWeight={700}>
+        <Typography component="span" variant="h6" fontWeight={700}>
           {title}
         </Typography>
       </DialogTitle>

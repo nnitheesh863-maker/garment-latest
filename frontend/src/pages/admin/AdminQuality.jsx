@@ -208,7 +208,14 @@ export default function AdminQuality() {
         <Chip label={val?.replace(/_/g, ' ') || '-'} size="small" variant="outlined" />
       ),
     },
-    { id: 'inspector', label: 'Inspector', render: (val) => val?.profile?.firstName || val?.email || '-' },
+    {
+      id: 'inspector',
+      label: 'Inspector',
+      render: (val) =>
+        typeof val === 'object' && val !== null
+          ? `${val?.profile?.firstName || ''} ${val?.profile?.lastName || ''}`.trim() || val?.email || '-'
+          : val || '-',
+    },
     {
       id: 'grade', label: 'Grade', render: (val) => val ? (
         <Chip label={val} size="small" color={gradeColors[val] || 'default'} />
@@ -313,11 +320,15 @@ export default function AdminQuality() {
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">Order</Typography>
-                <Typography variant="body2" fontWeight={500}>{detailData.order?.orderNumber || detailData.order || '-'}</Typography>
+                <Typography variant="body2" fontWeight={500}>{typeof detailData.order === 'object' && detailData.order !== null ? detailData.order?.orderNumber || '-' : detailData.order || '-'}</Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">Inspector</Typography>
-                <Typography variant="body2" fontWeight={500}>{detailData.inspector || '-'}</Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  {typeof detailData.inspector === 'object' && detailData.inspector !== null
+                    ? `${detailData.inspector?.profile?.firstName || ''} ${detailData.inspector?.profile?.lastName || ''}`.trim() || detailData.inspector?.email || '-'
+                    : detailData.inspector || '-'}
+                </Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">Date</Typography>

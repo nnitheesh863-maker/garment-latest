@@ -25,10 +25,10 @@ const registerRules = [
 
 const createOrderRules = [
   body('customer.name').notEmpty().withMessage('Customer name is required'),
-  body('customer.email').isEmail().withMessage('Valid customer email is required'),
+  body('customer.email').optional({ checkFalsy: true }).isEmail().withMessage('Valid customer email is required'),
   body('orderDetails.garmentType').notEmpty().withMessage('Garment type is required'),
-  body('orderDetails.quantity').isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
-  body('requiredDate').isISO8601().withMessage('Valid required date is required'),
+  body('orderDetails.quantity').toInt().isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
+  body('requiredDate').notEmpty().withMessage('Required date is required'),
 ];
 
 const updateOrderRules = [

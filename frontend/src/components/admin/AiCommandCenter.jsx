@@ -84,23 +84,35 @@ export default function AiCommandCenter({ onOrderCreated }) {
 
     try {
       const clientName = directOrder.customerName?.trim() || 'Direct Client';
+      const cleanEmail = directOrder.customerEmail?.trim() && directOrder.customerEmail.includes('@')
+        ? directOrder.customerEmail.trim()
+        : `${clientName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'client'}@garmentos.com`;
+
+      const deliveryDateIso = directOrder.deliveryDate
+        ? new Date(directOrder.deliveryDate).toISOString()
+        : new Date(Date.now() + 14 * 86400000).toISOString();
+
+      const startDateIso = directOrder.startDate
+        ? new Date(directOrder.startDate).toISOString()
+        : new Date().toISOString();
+
       const payload = {
         customer: {
           name: clientName,
-          email: directOrder.customerEmail?.trim() || `${clientName.toLowerCase().replace(/\s+/g, '')}@client.com`,
+          email: cleanEmail,
           phone: directOrder.customerPhone?.trim() || '+1 555-0199',
         },
         orderDetails: {
           garmentType: directOrder.garmentType || 'Linen Garment',
-          quantity: Number(directOrder.quantity) || 100,
+          quantity: parseInt(directOrder.quantity, 10) || 100,
           colors: [directOrder.color || 'Champagne Pearl'],
           sizes: [directOrder.size || 'M'],
         },
-        requiredDate: directOrder.deliveryDate || new Date(Date.now() + 14 * 86400000),
-        plannedDate: directOrder.startDate || new Date(),
+        requiredDate: deliveryDateIso,
+        plannedDate: startDateIso,
         timeline: {
-          startDate: directOrder.startDate,
-          deliveryDate: directOrder.deliveryDate,
+          startDate: startDateIso,
+          deliveryDate: deliveryDateIso,
         },
         priority: directOrder.priority === 'normal' ? 'medium' : (directOrder.priority || 'medium'),
         status: 'pending',
