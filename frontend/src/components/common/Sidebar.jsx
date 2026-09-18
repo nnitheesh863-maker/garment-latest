@@ -82,21 +82,22 @@ export default function Sidebar({ open, onClose, variant }) {
         overflow: 'hidden',
         background: (theme) =>
           theme.palette.mode === 'dark'
-            ? 'linear-gradient(180deg, rgba(38,24,27,0.88) 0%, rgba(26,16,18,0.94) 100%)'
-            : 'linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,248,242,0.88) 100%)',
-        backdropFilter: 'blur(20px) saturate(160%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+            ? 'rgba(30, 18, 20, 0.98)'
+            : 'rgba(255, 255, 255, 0.98)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         border: (theme) =>
           `1px solid ${
             theme.palette.mode === 'dark' ? 'rgba(254,215,184,0.1)' : 'rgba(241,213,192,0.7)'
           }`,
         boxShadow: (theme) =>
           theme.palette.mode === 'dark'
-            ? '0 18px 60px rgba(0,0,0,0.5)'
-            : '0 18px 50px rgba(89,23,27,0.08)',
+            ? '0 10px 40px rgba(0,0,0,0.5)'
+            : '0 8px 30px rgba(89,23,27,0.06)',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'width 280ms cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+        willChange: 'width',
         zIndex: 10,
       }}
     >
@@ -205,7 +206,8 @@ export default function Sidebar({ open, onClose, variant }) {
       <Box
         sx={{
           flex: 1,
-          overflow: 'auto',
+          overflowY: 'auto',
+          overflowX: 'hidden',
           px: collapsed ? 0.75 : 1.25,
           py: 1,
           '&::-webkit-scrollbar': { width: 4 },
@@ -215,60 +217,72 @@ export default function Sidebar({ open, onClose, variant }) {
         {navItems.map((item) => {
           const Icon = iconMap[item.icon] || DashboardIcon;
           const active = isActive(item.path);
-          return (
-            <Tooltip
+
+          const itemButton = (
+            <Box
               key={item.path}
-              title={collapsed ? item.label : ''}
-              placement="right"
-              arrow
-            >
-              <Box
-                onClick={() => {
+              onClick={() => {
+                if (location.pathname !== item.path) {
                   navigate(item.path);
-                  if (onClose) onClose();
-                }}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.5,
-                  px: collapsed ? 0 : 1.5,
-                  py: 1,
-                  mx: collapsed ? 0.25 : 0,
-                  my: 0.35,
-                  borderRadius: '14px',
-                  cursor: 'pointer',
-                  color: active ? '#FED7B8' : 'text.secondary',
-                  position: 'relative',
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  transition: 'background-color 0.15s ease, color 0.15s ease, transform 0.15s ease',
+                }
+                if (onClose) onClose();
+              }}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                px: collapsed ? 0 : 1.5,
+                py: 1,
+                mx: collapsed ? 0.25 : 0,
+                my: 0.35,
+                borderRadius: '14px',
+                cursor: 'pointer',
+                color: active ? '#FED7B8' : 'text.secondary',
+                position: 'relative',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                transition: 'background 0.12s ease, color 0.12s ease',
+                background: active
+                  ? 'linear-gradient(135deg, #59171B 0%, #7A2328 60%, #A45A4A 100%)'
+                  : 'transparent',
+                boxShadow: active ? '0 6px 18px rgba(89,23,27,0.25)' : 'none',
+                '&:hover': {
+                  color: active ? '#FED7B8' : 'primary.main',
                   background: active
                     ? 'linear-gradient(135deg, #59171B 0%, #7A2328 60%, #A45A4A 100%)'
-                    : 'transparent',
-                  boxShadow: active ? '0 6px 18px rgba(89,23,27,0.25)' : 'none',
-                  '&:hover': {
-                    color: active ? '#FED7B8' : 'primary.main',
-                    background: active
-                      ? 'linear-gradient(135deg, #59171B 0%, #7A2328 60%, #A45A4A 100%)'
-                      : (theme) =>
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(164,90,74,0.16)'
-                            : 'rgba(254,215,184,0.35)',
-                  },
-                }}
-              >
-                <Icon sx={{ fontSize: collapsed ? 22 : 20 }} />
-                {!collapsed && (
-                  <Typography
-                    variant="body2"
-                    fontWeight={active ? 700 : 500}
-                    sx={{ fontSize: 13.5, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}
-                  >
-                    {item.label}
-                  </Typography>
-                )}
-              </Box>
-            </Tooltip>
+                    : (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(164,90,74,0.16)'
+                          : 'rgba(254,215,184,0.35)',
+                },
+              }}
+            >
+              <Icon sx={{ fontSize: collapsed ? 22 : 20 }} />
+              {!collapsed && (
+                <Typography
+                  variant="body2"
+                  fontWeight={active ? 700 : 500}
+                  sx={{ fontSize: 13.5, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}
+                >
+                  {item.label}
+                </Typography>
+              )}
+            </Box>
           );
+
+          if (collapsed) {
+            return (
+              <Tooltip
+                key={item.path}
+                title={item.label}
+                placement="right"
+                arrow
+              >
+                {itemButton}
+              </Tooltip>
+            );
+          }
+
+          return itemButton;
         })}
       </Box>
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Toolbar } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../components/common/Header';
 import Sidebar from '../components/common/Sidebar';
 import VoiceAssistant from '../components/VoiceAssistant';
@@ -51,18 +50,19 @@ export default function MainLayout({ children }) {
               width: '100%',
             }}
           >
-            <AnimatePresence initial={false}>
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                style={{ willChange: 'opacity, transform' }}
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
+            <Box
+              key={location.pathname}
+              sx={{
+                animation: 'fastPageFade 0.12s cubic-bezier(0, 0, 0.2, 1)',
+                '@keyframes fastPageFade': {
+                  from: { opacity: 0.7, transform: 'translateY(3px)' },
+                  to: { opacity: 1, transform: 'translateY(0)' },
+                },
+                willChange: 'opacity, transform',
+              }}
+            >
+              {children}
+            </Box>
           </Box>
         </Box>
         <VoiceAssistant />
