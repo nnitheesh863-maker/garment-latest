@@ -268,15 +268,26 @@ export default function VoiceAssistant() {
         }
       }
 
-      if (/machine health|machine status|machine problem/.test(cmd)) {
-        return { reply: 'Machine telemetry is normal. All operating parameters are optimal.', lang: 'en' };
+      // Check for logged in / active users query
+      if (/which user|who logged in|logged in today|who is online|who is present|active users|logged in/.test(cmd)) {
+        try {
+          const res = await api.get('/api/users?active=true&limit=10');
+          const users = res.data?.data || [];
+          if (users.length > 0) {
+            const list = users.map((u) => `• ${u.profile?.firstName || u.email} (${u.role.toUpperCase()})`).join('\n');
+            return {
+              reply: `Active registered users (${users.length}):\n${list}`,
+              lang: 'en',
+            };
+          }
+        } catch {
+          return { reply: 'Currently inspecting active logged-in users. Please check the Admin User Management portal for live telemetry.', lang: 'en' };
+        }
       }
 
-      const greetings = {
-        en: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'],
-        ta: ['வணக்கம்', 'வனக்கம்'],
-      };
-      if (greetings.en.some((g) => cmd.includes(g)) || greetings.ta.some((g) => cmd.includes(g))) {
+      // Word-boundary matching for greetings so words like 'which', 'machine', 'shift' don't trigger 'hi'
+      const greetingRegex = /\b(hello|hi|hey|good\s+morning|good\s+afternoon|good\s+evening|vanakkam|வணக்கம்|नमस्ते)\b/i;
+      if (greetingRegex.test(cmd)) {
         const hour = new Date().getHours();
         const timeGreet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
         const replies = {
@@ -289,7 +300,7 @@ export default function VoiceAssistant() {
       }
 
       const defaultMsg = {
-        en: 'I understand you. You can say: "Clock In", "Clock Out", "My Tasks", "Machine Health", or "Report Issue".',
+        en: 'I understand you. You can say: "Which users logged in today", "Clock In", "Clock Out", "My Tasks", "Machine Health", or "Report Issue".',
         ta: 'நான் உங்களை புரிந்துகொள்கிறேன். நீங்கள் சொல்லலாம்: கிளாக் இன், கிளாக் அவுட், எனது பணிகள், பிரச்சனை புகார்',
         hi: 'मैं आपको समझता हूँ। आप कह सकते हैं: क्लॉक इन, क्लॉक आउट, मेरे कार्य, समस्या रिपोर्ट',
         tanglish: 'Puriyudhu. Neenga solalam: Clock In, Clock Out, My Tasks, Attendance, Issue Report',

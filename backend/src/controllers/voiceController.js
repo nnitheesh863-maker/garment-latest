@@ -632,23 +632,59 @@ exports.processVoiceCommand = async (req, res) => {
           language: lang, action: 'navigate', navigate: `/${req.user.role}/attendance`,
         },
       });
-    }
+    // 1. Check logged in users / attendance / who is working today
+    if (/which user|who logged in|logged in today|who is online|who is present|active users|logged in|attendance today/.test(cmd)) {
+      const User = require('../models/User');
+      const Attendance = require('../models/Attendance');
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
 
-    if (/open (tasks|my tasks)/.test(cmd)) {
+      const loggedInUsers = await User.find({
+        $or: [
+          { lastLogin: { $gte: todayStart } },
+          { active: true },
+        ],
+      }).select('email role profile lastLogin active').limit(10);
+
+      const todayAttendance = await Attendance.find({
+        date: { $gte: todayStart },
+      }).populate('employee', 'email profile role');
+
+      if (loggedInUsers.length === 0 && todayAttendance.length === 0) {
+        return res.json({
+          success: true,
+          data: {
+            reply: 'No active employee sessions logged for today yet.',
+            language: lang,
+          },
+        });
+      }
+
+      const userList = loggedInUsers.map((u) => {
+        const name = `${u.profile?.firstName || ''} ${u.profile?.lastName || ''}`.trim() || u.email;
+        const time = u.lastLogin
+          ? new Date(u.lastLogin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : 'Active';
+        return `• ${name} [${u.role.toUpperCase()}] - ${time}`;
+      });
+
       return res.json({
-        success: true, data: {
-          reply: getReply(lang, { en: 'Opening tasks page', ta: 'பணிகள் பக்கம் திறக்கிறது' }),
-          language: lang, action: 'navigate', navigate: `/${req.user.role}/tasks`,
+        success: true,
+        data: {
+          reply: `Users logged in / active today (${loggedInUsers.length}):\n${userList.join('\n')}`,
+          language: lang,
         },
       });
     }
 
-    const greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'vanakkam', 'வணக்கம்', 'नमस्ते'];
-    if (greetings.some(g => cmd.includes(g))) {
+    // 2. Exact word boundary match for greetings (prevents 'which', 'machine', 'shift' from matching 'hi')
+    const greetingRegex = /\b(hello|hi|hey|good\s+morning|good\s+afternoon|good\s+evening|vanakkam|வணக்கம்|नमस्ते)\b/i;
+    if (greetingRegex.test(cmd)) {
       const hour = now.getHours();
       const greet = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening';
       return res.json({
-        success: true, data: {
+        success: true,
+        data: {
           reply: getReply(lang, {
             en: `Good ${greet}! I am your AI assistant. How can I help you today?`,
             ta: `வணக்கம்! நான் உங்கள் AI உதவியாளர். எப்படி உதவ முடியும்?`,
@@ -660,10 +696,31 @@ exports.processVoiceCommand = async (req, res) => {
       });
     }
 
+    // 3. General AI Fallback answering factory intelligence questions
+    try {
+      const { getPrediction } = require('../services/aiService');
+      const aiReply = await getPrediction('general_query', { question: command, userRole: req.user.role });
+      if (aiReply) {
+        let cleanText = aiReply;
+        try {
+          const parsedObj = JSON.parse(aiReply);
+          cleanText = parsedObj.recommendation || parsedObj.prediction || parsedObj.answer || aiReply;
+        } catch {}
+        return res.json({
+          success: true,
+          data: {
+            reply: cleanText,
+            language: lang,
+          },
+        });
+      }
+    } catch {}
+
     return res.json({
-      success: true, data: {
+      success: true,
+      data: {
         reply: getReply(lang, {
-          en: 'I understand. You can say: Clock In, Clock Out, My Tasks, My Performance, Show Attendance, Report Issue, or ask me anything about your work.',
+          en: 'I understand. You can say: "Which users logged in today", "Clock In", "Clock Out", "My Tasks", "My Performance", "Show Attendance", or "Report Issue".',
           ta: 'புரிந்தது. நீங்கள் சொல்லலாம்: கிளாக் இன், கிளாக் அவுட், எனது பணிகள், எனது செயல்திறன், வருகை காண்பி, பிரச்சனை தெரிவி',
           hi: 'समझ गया। आप कह सकते हैं: क्लॉक इन, क्लॉक आउट, मेरे कार्य, मेरा प्रदर्शन, उपस्थिति दिखाएँ, समस्या रिपोर्ट करें',
           tanglish: 'Puriyudhu. Neenga solalam: Clock In, Clock Out, My Tasks, My Performance, Show Attendance, Report Issue',
@@ -674,7 +731,8 @@ exports.processVoiceCommand = async (req, res) => {
   } catch (err) {
     console.error('Voice command error:', err);
     return res.json({
-      success: true, data: {
+      success: true,
+      data: {
         reply: 'I encountered an error processing your request. Please try again.',
         language: 'en',
       },

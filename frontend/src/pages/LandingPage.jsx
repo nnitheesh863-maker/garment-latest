@@ -23,6 +23,7 @@ import {
   Rating,
   Tooltip,
   Badge,
+  Alert,
 } from "@mui/material";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
@@ -44,16 +45,30 @@ import PinterestIcon from "@mui/icons-material/Pinterest";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import SensorsIcon from "@mui/icons-material/Sensors";
-import { motion } from "framer-motion";
+import ViewInArIcon from "@mui/icons-material/ViewInAr";
+import ThreeDRotationIcon from "@mui/icons-material/ThreeDRotation";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
 import { useAuth } from "../hooks/useAuth";
 
-// High quality images
+// 3D Interactive Components
+import Floating3DCard from "../components/3d/Floating3DCard";
+import ThreeGarmentCanvas from "../components/3d/ThreeGarmentCanvas";
+import Garment3DViewer from "../components/3d/Garment3DViewer";
+import FabricTextureZoomer from "../components/3d/FabricTextureZoomer";
+import VirtualFit3D from "../components/3d/VirtualFit3D";
+import LinenCollection3DShowcase from "../components/3d/LinenCollection3DShowcase";
+
+// High quality unique imagery
 import heroSilkImg from "../images/hero_silk.jpg";
 import linenDressImg from "../images/linen_dress.jpg";
 import linenBlazerImg from "../images/linen_blazer.jpg";
+import linenCollectionImg from "../images/linen_collection.png";
 import garmentStock1 from "../images/garment1.jpg";
 import garmentStock3 from "../images/garments3.jpg";
 import garmentStock4 from "../images/garment4.webp";
+import garmentStock2 from "../images/garment.jpg";
 
 // Curated Luxury Color Palette (Matching Pinterest aesthetic)
 const THEME = {
@@ -72,12 +87,12 @@ const THEME = {
   silkDark: "linear-gradient(135deg, #2B2623 0%, #171412 100%)",
 };
 
-// Initial Products Data matching the Pinterest board
+// Initial Products Data - 100% Unique Image per Product
 const PRODUCTS = [
   {
     id: "prod-1",
     name: "Linen Wrap Dress",
-    material: "100% Organic Linen",
+    material: "100% Organic Belgian Linen",
     price: 129.0,
     originalPrice: 160.0,
     rating: 4.9,
@@ -106,18 +121,18 @@ const PRODUCTS = [
   },
   {
     id: "prod-3",
-    name: "Silk Button-Down Blouse",
-    material: "100% Pure Mulberry Silk",
-    price: 149.0,
-    originalPrice: 185.0,
-    rating: 4.8,
-    reviews: 86,
-    image: heroSilkImg,
-    sizes: ["XS", "S", "M", "L"],
-    colors: ["Champagne", "Ivory", "Midnight"],
-    tag: "ORGANIC SILK",
+    name: "Belgian Linen Camp Shirt",
+    material: "100% Naturally Grown Linen",
+    price: 145.0,
+    originalPrice: 180.0,
+    rating: 5.0,
+    reviews: 142,
+    image: linenCollectionImg,
+    sizes: ["S", "M", "L", "XL"],
+    colors: ["Natural Cream", "Desert Sand", "Olive"],
+    tag: "LINEN COLLECTION",
     description:
-      "Lustrous 22-momme grade 6A silk with a relaxed drape. Concealed mother-of-pearl button placket and French seams for timeless luxury.",
+      "Equipped with natural breeziness, enzyme-softened handfeel, wrinkle-resistant drape, and French seams tailored for timeless elegance.",
   },
   {
     id: "prod-4",
@@ -134,34 +149,64 @@ const PRODUCTS = [
     description:
       "Pure featherweight Grade-A Mongolian cashmere blended with silk for cool summer nights and refined winter layering.",
   },
+  {
+    id: "prod-5",
+    name: "Pleated Tencel Trouser",
+    material: "Botanical Tencel Twill",
+    price: 135.0,
+    originalPrice: 165.0,
+    rating: 4.9,
+    reviews: 78,
+    image: garmentStock3,
+    sizes: ["XS", "S", "M", "L", "XL"],
+    colors: ["Oatmeal", "Earthy Taupe", "Slate"],
+    tag: "FLUID DRAPE",
+    description:
+      "High-waisted tailored trousers cut from silky sustainable eucalyptus fibers with deep front pleats and fluid movement.",
+  },
+  {
+    id: "prod-6",
+    name: "Atelier Structured Trench",
+    material: "Heavyweight Organic Cotton",
+    price: 260.0,
+    originalPrice: 320.0,
+    rating: 5.0,
+    reviews: 51,
+    image: garmentStock4,
+    sizes: ["S", "M", "L"],
+    colors: ["Desert Camel", "Midnight Navy"],
+    tag: "SIGNATURE PIECE",
+    description:
+      "Double-breasted storm flap trench with horn buckle belts, deep welt pockets, and water-repellent biological plant wax finish.",
+  },
 ];
 
 const COLLECTIONS = [
   {
     id: "col-1",
-    title: "Summer Linen",
-    description: "Effortless breathable silhouettes tailored in raw flax",
-    image: linenDressImg,
+    title: "The Belgian Linen Series",
+    description: "Effortless breathable silhouettes tailored in raw Flanders flax",
+    image: linenCollectionImg,
     tag: "18 PIECES",
   },
   {
     id: "col-2",
-    title: "Autumn Knit",
-    description: "Tactile ribbed sweaters, turtlenecks & cardigans",
+    title: "Autumn Knit & Cashmere",
+    description: "Tactile ribbed sweaters, turtlenecks & brushed robes",
     image: garmentStock3,
     tag: "14 PIECES",
   },
   {
     id: "col-3",
-    title: "Evening Silk",
-    description: "Flowing organza gowns & fluid slip dresses",
+    title: "Evening Mulberry Silk",
+    description: "Flowing organza gowns, fluid slip dresses & satin blouses",
     image: heroSilkImg,
     tag: "22 PIECES",
   },
   {
     id: "col-4",
-    title: "Casual Cotton",
-    description: "Crisp organic poplin shirts & relaxed trousers",
+    title: "Minimal Tailoring",
+    description: "Structured blazers, poplin shirting & pleated trousers",
     image: linenBlazerImg,
     tag: "26 PIECES",
   },
@@ -170,21 +215,21 @@ const COLLECTIONS = [
 const LOOKBOOKS = [
   {
     id: "look-1",
-    title: "Effortless Day Out",
+    title: "Effortless Linen Day",
     image: linenDressImg,
-    items: ["Linen Wrap Dress", "Wide Leg Pants", "Leather Atelier Sandals"],
+    items: ["Linen Wrap Dress", "Wide Leg Pants", "Leather Atelier Mules"],
   },
   {
     id: "look-2",
-    title: "City Chic",
+    title: "Milanese City Chic",
     image: linenBlazerImg,
     items: ["Tailored Blazer", "Silk Cami", "Pleated Linen Trousers"],
   },
   {
     id: "look-3",
-    title: "Evening Elegance",
-    image: heroSilkImg,
-    items: ["Pure Silk Gown", "Heeled Mule", "Handwoven Mini Clutch"],
+    title: "Nordic Winter Opulence",
+    image: garmentStock4,
+    items: ["Structured Trench", "Cashmere Scarf", "Handcrafted Leather Tote"],
   },
 ];
 
@@ -194,7 +239,7 @@ const REVIEWS = [
     name: "Emily R.",
     location: "New York, USA",
     rating: 5,
-    text: "The quality and fit are absolutely divine. GarmentOS & Atelier is now my ultimate sanctuary for timeless, sustainable pieces.",
+    text: "The 3D interactive viewer is magical! Being able to inspect the real-time silk drape before ordering gave me complete confidence. The piece fits like high couture.",
     verified: true,
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
   },
@@ -203,7 +248,7 @@ const REVIEWS = [
     name: "Sophia L.",
     location: "Milan, Italy",
     rating: 5,
-    text: "Beautiful clothing, genuine sustainable fabrics, and lightning-fast worldwide shipping. The stitch precision is masterclass level.",
+    text: "Impeccable stitch precision, genuine sustainable fabrics, and lightning-fast worldwide delivery. The Belgian linen feels breathable yet perfectly structured.",
     verified: true,
     avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80",
   },
@@ -212,7 +257,7 @@ const REVIEWS = [
     name: "Olivia M.",
     location: "London, UK",
     rating: 5,
-    text: "Every piece feels so lightweight, elegant, and breathable. I receive endless compliments whenever I wear the linen collection.",
+    text: "Every piece feels lightweight, elegant, and timeless. The AI sizing engine suggested Size M and the drape is flawless without a millimeter to adjust.",
     verified: true,
     avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80",
   },
@@ -231,18 +276,20 @@ export default function LandingPage() {
       quantity: 1,
     },
   ]);
-  const [wishlist, setWishlist] = useState(["prod-1"]);
+  const [wishlist, setWishlist] = useState(["prod-1", "prod-3"]);
+  const [promoCode, setPromoCode] = useState("");
+  const [discountApplied, setDiscountApplied] = useState(false);
 
   // Quick View Modal State
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState("M");
 
-  // AI Fit Modal State
+  // Virtual Fit Dialog State
   const [fitModalOpen, setFitModalOpen] = useState(false);
-  const [fitHeight, setFitHeight] = useState("168");
-  const [fitWeight, setFitWeight] = useState("58");
-  const [fitPreference, setFitPreference] = useState("Regular Fit");
-  const [calculatedSize, setCalculatedSize] = useState(null);
+
+  // Checkout Modal State
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [orderComplete, setOrderComplete] = useState(false);
 
   // Newsletter State
   const [newsletterEmail, setNewsletterEmail] = useState("");
@@ -261,7 +308,18 @@ export default function LandingPage() {
             : item
         );
       }
-      return [...prev, { ...product, selectedSize: size, quantity: 1 }];
+      return [
+        ...prev,
+        {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          material: product.material,
+          image: product.image || heroSilkImg,
+          selectedSize: size,
+          quantity: 1,
+        },
+      ];
     });
     setBagOpen(true);
   };
@@ -286,27 +344,24 @@ export default function LandingPage() {
     );
   };
 
-  const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discount = discountApplied ? subtotal * 0.15 : 0;
+  const total = Math.max(0, subtotal - discount);
+
+  const handleApplyPromo = () => {
+    if (promoCode.trim().toUpperCase() === "ATELIER2026") {
+      setDiscountApplied(true);
+    }
   };
 
-  const handleCalculateFit = (e) => {
+  const handlePlaceOrder = (e) => {
     e.preventDefault();
-    const h = parseFloat(fitHeight) || 165;
-    const w = parseFloat(fitWeight) || 55;
-    const bmi = w / Math.pow(h / 100, 2);
-
-    let rec = "M";
-    if (bmi < 19) rec = "XS";
-    else if (bmi < 22) rec = "S";
-    else if (bmi < 25) rec = "M";
-    else if (bmi < 28) rec = "L";
-    else rec = "XL";
-
-    setCalculatedSize({
-      size: rec,
-      confidence: "98.4%",
-      notes: `Optimal match for ${fitPreference.toLowerCase()} drape.`,
+    setOrderComplete(true);
+    confetti({
+      particleCount: 120,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#A88362", "#D4AF37", "#231F20", "#EADCCF"],
     });
   };
 
@@ -345,7 +400,8 @@ export default function LandingPage() {
         }}
       >
         <Typography variant="caption" sx={{ letterSpacing: "0.08em" }}>
-          ✦ COMPLIMENTARY GLOBAL EXPRESS DELIVERY ON ALL BESPOKE ATELIER ORDERS • USE CODE <strong>ATELIER2026</strong> FOR 15% OFF
+          ✦ COMPLIMENTARY GLOBAL EXPRESS DELIVERY ON ALL BESPOKE ATELIER ORDERS • USE CODE{" "}
+          <strong style={{ color: "#D4AF37" }}>ATELIER2026</strong> FOR 15% OFF
         </Typography>
       </Box>
 
@@ -356,8 +412,8 @@ export default function LandingPage() {
           position: "sticky",
           top: 0,
           zIndex: 1100,
-          bgcolor: "rgba(251, 248, 245, 0.94)",
-          backdropFilter: "blur(14px)",
+          bgcolor: "rgba(251, 248, 245, 0.95)",
+          backdropFilter: "blur(16px)",
           borderBottom: `1px solid ${THEME.borderLight}`,
           transition: "all 0.3s ease",
         }}
@@ -384,7 +440,7 @@ export default function LandingPage() {
               <Typography
                 variant="h5"
                 sx={{
-                  fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
+                  fontFamily: "'Cormorant Garamond', serif",
                   fontWeight: 700,
                   letterSpacing: "0.15em",
                   fontSize: { xs: 20, md: 26 },
@@ -404,7 +460,7 @@ export default function LandingPage() {
                   mt: 0.3,
                 }}
               >
-                Smart Factory & Bespoke Wear
+                3D Smart Factory & Bespoke Luxury
               </Typography>
             </Box>
 
@@ -413,35 +469,40 @@ export default function LandingPage() {
               sx={{
                 display: { xs: "none", md: "flex" },
                 alignItems: "center",
-                gap: 4,
+                gap: 3.5,
               }}
             >
-              {["New Arrivals", "Collections", "How to Style", "Sustainability", "AI Sizing"].map(
-                (item) => (
-                  <Button
-                    key={item}
-                    href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
-                    sx={{
-                      color: THEME.textPrimary,
-                      fontSize: 13.5,
-                      fontWeight: 500,
-                      letterSpacing: "0.04em",
-                      textTransform: "none",
-                      "&:hover": {
-                        color: THEME.accentCamel,
-                        bgcolor: "transparent",
-                      },
-                    }}
-                  >
-                    {item}
-                  </Button>
-                )
-              )}
+              {[
+                { label: "3D Studio", href: "#3d-studio" },
+                { label: "New Arrivals", href: "#new-arrivals" },
+                { label: "Collections", href: "#collections" },
+                { label: "Fabric Weave", href: "#fabric-weaves" },
+                { label: "3D Fit Engine", href: "#fit-engine" },
+                { label: "Lookbook", href: "#lookbooks" },
+              ].map((item) => (
+                <Button
+                  key={item.label}
+                  href={item.href}
+                  sx={{
+                    color: THEME.textPrimary,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    letterSpacing: "0.04em",
+                    textTransform: "none",
+                    "&:hover": {
+                      color: THEME.accentCamel,
+                      bgcolor: "transparent",
+                    },
+                  }}
+                >
+                  {item.label}
+                </Button>
+              ))}
             </Box>
 
-            {/* Action Icons & Factory Portal Link */}
+            {/* Action Icons & Portal Link */}
             <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 } }}>
-              <Tooltip title="AI Smart Size Calculator">
+              <Tooltip title="AI 3D Size Calculator">
                 <IconButton
                   onClick={() => setFitModalOpen(true)}
                   sx={{ color: THEME.textPrimary }}
@@ -461,7 +522,7 @@ export default function LandingPage() {
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Shopping Bag">
+              <Tooltip title="Bespoke Bag">
                 <IconButton
                   onClick={() => setBagOpen(true)}
                   sx={{ color: THEME.textPrimary }}
@@ -490,18 +551,16 @@ export default function LandingPage() {
                   sx={{
                     bgcolor: THEME.textPrimary,
                     color: "#FFFFFF",
-                    fontSize: 12.5,
+                    fontSize: 12,
                     fontWeight: 600,
                     letterSpacing: "0.05em",
                     px: 2.2,
                     py: 0.9,
                     borderRadius: "8px",
                     textTransform: "none",
-                    transition: "all 0.25s ease",
                     "&:hover": {
                       bgcolor: THEME.accentCamel,
                       transform: "translateY(-2px)",
-                      boxShadow: "0 6px 18px rgba(168,131,98,0.35)",
                     },
                   }}
                 >
@@ -516,19 +575,17 @@ export default function LandingPage() {
                     sx={{
                       borderColor: THEME.textPrimary,
                       color: THEME.textPrimary,
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: 600,
                       letterSpacing: "0.06em",
                       px: 2,
                       py: 0.8,
                       borderRadius: "8px",
                       textTransform: "uppercase",
-                      transition: "all 0.25s ease",
                       "&:hover": {
                         borderColor: THEME.accentCamel,
                         color: THEME.accentCamel,
                         bgcolor: "transparent",
-                        transform: "translateY(-2px)",
                       },
                     }}
                   >
@@ -541,7 +598,7 @@ export default function LandingPage() {
                     sx={{
                       bgcolor: THEME.accentCamel,
                       color: "#FFFFFF",
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: 600,
                       letterSpacing: "0.06em",
                       px: 2,
@@ -549,11 +606,8 @@ export default function LandingPage() {
                       borderRadius: "8px",
                       textTransform: "uppercase",
                       display: { xs: "none", sm: "inline-flex" },
-                      transition: "all 0.25s ease",
                       "&:hover": {
                         bgcolor: THEME.accentCamelHover,
-                        transform: "translateY(-2px)",
-                        boxShadow: "0 6px 18px rgba(168,131,98,0.35)",
                       },
                     }}
                   >
@@ -566,14 +620,14 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* 3. HERO SECTION (Exact Pinterest Layout) */}
+      {/* 3. HERO SECTION (Pinterest Layout + 3D Realistic Cloth Simulation + Kinetic Cards) */}
       <Box
         component="section"
         sx={{
-          pt: { xs: 4, md: 8 },
-          pb: { xs: 8, md: 12 },
-          overflow: "hidden",
+          pt: { xs: 4, md: 7 },
+          pb: { xs: 8, md: 11 },
           position: "relative",
+          overflow: "hidden",
         }}
       >
         <Container maxWidth="xl">
@@ -585,333 +639,225 @@ export default function LandingPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
-                <Box sx={{ maxWidth: 560, mx: { xs: "auto", md: 0 } }}>
+                <Box sx={{ maxWidth: 580, mx: { xs: "auto", md: 0 } }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+                    <Chip
+                      icon={<AutoAwesomeIcon sx={{ fontSize: "14px !important", color: "#D4AF37" }} />}
+                      label="AUTUMN / SPRING 2026 ATELIER COLLECTION"
+                      size="small"
+                      sx={{
+                        bgcolor: "rgba(168, 131, 98, 0.12)",
+                        color: THEME.accentCamel,
+                        fontWeight: 700,
+                        fontSize: 11,
+                        letterSpacing: "0.12em",
+                        border: "1px solid rgba(168,131,98,0.25)",
+                      }}
+                    />
+                  </Box>
+
                   <Typography
-                    variant="caption"
+                    variant="h1"
                     sx={{
-                      letterSpacing: "0.25em",
-                      textTransform: "uppercase",
-                      color: THEME.accentCamel,
-                      fontWeight: 700,
-                      fontSize: 11.5,
-                      display: "block",
-                      mb: 1.5,
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontWeight: 500,
+                      fontSize: { xs: "2.8rem", sm: "4.2rem", md: "5.0rem" },
+                      lineHeight: 1.02,
+                      letterSpacing: "-0.01em",
+                      color: THEME.textPrimary,
+                      mb: 2.5,
                     }}
                   >
-                    ✦ AUTUMN / SPRING 2026 ATELIER COLLECTION
+                    Wear the Story.
+                    <br />
+                    <span style={{ fontStyle: "italic", fontWeight: 400 }}>Live the Style.</span>
                   </Typography>
 
-                <Typography
-                  variant="h1"
-                  sx={{
-                    fontFamily: "'Cormorant Garamond', 'Playfair Display', serif",
-                    fontWeight: 500,
-                    fontSize: { xs: "2.8rem", sm: "4rem", md: "4.8rem" },
-                    lineHeight: 1.05,
-                    letterSpacing: "-0.01em",
-                    color: THEME.textPrimary,
-                    mb: 2.5,
-                  }}
-                >
-                  Wear the Story.
-                  <br />
-                  <span style={{ fontStyle: "italic", fontWeight: 400 }}>Live the Style.</span>
-                </Typography>
-
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontStyle: "italic",
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                    color: THEME.textSecondary,
-                    lineHeight: 1.45,
-                    mb: 4.5,
-                  }}
-                >
-                  Timeless designs. Thoughtfully crafted.
-                  <br />
-                  Made for your every moment.
-                </Typography>
-
-                {/* CTA Action Buttons */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 2,
-                    mb: 5,
-                  }}
-                >
-                  <Button
-                    href="#new-arrivals"
-                    variant="contained"
+                  <Typography
+                    variant="body1"
                     sx={{
-                      bgcolor: THEME.accentCamel,
-                      color: "#FFFFFF",
-                      px: { xs: 3, sm: 4 },
-                      py: 1.5,
-                      borderRadius: 0,
-                      fontWeight: 600,
-                      letterSpacing: "0.1em",
-                      fontSize: 13,
-                      textTransform: "uppercase",
-                      "&:hover": {
-                        bgcolor: THEME.accentCamelHover,
-                      },
+                      fontFamily: "'Cormorant Garamond', serif",
+                      fontStyle: "italic",
+                      fontSize: { xs: "1.25rem", md: "1.55rem" },
+                      color: THEME.textSecondary,
+                      lineHeight: 1.45,
+                      mb: 4.5,
                     }}
                   >
-                    SHOP NEW ARRIVALS
-                  </Button>
+                    Timeless silhouettes rendered in hyper-realistic 3D cloth physics.
+                    <br />
+                    Thoughtfully crafted for your every refined moment.
+                  </Typography>
 
-                  <Button
-                    href="#collections"
-                    variant="outlined"
+                  {/* CTA Action Buttons */}
+                  <Box
                     sx={{
-                      borderColor: THEME.textPrimary,
-                      color: THEME.textPrimary,
-                      px: { xs: 3, sm: 4 },
-                      py: 1.5,
-                      borderRadius: 0,
-                      fontWeight: 600,
-                      letterSpacing: "0.1em",
-                      fontSize: 13,
-                      textTransform: "uppercase",
-                      "&:hover": {
-                        borderColor: THEME.accentCamel,
-                        color: THEME.accentCamel,
-                        bgcolor: "transparent",
-                      },
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 2,
+                      mb: 5,
                     }}
                   >
-                    EXPLORE COLLECTIONS
-                  </Button>
-                </Box>
-
-                {/* Social Proof (Customer Avatars & Count) */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    pt: 2,
-                    borderTop: `1px solid ${THEME.borderLight}`,
-                  }}
-                >
-                  <AvatarGroup
-                    max={4}
-                    sx={{
-                      "& .MuiAvatar-root": {
-                        width: 38,
-                        height: 38,
-                        border: `2px solid ${THEME.bgWarm}`,
-                      },
-                    }}
-                  >
-                    <Avatar src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" />
-                    <Avatar src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" />
-                    <Avatar src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" />
-                    <Avatar src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" />
-                  </AvatarGroup>
-
-                  <Box>
-                    <Typography
-                      variant="body2"
+                    <Button
+                      href="#3d-studio"
+                      variant="contained"
+                      startIcon={<ThreeDRotationIcon />}
                       sx={{
-                        fontWeight: 600,
+                        bgcolor: THEME.accentCamel,
+                        color: "#FFFFFF",
+                        px: { xs: 3, sm: 4 },
+                        py: 1.6,
+                        borderRadius: "8px",
+                        fontWeight: 700,
+                        letterSpacing: "0.1em",
                         fontSize: 13,
-                        color: THEME.textPrimary,
+                        textTransform: "uppercase",
+                        transition: "all 0.25s ease",
+                        "&:hover": {
+                          bgcolor: THEME.accentCamelHover,
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 8px 24px rgba(168,131,98,0.35)",
+                        },
                       }}
                     >
-                      Loved by 35,000+
-                    </Typography>
-                    <Typography
-                      variant="caption"
+                      ENTER 3D ATELIER STUDIO
+                    </Button>
+
+                    <Button
+                      href="#new-arrivals"
+                      variant="outlined"
                       sx={{
-                        color: THEME.textSecondary,
-                        fontSize: 12,
+                        borderColor: THEME.textPrimary,
+                        color: THEME.textPrimary,
+                        px: { xs: 3, sm: 4 },
+                        py: 1.6,
+                        borderRadius: "8px",
+                        fontWeight: 700,
+                        letterSpacing: "0.1em",
+                        fontSize: 13,
+                        textTransform: "uppercase",
+                        "&:hover": {
+                          borderColor: THEME.accentCamel,
+                          color: THEME.accentCamel,
+                          bgcolor: "transparent",
+                          transform: "translateY(-2px)",
+                        },
                       }}
                     >
-                      Fashion Lovers & Atelier Patrons
-                    </Typography>
+                      EXPLORE READY-TO-WEAR
+                    </Button>
+                  </Box>
+
+                  {/* Social Proof & Metrics */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 3,
+                      pt: 2.5,
+                      borderTop: `1px solid ${THEME.borderLight}`,
+                    }}
+                  >
+                    <AvatarGroup
+                      max={4}
+                      sx={{
+                        "& .MuiAvatar-root": {
+                          width: 40,
+                          height: 40,
+                          border: `2px solid ${THEME.bgWarm}`,
+                        },
+                      }}
+                    >
+                      <Avatar src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" />
+                      <Avatar src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80" />
+                      <Avatar src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" />
+                      <Avatar src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" />
+                    </AvatarGroup>
+
+                    <Box>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                        <Rating value={5} readOnly size="small" sx={{ color: "#D4AF37", fontSize: 16 }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700, fontSize: 13, color: THEME.textPrimary }}>
+                          5.0 / 5.0
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: THEME.textSecondary, fontSize: 12 }}>
+                        Loved by 35,000+ Patrons Worldwide
+                      </Typography>
+                    </Box>
                   </Box>
                 </Box>
-              </Box>
               </motion.div>
             </Grid>
 
-            {/* Right Hero Image (Flowing Silk Dress) */}
+            {/* Right Hero: Real-time 3D Silk Simulation + Kinetic Floating 3D Cards (Pin 2 Style) */}
             <Grid item xs={12} md={6}>
               <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: 30 }}
+                initial={{ opacity: 0, scale: 0.95, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               >
-                <Box
-                  sx={{
-                    position: "relative",
-                    display: "flex",
-                    justifyContent: "center",
-                  }}
-                >
-                  {/* Floating Silk Card */}
+                <Floating3DCard depth={20} glare={true}>
                   <Box
                     sx={{
-                      width: "100%",
-                      maxWidth: 540,
-                      height: { xs: 460, sm: 580, md: 660 },
                       position: "relative",
-                      borderRadius: "4px",
+                      height: { xs: 460, sm: 560, md: 620 },
+                      borderRadius: "20px",
                       overflow: "hidden",
-                      boxShadow: "0 24px 60px rgba(35, 31, 32, 0.12)",
-                      "&:hover img": {
-                        transform: "scale(1.03)",
-                      },
+                      bgcolor: "#F4EFEA",
+                      border: "1px solid rgba(232, 226, 220, 0.9)",
+                      boxShadow: "0 30px 80px rgba(35, 31, 32, 0.15)",
                     }}
                   >
-                    <Box
-                      component="img"
-                      src={heroSilkImg}
-                      alt="Wear the Story - Flowing Silk Dress"
-                      sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        objectPosition: "top center",
-                        transition: "transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                      }}
+                    {/* Real-time 3D Garment WebGL Canvas & Macro Thread Inspector */}
+                    <ThreeGarmentCanvas
+                      height="100%"
                     />
-
-                    {/* Subtle Badge Overlay */}
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        bottom: 24,
-                        left: 24,
-                        right: 24,
-                        bgcolor: "rgba(255, 255, 255, 0.92)",
-                        backdropFilter: "blur(12px)",
-                        p: 2,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        border: "1px solid rgba(255,255,255,0.8)",
-                      }}
-                    >
-                      <Box>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: THEME.accentCamel,
-                            fontWeight: 700,
-                            letterSpacing: "0.1em",
-                          }}
-                        >
-                          FEATURED ATELIER PIECE
-                        </Typography>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            fontFamily: "'Cormorant Garamond', serif",
-                            fontWeight: 600,
-                            fontSize: "1.1rem",
-                            color: THEME.textPrimary,
-                          }}
-                        >
-                          Mulberry Silk Wrap Dress
-                        </Typography>
-                      </Box>
-                      <Button
-                        onClick={() => handleAddToCart(PRODUCTS[2])}
-                        variant="contained"
-                        sx={{
-                          bgcolor: THEME.textPrimary,
-                          color: "#FFFFFF",
-                          fontSize: 11,
-                          fontWeight: 600,
-                          letterSpacing: "0.05em",
-                          borderRadius: 0,
-                          px: 2,
-                          "&:hover": { bgcolor: THEME.accentCamel },
-                        }}
-                      >
-                        ADD TO BAG $149
-                      </Button>
-                    </Box>
                   </Box>
-                </Box>
+                </Floating3DCard>
               </motion.div>
             </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* 4. TRUST BADGES STRIP (4 Pillars) */}
-      <Box
-        component="section"
-        sx={{
-          py: 4,
-          bgcolor: THEME.bgSecondary,
-          borderTop: `1px solid ${THEME.borderLight}`,
-          borderBottom: `1px solid ${THEME.borderLight}`,
-        }}
-      >
+      {/* 4. VALUE PROPOSITION PILLARS */}
+      <Box sx={{ bgcolor: THEME.bgSecondary, py: 5, borderY: `1px solid ${THEME.borderLight}` }}>
         <Container maxWidth="xl">
-          <Grid container spacing={3} justifyContent="space-between">
+          <Grid container spacing={3}>
             {[
               {
-                icon: <SpaOutlinedIcon sx={{ fontSize: 26, color: THEME.accentCamel }} />,
-                title: "Sustainable Fabrics",
-                desc: "100% Organic & OEKO-TEX Certified",
+                icon: <SpaOutlinedIcon sx={{ color: THEME.accentCamel, fontSize: 28 }} />,
+                title: "100% Organic & Traceable",
+                desc: "GOTS certified Belgian linen, mulberry silk, and Mongolian cashmere.",
               },
               {
-                icon: <ShieldOutlinedIcon sx={{ fontSize: 26, color: THEME.accentCamel }} />,
-                title: "Ethically Made",
-                desc: "Fair Wage & Zero-Exploitation",
+                icon: <ViewInArIcon sx={{ color: THEME.accentCamel, fontSize: 28 }} />,
+                title: "3D Realistic Fitting",
+                desc: "Inspect micro-drape, fabric sheen & biometrics prior to dispatch.",
               },
               {
-                icon: <ReplayOutlinedIcon sx={{ fontSize: 26, color: THEME.accentCamel }} />,
-                title: "Free Returns",
-                desc: "30-Day Hassle-Free Exchange",
+                icon: <LocalShippingOutlinedIcon sx={{ color: THEME.accentCamel, fontSize: 28 }} />,
+                title: "Express Global Atelier",
+                desc: "Complimentary DHL Express courier with carbon-neutral shipping.",
               },
               {
-                icon: <LocalShippingOutlinedIcon sx={{ fontSize: 26, color: THEME.accentCamel }} />,
-                title: "Worldwide Shipping",
-                desc: "Insured Global Express Courier",
+                icon: <ShieldOutlinedIcon sx={{ color: THEME.accentCamel, fontSize: 28 }} />,
+                title: "Smart AI Quality Check",
+                desc: "Zero-defect guarantee powered by GarmentOS factory computer vision.",
               },
-            ].map((item, idx) => (
-              <Grid item xs={6} md={3} key={idx}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.8,
-                    p: { xs: 1, sm: 1.5 },
-                  }}
-                >
-                  <Box>{item.icon}</Box>
+            ].map((p, idx) => (
+              <Grid item xs={12} sm={6} md={3} key={idx}>
+                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                  <Box sx={{ p: 1.2, bgcolor: "#FFFFFF", borderRadius: "10px", border: `1px solid ${THEME.borderLight}` }}>
+                    {p.icon}
+                  </Box>
                   <Box>
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        fontWeight: 600,
-                        fontSize: { xs: 13, sm: 14 },
-                        color: THEME.textPrimary,
-                        lineHeight: 1.2,
-                      }}
-                    >
-                      {item.title}
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: THEME.textPrimary, mb: 0.3 }}>
+                      {p.title}
                     </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: THEME.textSecondary,
-                        fontSize: 11.5,
-                        display: "block",
-                        mt: 0.3,
-                      }}
-                    >
-                      {item.desc}
+                    <Typography variant="caption" sx={{ color: THEME.textSecondary, lineHeight: 1.4, display: "block" }}>
+                      {p.desc}
                     </Typography>
                   </Box>
                 </Box>
@@ -921,1388 +867,658 @@ export default function LandingPage() {
         </Container>
       </Box>
 
-      {/* 5. NEW THIS SEASON (Product Cards Slider) */}
-      <Box
-        component="section"
-        id="new-arrivals"
-        sx={{
-          py: { xs: 8, md: 12 },
-        }}
-      >
+      {/* 5. 3D INTERACTIVE ATELIER STUDIO (Interactive 360° Customizer) */}
+      <Box id="3d-studio" component="section" sx={{ py: { xs: 8, md: 12 } }}>
         <Container maxWidth="xl">
-          {/* Section Heading */}
-          <Box sx={{ textAlign: "center", mb: { xs: 5, md: 7 } }}>
+          <Box sx={{ textAlign: "center", maxWidth: 700, mx: "auto", mb: 6 }}>
             <Typography
               variant="caption"
-              sx={{
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: THEME.accentCamel,
-                fontWeight: 700,
-                fontSize: 12,
-                display: "block",
-                mb: 1,
-              }}
+              sx={{ letterSpacing: "0.25em", color: THEME.accentCamel, fontWeight: 700, textTransform: "uppercase" }}
             >
-              NEW ARRIVALS
+              ✦ IMMERSIVE ATELIER EXPERIENCE
             </Typography>
             <Typography
-              variant="h2"
+              variant="h3"
               sx={{
                 fontFamily: "'Cormorant Garamond', serif",
-                fontSize: { xs: "2.2rem", sm: "3rem", md: "3.5rem" },
                 fontWeight: 600,
                 color: THEME.textPrimary,
+                mt: 1,
+                mb: 1.5,
               }}
             >
-              New This Season
+              Interactive 3D Garment Studio
+            </Typography>
+            <Typography variant="body1" sx={{ color: THEME.textSecondary }}>
+              Rotate 360°, switch luxury fabrics in real-time, toggle studio lighting, and customize your bespoke piece with photorealistic PBR rendering.
             </Typography>
           </Box>
 
-          {/* Product Cards Grid */}
+          {/* Garment 3D Turntable Component */}
+          <Garment3DViewer onAddToCart={(item) => addToBag(item, "M")} />
+        </Container>
+      </Box>
+
+      {/* 5B. 3D LINEN COLLECTION MASTERPIECE SHOWCASE (with 3D Parallax & Callouts) */}
+      <LinenCollection3DShowcase onAddToBag={(item) => addToBag(item, "M")} />
+
+      {/* 6. FEATURED ATELIER PRODUCTS (with 3D Tilt Hover & Quick View) */}
+      <Box id="new-arrivals" component="section" sx={{ py: { xs: 8, md: 10 }, bgcolor: THEME.bgSecondary }}>
+        <Container maxWidth="xl">
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              mb: 5,
+              flexWrap: "wrap",
+              gap: 2,
+            }}
+          >
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{ letterSpacing: "0.2em", color: THEME.accentCamel, fontWeight: 700, textTransform: "uppercase" }}
+              >
+                ✦ CURATED NEW ARRIVALS
+              </Typography>
+              <Typography
+                variant="h3"
+                sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, color: THEME.textPrimary, mt: 0.5 }}
+              >
+                Ready-to-Wear Atelier
+              </Typography>
+            </Box>
+
+            <Typography variant="body2" sx={{ color: THEME.textSecondary, maxWidth: 380 }}>
+              Impeccably tailored timeless silhouettes woven from pure natural fibers with lifetime seam guarantees.
+            </Typography>
+          </Box>
+
           <Grid container spacing={3.5}>
-            {PRODUCTS.map((product) => (
-              <Grid item xs={12} sm={6} md={3} key={product.id}>
-                <Card
-                  sx={{
-                    bgcolor: THEME.bgCard,
-                    borderRadius: 0,
-                    boxShadow: "none",
-                    border: `1px solid ${THEME.borderLight}`,
-                    transition: "all 0.35s ease",
-                    display: "flex",
-                    flexDirection: "column",
-                    height: "100%",
-                    "&:hover": {
-                      boxShadow: "0 18px 40px rgba(0,0,0,0.08)",
-                      borderColor: THEME.accentCamel,
-                      "& .product-img": {
-                        transform: "scale(1.05)",
-                      },
-                      "& .quick-view-btn": {
-                        opacity: 1,
-                        transform: "translateY(0)",
-                      },
-                    },
-                  }}
-                >
-                  {/* Image Container with Hover Action */}
-                  <Box
-                    sx={{
-                      position: "relative",
-                      overflow: "hidden",
-                      bgcolor: THEME.bgSecondary,
-                      height: 380,
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      className="product-img"
-                      src={product.image}
-                      alt={product.name}
+            {PRODUCTS.map((product) => {
+              const isWished = wishlist.includes(product.id);
+              return (
+                <Grid item xs={12} sm={6} md={4} key={product.id}>
+                  <Floating3DCard depth={15} glare={true}>
+                    <Card
                       sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        objectPosition: "top center",
-                        transition: "transform 0.6s ease",
-                      }}
-                    />
-
-                    {/* Tag Badge */}
-                    <Chip
-                      label={product.tag}
-                      size="small"
-                      sx={{
-                        position: "absolute",
-                        top: 14,
-                        left: 14,
-                        bgcolor: THEME.bgDark,
-                        color: "#fff",
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: "0.08em",
-                        borderRadius: 0,
-                        height: 22,
-                      }}
-                    />
-
-                    {/* Wishlist Button */}
-                    <IconButton
-                      onClick={() => toggleWishlist(product.id)}
-                      sx={{
-                        position: "absolute",
-                        top: 10,
-                        right: 10,
-                        bgcolor: "rgba(255,255,255,0.85)",
-                        backdropFilter: "blur(4px)",
-                        "&:hover": { bgcolor: "#fff" },
-                      }}
-                    >
-                      {wishlist.includes(product.id) ? (
-                        <FavoriteIcon sx={{ color: "#d32f2f", fontSize: 18 }} />
-                      ) : (
-                        <FavoriteBorderIcon sx={{ color: THEME.textPrimary, fontSize: 18 }} />
-                      )}
-                    </IconButton>
-
-                    {/* Quick View Button on Hover */}
-                    <Button
-                      className="quick-view-btn"
-                      onClick={() => setQuickViewProduct(product)}
-                      variant="contained"
-                      sx={{
-                        position: "absolute",
-                        bottom: 14,
-                        left: 14,
-                        right: 14,
-                        bgcolor: "rgba(255,255,255,0.95)",
-                        color: THEME.textPrimary,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        letterSpacing: "0.08em",
-                        borderRadius: 0,
-                        py: 0.9,
-                        opacity: 0,
-                        transform: "translateY(10px)",
+                        bgcolor: "#FFFFFF",
+                        borderRadius: "16px",
+                        overflow: "hidden",
+                        border: `1px solid ${THEME.borderLight}`,
                         transition: "all 0.3s ease",
+                        position: "relative",
                         "&:hover": {
-                          bgcolor: THEME.textPrimary,
-                          color: "#fff",
+                          boxShadow: "0 20px 45px rgba(35, 31, 28, 0.12)",
                         },
                       }}
                     >
-                      QUICK VIEW
-                    </Button>
-                  </Box>
-
-                  {/* Product Details */}
-                  <CardContent
-                    sx={{
-                      p: 2.5,
-                      textAlign: "center",
-                      display: "flex",
-                      flexDirection: "column",
-                      flexGrow: 1,
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontFamily: "'Cormorant Garamond', serif",
-                        fontSize: 20,
-                        fontWeight: 700,
-                        color: THEME.textPrimary,
-                        mb: 0.5,
-                      }}
-                    >
-                      {product.name}
-                    </Typography>
-
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: THEME.textSecondary,
-                        fontSize: 12,
-                        letterSpacing: "0.04em",
-                        mb: 1.5,
-                        display: "block",
-                      }}
-                    >
-                      {product.material}
-                    </Typography>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 1.5,
-                        mb: 2,
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: 17,
-                          color: THEME.textPrimary,
-                        }}
-                      >
-                        ${product.price.toFixed(2)}
-                      </Typography>
-                      {product.originalPrice && (
-                        <Typography
-                          variant="caption"
+                      {/* Product Image Area */}
+                      <Box sx={{ position: "relative", height: 380, overflow: "hidden", bgcolor: "#EDE6DF" }}>
+                        <Box
+                          component="img"
+                          src={product.image}
+                          alt={product.name}
                           sx={{
-                            textDecoration: "line-through",
-                            color: THEME.textMuted,
-                            fontSize: 14,
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            transition: "transform 0.6s cubic-bezier(0.25, 1, 0.5, 1)",
+                            "&:hover": { transform: "scale(1.05)" },
+                          }}
+                        />
+
+                        {/* Tag Badge */}
+                        <Chip
+                          label={product.tag}
+                          size="small"
+                          sx={{
+                            position: "absolute",
+                            top: 16,
+                            left: 16,
+                            bgcolor: "rgba(255, 255, 255, 0.9)",
+                            backdropFilter: "blur(8px)",
+                            color: THEME.textPrimary,
+                            fontWeight: 700,
+                            fontSize: 10,
+                            letterSpacing: "0.05em",
+                          }}
+                        />
+
+                        {/* Wishlist Button */}
+                        <IconButton
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleWishlist(product.id);
+                          }}
+                          sx={{
+                            position: "absolute",
+                            top: 14,
+                            right: 14,
+                            bgcolor: "rgba(255, 255, 255, 0.85)",
+                            backdropFilter: "blur(8px)",
+                            color: isWished ? "#D32F2F" : THEME.textPrimary,
+                            "&:hover": { bgcolor: "#FFFFFF" },
                           }}
                         >
-                          ${product.originalPrice.toFixed(2)}
-                        </Typography>
-                      )}
-                    </Box>
+                          {isWished ? <FavoriteIcon fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
+                        </IconButton>
 
-                    {/* Add to Bag Button */}
-                    <Button
-                      onClick={() => addToBag(product)}
-                      variant="contained"
-                      startIcon={<ShoppingBagOutlinedIcon fontSize="small" />}
-                      sx={{
-                        mt: "auto",
-                        bgcolor: THEME.accentCamel,
-                        color: "#FFFFFF",
-                        borderRadius: 0,
-                        py: 1.1,
-                        fontSize: 12,
-                        fontWeight: 600,
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        "&:hover": {
-                          bgcolor: THEME.accentCamelHover,
-                        },
-                      }}
-                    >
-                      ADD TO BAG
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                        {/* Quick View Button on Hover */}
+                        <Button
+                          variant="contained"
+                          onClick={() => setQuickViewProduct(product)}
+                          sx={{
+                            position: "absolute",
+                            bottom: 14,
+                            left: 14,
+                            right: 14,
+                            bgcolor: "rgba(35, 31, 32, 0.9)",
+                            backdropFilter: "blur(8px)",
+                            color: "#FFFFFF",
+                            py: 1,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            letterSpacing: "0.08em",
+                            borderRadius: "8px",
+                            textTransform: "uppercase",
+                            "&:hover": { bgcolor: THEME.accentCamel },
+                          }}
+                        >
+                          QUICK 3D VIEW & FIT
+                        </Button>
+                      </Box>
+
+                      {/* Details Area */}
+                      <CardContent sx={{ p: 2.5 }}>
+                        <Typography variant="caption" sx={{ color: THEME.accentCamel, fontWeight: 700, fontSize: 11 }}>
+                          {product.material}
+                        </Typography>
+
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", mt: 0.5, mb: 1 }}>
+                          <Typography variant="h6" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, fontSize: 20 }}>
+                            {product.name}
+                          </Typography>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 700, color: THEME.textPrimary }}>
+                            ${product.price.toFixed(2)}
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                            <Rating value={product.rating} precision={0.1} readOnly size="small" sx={{ fontSize: 15, color: "#D4AF37" }} />
+                            <Typography variant="caption" sx={{ color: THEME.textSecondary, fontSize: 11 }}>
+                              ({product.reviews})
+                            </Typography>
+                          </Box>
+
+                          <Button
+                            size="small"
+                            onClick={() => addToBag(product, "M")}
+                            sx={{
+                              color: THEME.accentCamel,
+                              fontWeight: 700,
+                              fontSize: 12,
+                              textTransform: "none",
+                              "&:hover": { bgcolor: "transparent", color: THEME.accentCamelHover },
+                            }}
+                          >
+                            Add to Bag +
+                          </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  </Floating3DCard>
+                </Grid>
+              );
+            })}
           </Grid>
         </Container>
       </Box>
 
-      {/* 6. EXPLORE OUR COLLECTIONS (4-Grid Editorial) */}
-      <Box
-        component="section"
-        id="collections"
-        sx={{
-          py: { xs: 8, md: 10 },
-          bgcolor: THEME.bgSecondary,
-        }}
-      >
+      {/* 7. TACTILE 3D FABRIC MICROSCOPY & WEAVES */}
+      <Box id="fabric-weaves" component="section" sx={{ py: { xs: 8, md: 11 } }}>
         <Container maxWidth="xl">
-          <Box sx={{ textAlign: "center", mb: { xs: 4, md: 6 } }}>
-            <Typography
-              variant="caption"
-              sx={{
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: THEME.accentCamel,
-                fontWeight: 700,
-                fontSize: 12,
-                display: "block",
-                mb: 1,
-              }}
-            >
-              CURATED EDITIONS
+          <Box sx={{ textAlign: "center", maxWidth: 680, mx: "auto", mb: 5 }}>
+            <Typography variant="caption" sx={{ letterSpacing: "0.2em", color: THEME.accentCamel, fontWeight: 700 }}>
+              ✦ BIOLOGICAL LUXURY WEAVES
             </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: { xs: "2.2rem", sm: "3rem", md: "3.5rem" },
-                fontWeight: 600,
-                color: THEME.textPrimary,
-              }}
-            >
-              Explore Our Collections
+            <Typography variant="h3" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, mt: 0.5, mb: 1 }}>
+              Inspect Fiber Microscopy in 3D
+            </Typography>
+            <Typography variant="body1" sx={{ color: THEME.textSecondary }}>
+              Experience the microscopic thread count, prism reflection, and breathability of our organic raw fibers.
+            </Typography>
+          </Box>
+
+          <FabricTextureZoomer />
+        </Container>
+      </Box>
+
+      {/* 8. 3D BIOMETRIC VIRTUAL FIT ROOM */}
+      <Box id="fit-engine" component="section" sx={{ py: { xs: 8, md: 11 }, bgcolor: THEME.bgSecondary }}>
+        <Container maxWidth="xl">
+          <Box sx={{ textAlign: "center", maxWidth: 680, mx: "auto", mb: 5 }}>
+            <Typography variant="caption" sx={{ letterSpacing: "0.2em", color: THEME.accentCamel, fontWeight: 700 }}>
+              ✦ SMART BIOMETRIC ALIGNMENT
+            </Typography>
+            <Typography variant="h3" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, mt: 0.5, mb: 1 }}>
+              Interactive 3D Virtual Fitting
+            </Typography>
+            <Typography variant="body1" sx={{ color: THEME.textSecondary }}>
+              Dial in your exact measurements to simulate drape tension in 3D and eliminate sizing guesswork.
+            </Typography>
+          </Box>
+
+          <VirtualFit3D
+            onApplySize={(size) => {
+              setSelectedSize(size);
+              alert(`Size ${size} applied to your bespoke profile!`);
+            }}
+          />
+        </Container>
+      </Box>
+
+      {/* 9. CURATED COLLECTIONS GRID */}
+      <Box id="collections" component="section" sx={{ py: { xs: 8, md: 10 } }}>
+        <Container maxWidth="xl">
+          <Box sx={{ mb: 5 }}>
+            <Typography variant="caption" sx={{ letterSpacing: "0.2em", color: THEME.accentCamel, fontWeight: 700 }}>
+              ✦ SEASONAL CAPSULES
+            </Typography>
+            <Typography variant="h3" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, mt: 0.5 }}>
+              Explore Atelier Collections
             </Typography>
           </Box>
 
           <Grid container spacing={3}>
             {COLLECTIONS.map((col) => (
               <Grid item xs={12} sm={6} md={3} key={col.id}>
-                <Box
-                  sx={{
-                    position: "relative",
-                    height: 420,
-                    borderRadius: 0,
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    "&:hover img": {
-                      transform: "scale(1.08)",
-                    },
-                    "&:hover .collection-overlay": {
-                      bgcolor: "rgba(30, 26, 24, 0.45)",
-                    },
-                  }}
-                >
+                <Floating3DCard depth={16} glare={true}>
                   <Box
-                    component="img"
-                    src={col.image}
-                    alt={col.title}
                     sx={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center",
-                      transition: "transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                    }}
-                  />
-
-                  {/* Gradient & Darkening Overlay */}
-                  <Box
-                    className="collection-overlay"
-                    sx={{
-                      position: "absolute",
-                      inset: 0,
-                      bgcolor: "rgba(30, 26, 24, 0.32)",
-                      transition: "bgcolor 0.4s ease",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "flex-end",
-                      p: 3.5,
-                      color: "#fff",
-                      background:
-                        "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.75) 100%)",
+                      position: "relative",
+                      height: 380,
+                      borderRadius: "16px",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                      "&:hover img": { transform: "scale(1.06)" },
                     }}
                   >
-                    <Chip
-                      label={col.tag}
-                      size="small"
+                    <Box
+                      component="img"
+                      src={col.image}
+                      alt={col.title}
                       sx={{
-                        bgcolor: "rgba(255,255,255,0.2)",
-                        color: "#fff",
-                        backdropFilter: "blur(4px)",
-                        fontSize: 10,
-                        fontWeight: 600,
-                        alignSelf: "flex-start",
-                        mb: 1.5,
-                        borderRadius: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        transition: "transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)",
                       }}
                     />
-
-                    <Typography
-                      variant="h4"
+                    <Box
                       sx={{
-                        fontFamily: "'Cormorant Garamond', serif",
-                        fontSize: 26,
-                        fontWeight: 600,
-                        mb: 0.5,
+                        position: "absolute",
+                        inset: 0,
+                        background: "linear-gradient(180deg, rgba(0,0,0,0.05) 40%, rgba(30,26,24,0.85) 100%)",
+                        p: 3,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "flex-end",
                         color: "#FFFFFF",
                       }}
                     >
-                      {col.title}
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontSize: 12.5,
-                        color: "rgba(255,255,255,0.85)",
-                        mb: 2,
-                      }}
-                    >
-                      {col.description}
-                    </Typography>
-
-                    <Button
-                      href="#new-arrivals"
-                      sx={{
-                        color: "#FFFFFF",
-                        borderBottom: "1px solid #FFFFFF",
-                        p: 0,
-                        alignSelf: "flex-start",
-                        borderRadius: 0,
-                        fontSize: 11,
-                        letterSpacing: "0.1em",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        "&:hover": {
-                          color: "#FED7B8",
-                          borderColor: "#FED7B8",
-                          bgcolor: "transparent",
-                        },
-                      }}
-                    >
-                      SHOP COLLECTION &rarr;
-                    </Button>
-                  </Box>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* 7. END OF SEASON SALE PROMO BANNER */}
-      <Box
-        component="section"
-        sx={{
-          py: { xs: 8, md: 11 },
-          background: THEME.silkGradient,
-          borderTop: `1px solid ${THEME.borderLight}`,
-          borderBottom: `1px solid ${THEME.borderLight}`,
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <Container maxWidth="md">
-          <Typography
-            variant="caption"
-            sx={{
-              letterSpacing: "0.25em",
-              textTransform: "uppercase",
-              color: THEME.accentCamel,
-              fontWeight: 700,
-              fontSize: 12,
-              display: "block",
-              mb: 1.5,
-            }}
-          >
-            END OF SEASON ARCHIVE SALE
-          </Typography>
-
-          <Typography
-            variant="h2"
-            sx={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: { xs: "2.8rem", sm: "4rem", md: "4.8rem" },
-              fontWeight: 600,
-              color: THEME.textPrimary,
-              mb: 2,
-            }}
-          >
-            Up to 40% Off
-          </Typography>
-
-          <Typography
-            variant="body1"
-            sx={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontStyle: "italic",
-              fontSize: { xs: "1.2rem", md: "1.4rem" },
-              color: THEME.textSecondary,
-              maxWidth: 580,
-              mx: "auto",
-              mb: 4,
-            }}
-          >
-            Limited edition bespoke archive pieces crafted with zero-waste precision and pure natural textiles.
-          </Typography>
-
-          <Button
-            href="#new-arrivals"
-            variant="contained"
-            sx={{
-              bgcolor: THEME.textPrimary,
-              color: "#FFFFFF",
-              px: 5,
-              py: 1.6,
-              borderRadius: 0,
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              fontSize: 13,
-              textTransform: "uppercase",
-              "&:hover": {
-                bgcolor: THEME.accentCamel,
-              },
-            }}
-          >
-            SHOP THE SALE
-          </Button>
-        </Container>
-      </Box>
-
-      {/* 8. STYLE DELIVERED IN 4 SIMPLE STEPS */}
-      <Box
-        component="section"
-        id="ai-sizing"
-        sx={{
-          py: { xs: 8, md: 12 },
-        }}
-      >
-        <Container maxWidth="xl">
-          <Box sx={{ textAlign: "center", mb: { xs: 6, md: 8 } }}>
-            <Typography
-              variant="caption"
-              sx={{
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: THEME.accentCamel,
-                fontWeight: 700,
-                fontSize: 12,
-                display: "block",
-                mb: 1,
-              }}
-            >
-              SEAMLESS BESPOKE EXPERIENCE
-            </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: { xs: "2.2rem", sm: "3rem", md: "3.5rem" },
-                fontWeight: 600,
-                color: THEME.textPrimary,
-              }}
-            >
-              Style Delivered in 4 Simple Steps
-            </Typography>
-          </Box>
-
-          <Grid container spacing={4} justifyContent="center">
-            {[
-              {
-                step: "01",
-                title: "Browse",
-                desc: "Explore our curated seasonal artisan collections & hand-woven fabrics.",
-                icon: "🔍",
-              },
-              {
-                step: "02",
-                title: "Select Size & AI Fit",
-                desc: "Find your exact bespoke biometric fit in 10 seconds with smart precision.",
-                icon: "👗",
-              },
-              {
-                step: "03",
-                title: "Checkout",
-                desc: "Secure, encrypted & effortless payment with live factory order tracking.",
-                icon: "🛍️",
-              },
-              {
-                step: "04",
-                title: "Wear with Confidence",
-                desc: "Feel timeless elegance, effortless comfort, and pure luxury every day.",
-                icon: "🤍",
-              },
-            ].map((step, idx) => (
-              <Grid item xs={12} sm={6} md={3} key={idx}>
-                <Box
-                  sx={{
-                    textAlign: "center",
-                    p: 3,
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    position: "relative",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: "50%",
-                      bgcolor: THEME.bgSecondary,
-                      border: `1px solid ${THEME.borderLight}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 24,
-                      mb: 2.5,
-                      boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
-                    }}
-                  >
-                    {step.icon}
-                  </Box>
-
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: THEME.accentCamel,
-                      fontWeight: 700,
-                      letterSpacing: "0.15em",
-                      fontSize: 11,
-                      mb: 0.5,
-                    }}
-                  >
-                    STEP {step.step}
-                  </Typography>
-
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontFamily: "'Cormorant Garamond', serif",
-                      fontSize: 22,
-                      fontWeight: 700,
-                      color: THEME.textPrimary,
-                      mb: 1.5,
-                    }}
-                  >
-                    {step.title}
-                  </Typography>
-
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: THEME.textSecondary,
-                      fontSize: 13,
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    {step.desc}
-                  </Typography>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* 9. SUSTAINABLE BY CHOICE (Split Editorial Feature) */}
-      <Box
-        component="section"
-        id="sustainability"
-        sx={{
-          py: { xs: 8, md: 12 },
-          bgcolor: THEME.bgSecondary,
-          borderTop: `1px solid ${THEME.borderLight}`,
-          borderBottom: `1px solid ${THEME.borderLight}`,
-        }}
-      >
-        <Container maxWidth="xl">
-          <Grid container spacing={{ xs: 4, md: 8 }} alignItems="center">
-            {/* Left Narrative */}
-            <Grid item xs={12} md={6}>
-              <Box sx={{ maxWidth: 540 }}>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    letterSpacing: "0.25em",
-                    textTransform: "uppercase",
-                    color: THEME.accentCamel,
-                    fontWeight: 700,
-                    fontSize: 12,
-                    display: "block",
-                    mb: 1.5,
-                  }}
-                >
-                  SUSTAINABLE BY CHOICE
-                </Typography>
-
-                <Typography
-                  variant="h2"
-                  sx={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: { xs: "2.4rem", sm: "3.2rem", md: "3.8rem" },
-                    fontWeight: 600,
-                    lineHeight: 1.15,
-                    color: THEME.textPrimary,
-                    mb: 3,
-                  }}
-                >
-                  Fashion with Purpose.
-                  <br />
-                  Better for You. Better for Earth.
-                </Typography>
-
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontSize: 15,
-                    lineHeight: 1.8,
-                    color: THEME.textSecondary,
-                    mb: 4,
-                  }}
-                >
-                  We believe in slow fashion, crafted with meticulous care using OEKO-TEX certified natural linen, pure mulberry silk, and organic combed cotton. Our GarmentOS factory algorithms eliminate textile cut-waste by 94% and uphold fair living wages for every master artisan.
-                </Typography>
-
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-                  {[
-                    { number: "100%", label: "Organic & Biodegradable Fibers" },
-                    { number: "0%", label: "Toxic Dyes & Microplastics" },
-                    { number: "-84%", label: "Factory Water Footprint" },
-                  ].map((stat, i) => (
-                    <Grid item xs={4} key={i}>
-                      <Typography
-                        variant="h4"
+                      <Chip
+                        label={col.tag}
+                        size="small"
                         sx={{
-                          fontFamily: "'Cormorant Garamond', serif",
+                          bgcolor: "rgba(255,255,255,0.25)",
+                          backdropFilter: "blur(6px)",
+                          color: "#FFFFFF",
                           fontWeight: 700,
-                          color: THEME.accentCamel,
-                          fontSize: { xs: 24, sm: 30 },
+                          fontSize: 10,
+                          alignSelf: "flex-start",
+                          mb: 1,
                         }}
-                      >
-                        {stat.number}
+                      />
+                      <Typography variant="h5" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700 }}>
+                        {col.title}
                       </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontSize: 11,
-                          color: THEME.textSecondary,
-                          lineHeight: 1.3,
-                          display: "block",
-                        }}
-                      >
-                        {stat.label}
+                      <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.8)", mt: 0.5 }}>
+                        {col.description}
                       </Typography>
-                    </Grid>
-                  ))}
-                </Grid>
-
-                <Button
-                  onClick={() => setFitModalOpen(true)}
-                  variant="outlined"
-                  sx={{
-                    borderColor: THEME.textPrimary,
-                    color: THEME.textPrimary,
-                    px: 4,
-                    py: 1.4,
-                    borderRadius: 0,
-                    fontWeight: 600,
-                    letterSpacing: "0.1em",
-                    fontSize: 12.5,
-                    textTransform: "uppercase",
-                    "&:hover": {
-                      borderColor: THEME.accentCamel,
-                      color: THEME.accentCamel,
-                      bgcolor: "transparent",
-                    },
-                  }}
-                >
-                  LEARN OUR JOURNEY & FABRIC SPECS
-                </Button>
-              </Box>
-            </Grid>
-
-            {/* Right Photo (Organic Textiles / Cotton) */}
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  position: "relative",
-                  borderRadius: "2px",
-                  overflow: "hidden",
-                  boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
-                  height: { xs: 360, md: 480 },
-                }}
-              >
-                <Box
-                  component="img"
-                  src={garmentStock4}
-                  alt="Sustainable Natural Fibers & Organic Fabrics"
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-              </Box>
-            </Grid>
+                    </Box>
+                  </Box>
+                </Floating3DCard>
+              </Grid>
+            ))}
           </Grid>
         </Container>
       </Box>
 
-      {/* 10. HOW TO STYLE IT (Lookbook Mood Boards) */}
-      <Box
-        component="section"
-        id="how-to-style"
-        sx={{
-          py: { xs: 8, md: 12 },
-        }}
-      >
+      {/* 10. EDITORIAL LOOKBOOKS */}
+      <Box id="lookbooks" component="section" sx={{ py: { xs: 8, md: 10 }, bgcolor: THEME.bgSecondary }}>
         <Container maxWidth="xl">
-          <Box sx={{ textAlign: "center", mb: { xs: 5, md: 7 } }}>
-            <Typography
-              variant="caption"
-              sx={{
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: THEME.accentCamel,
-                fontWeight: 700,
-                fontSize: 12,
-                display: "block",
-                mb: 1,
-              }}
-            >
-              EDITORIAL LOOKBOOK
+          <Box sx={{ mb: 5, textAlign: "center" }}>
+            <Typography variant="caption" sx={{ letterSpacing: "0.2em", color: THEME.accentCamel, fontWeight: 700 }}>
+              ✦ HOW TO STYLE
             </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: { xs: "2.2rem", sm: "3rem", md: "3.5rem" },
-                fontWeight: 600,
-                color: THEME.textPrimary,
-              }}
-            >
-              How to Style It
+            <Typography variant="h3" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, mt: 0.5 }}>
+              Editorial Styling Lookbooks
             </Typography>
           </Box>
 
           <Grid container spacing={4}>
             {LOOKBOOKS.map((look) => (
               <Grid item xs={12} md={4} key={look.id}>
-                <Card
-                  sx={{
-                    bgcolor: THEME.bgCard,
-                    borderRadius: 0,
-                    boxShadow: "none",
-                    border: `1px solid ${THEME.borderLight}`,
-                    display: "flex",
-                    flexDirection: "row",
-                    height: "100%",
-                    overflow: "hidden",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      borderColor: THEME.accentCamel,
-                      boxShadow: "0 12px 30px rgba(0,0,0,0.06)",
-                    },
-                  }}
-                >
-                  {/* Left Column Image */}
-                  <Box sx={{ width: "45%", position: "relative" }}>
-                    <Box
-                      component="img"
-                      src={look.image}
-                      alt={look.title}
-                      sx={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  </Box>
-
-                  {/* Right Column Details */}
+                <Floating3DCard depth={14} glare={true}>
                   <Box
                     sx={{
-                      width: "55%",
-                      p: 3,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
+                      bgcolor: "#FFFFFF",
+                      borderRadius: "16px",
+                      overflow: "hidden",
+                      border: `1px solid ${THEME.borderLight}`,
                     }}
                   >
-                    <Typography
-                      variant="h5"
-                      sx={{
-                        fontFamily: "'Cormorant Garamond', serif",
-                        fontSize: 22,
-                        fontWeight: 700,
-                        color: THEME.textPrimary,
-                        mb: 2,
-                      }}
-                    >
-                      {look.title}
-                    </Typography>
-
-                    <List dense disablePadding sx={{ mb: 2.5 }}>
-                      {look.items.map((item, idx) => (
-                        <ListItem key={idx} disableGutters sx={{ py: 0.4 }}>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: THEME.textSecondary,
-                              fontSize: 12.5,
-                            }}
-                          >
-                            • {item}
-                          </Typography>
-                        </ListItem>
-                      ))}
-                    </List>
-
-                    <Button
-                      href="#new-arrivals"
-                      sx={{
-                        color: THEME.accentCamel,
-                        borderBottom: `1px solid ${THEME.accentCamel}`,
-                        p: 0,
-                        alignSelf: "flex-start",
-                        borderRadius: 0,
-                        fontSize: 11,
-                        letterSpacing: "0.1em",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        "&:hover": {
-                          color: THEME.textPrimary,
-                          borderColor: THEME.textPrimary,
-                          bgcolor: "transparent",
-                        },
-                      }}
-                    >
-                      SHOP THE LOOK &rarr;
-                    </Button>
+                    <Box sx={{ height: 360, overflow: "hidden" }}>
+                      <Box
+                        component="img"
+                        src={look.image}
+                        alt={look.title}
+                        sx={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          transition: "transform 0.6s ease",
+                          "&:hover": { transform: "scale(1.04)" },
+                        }}
+                      />
+                    </Box>
+                    <Box sx={{ p: 2.5 }}>
+                      <Typography variant="h6" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700 }}>
+                        {look.title}
+                      </Typography>
+                      <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                        {look.items.map((item, i) => (
+                          <Chip key={i} label={item} size="small" sx={{ bgcolor: "#F4EFEA", fontSize: 11 }} />
+                        ))}
+                      </Box>
+                    </Box>
                   </Box>
-                </Card>
+                </Floating3DCard>
               </Grid>
             ))}
           </Grid>
         </Container>
       </Box>
 
-      {/* 11. WORDS FROM OUR STYLE COMMUNITY (Testimonials) */}
-      <Box
-        component="section"
-        sx={{
-          py: { xs: 8, md: 12 },
-          bgcolor: THEME.bgSecondary,
-          borderTop: `1px solid ${THEME.borderLight}`,
-          borderBottom: `1px solid ${THEME.borderLight}`,
-        }}
-      >
+      {/* 11. SUSTAINABILITY & SMART FACTORY INTEGRATION */}
+      <Box component="section" sx={{ py: { xs: 8, md: 11 }, bgcolor: THEME.bgDark, color: "#FFFFFF" }}>
         <Container maxWidth="xl">
-          <Box sx={{ textAlign: "center", mb: { xs: 5, md: 7 } }}>
-            <Typography
-              variant="caption"
-              sx={{
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: THEME.accentCamel,
-                fontWeight: 700,
-                fontSize: 12,
-                display: "block",
-                mb: 1,
-              }}
-            >
-              WORDS FROM OUR STYLE COMMUNITY
+          <Grid container spacing={6} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Typography variant="caption" sx={{ letterSpacing: "0.2em", color: "#D4AF37", fontWeight: 700 }}>
+                ✦ SMART ZERO-WASTE ATELIER
+              </Typography>
+              <Typography
+                variant="h3"
+                sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, color: "#FFFFFF", mt: 1, mb: 2 }}
+              >
+                Intelligent Craftsmanship Powered by GarmentOS
+              </Typography>
+              <Typography variant="body1" sx={{ color: "#C4BBB5", lineHeight: 1.7, mb: 3 }}>
+                Every single garment is mapped through our real-time smart production lines. Our neural computer vision engines continuously monitor stitch tension, warp alignment, and seam integrity to eliminate manufacturing waste and deliver heirloom perfection.
+              </Typography>
+
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Box sx={{ p: 2, bgcolor: "rgba(255,255,255,0.06)", borderRadius: "10px" }}>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: "#D4AF37", fontFamily: "'Cormorant Garamond', serif" }}>
+                      0.02%
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#E5DDD5" }}>Defect Rate via AI Vision</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6}>
+                  <Box sx={{ p: 2, bgcolor: "rgba(255,255,255,0.06)", borderRadius: "10px" }}>
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: "#D4AF37", fontFamily: "'Cormorant Garamond', serif" }}>
+                      100%
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#E5DDD5" }}>Biodegradable Natural Yarns</Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Box
+                sx={{
+                  position: "relative",
+                  borderRadius: "16px",
+                  overflow: "hidden",
+                  boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+                }}
+              >
+                <Box
+                  component="img"
+                  src={linenBlazerImg}
+                  alt="GarmentOS Smart Factory"
+                  sx={{ width: "100%", height: 420, objectFit: "cover" }}
+                />
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    p: 2,
+                    bgcolor: "rgba(30, 26, 24, 0.88)",
+                    backdropFilter: "blur(12px)",
+                    borderRadius: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.5,
+                  }}
+                >
+                  <SensorsIcon sx={{ color: "#D4AF37", fontSize: 24 }} />
+                  <Typography variant="caption" sx={{ color: "#FFFFFF", fontWeight: 600 }}>
+                    Live Factory Telemetry: IoT Loom #4 ACTIVE • 99.8% Efficiency
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* 12. CLIENT REVIEWS & TESTIMONIALS */}
+      <Box component="section" sx={{ py: { xs: 8, md: 10 } }}>
+        <Container maxWidth="xl">
+          <Box sx={{ textAlign: "center", mb: 6 }}>
+            <Typography variant="caption" sx={{ letterSpacing: "0.2em", color: THEME.accentCamel, fontWeight: 700 }}>
+              ✦ PATRON TESTIMONIALS
             </Typography>
-            <Typography
-              variant="h2"
-              sx={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: { xs: "2.2rem", sm: "3rem", md: "3.5rem" },
-                fontWeight: 600,
-                color: THEME.textPrimary,
-              }}
-            >
-              Loved Worldwide
+            <Typography variant="h3" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, mt: 0.5 }}>
+              Loved Across Continents
             </Typography>
           </Box>
 
           <Grid container spacing={3.5}>
             {REVIEWS.map((rev) => (
               <Grid item xs={12} md={4} key={rev.id}>
-                <Card
+                <Box
                   sx={{
-                    bgcolor: THEME.bgCard,
-                    borderRadius: 0,
-                    boxShadow: "none",
-                    border: `1px solid ${THEME.borderLight}`,
+                    bgcolor: "#FFFFFF",
                     p: 3.5,
+                    borderRadius: "16px",
+                    border: `1px solid ${THEME.borderLight}`,
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
+                    justifyContent: "space-between",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.03)",
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-                    <Avatar src={rev.avatar} sx={{ width: 44, height: 44 }} />
+                  <Box>
+                    <Rating value={rev.rating} readOnly size="small" sx={{ color: "#D4AF37", mb: 1.5 }} />
+                    <Typography variant="body2" sx={{ color: THEME.textSecondary, fontStyle: "italic", lineHeight: 1.6, mb: 2.5 }}>
+                      "{rev.text}"
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Avatar src={rev.avatar} />
                     <Box>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{ fontWeight: 700, fontSize: 15, color: THEME.textPrimary }}
-                      >
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: THEME.textPrimary }}>
                         {rev.name}
                       </Typography>
                       <Typography variant="caption" sx={{ color: THEME.textMuted }}>
-                        {rev.location}
+                        {rev.location} • Verified Atelier Buyer
                       </Typography>
                     </Box>
                   </Box>
-
-                  <Rating
-                    value={rev.rating}
-                    readOnly
-                    size="small"
-                    sx={{ color: THEME.accentGold, mb: 2 }}
-                  />
-
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontFamily: "'Cormorant Garamond', serif",
-                      fontStyle: "italic",
-                      fontSize: 16,
-                      lineHeight: 1.6,
-                      color: THEME.textSecondary,
-                      mb: 2.5,
-                      flexGrow: 1,
-                    }}
-                  >
-                    "{rev.text}"
-                  </Typography>
-
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-                    <CheckCircleOutlineIcon sx={{ color: "#2e7d32", fontSize: 16 }} />
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#2e7d32", fontWeight: 600, fontSize: 11.5 }}
-                    >
-                      Verified Atelier Patron
-                    </Typography>
-                  </Box>
-                </Card>
+                </Box>
               </Grid>
             ))}
           </Grid>
         </Container>
       </Box>
 
-      {/* 12. CALL TO ACTION BANNER (Discover Your Signature Style) */}
-      <Box
-        component="section"
-        sx={{
-          py: { xs: 9, md: 13 },
-          background: THEME.silkGradient,
-          textAlign: "center",
-          position: "relative",
-        }}
-      >
+      {/* 13. NEWSLETTER & VIP ATELIER SIGNUP */}
+      <Box component="section" sx={{ py: 8, bgcolor: THEME.bgSecondary, borderTop: `1px solid ${THEME.borderLight}` }}>
         <Container maxWidth="md">
-          <Typography
-            variant="h2"
-            sx={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: { xs: "2.6rem", sm: "3.6rem", md: "4.4rem" },
-              fontWeight: 600,
-              color: THEME.textPrimary,
-              mb: 3,
-            }}
-          >
-            Discover Your Signature Style Today
-          </Typography>
-
-          <Typography
-            variant="body1"
-            sx={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontStyle: "italic",
-              fontSize: 18,
-              color: THEME.textSecondary,
-              mb: 4.5,
-            }}
-          >
-            Step into the modern sanctuary of ethical elegance and smart tailored craftsmanship.
-          </Typography>
-
-          <Button
-            href="#new-arrivals"
-            variant="contained"
-            sx={{
-              bgcolor: THEME.textPrimary,
-              color: "#FFFFFF",
-              px: 5,
-              py: 1.6,
-              borderRadius: 0,
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              fontSize: 13,
-              textTransform: "uppercase",
-              "&:hover": {
-                bgcolor: THEME.accentCamel,
-              },
-            }}
-          >
-            SHOP NEW ARRIVALS
-          </Button>
-        </Container>
-      </Box>
-
-      {/* 13. FULL LUXURY EDITORIAL FOOTER */}
-      <Box
-        component="footer"
-        sx={{
-          bgcolor: THEME.bgDark,
-          color: "#EDE6DF",
-          pt: { xs: 8, md: 11 },
-          pb: 5,
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <Container maxWidth="xl">
-          <Grid container spacing={5} sx={{ mb: 7 }}>
-            {/* Col 1: Brand & Philosophy */}
-            <Grid item xs={12} md={4}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  fontWeight: 700,
-                  letterSpacing: "0.15em",
-                  fontSize: 24,
-                  color: "#FFFFFF",
-                  mb: 1.5,
-                }}
-              >
-                GARMENTOS <span style={{ color: THEME.accentCamel, fontWeight: 400 }}>ATELIER</span>
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "#A89F97",
-                  fontSize: 13.5,
-                  lineHeight: 1.7,
-                  mb: 3,
-                  maxWidth: 320,
-                }}
-              >
-                Timeless fashion for the modern connoisseur. Elegant. Ethical. Effortless. Powered by next-generation precision factory intelligence.
-              </Typography>
-
-              {/* Social Media Links */}
-              <Box sx={{ display: "flex", gap: 1.5 }}>
-                {[InstagramIcon, FacebookIcon, PinterestIcon, YouTubeIcon].map((Icon, i) => (
-                  <IconButton
-                    key={i}
-                    size="small"
-                    sx={{
-                      color: "#EDE6DF",
-                      border: "1px solid rgba(255,255,255,0.2)",
-                      "&:hover": {
-                        borderColor: THEME.accentCamel,
-                        color: THEME.accentCamel,
-                      },
-                    }}
-                  >
-                    <Icon fontSize="small" />
-                  </IconButton>
-                ))}
-              </Box>
-            </Grid>
-
-            {/* Col 2: Shop Links */}
-            <Grid item xs={6} sm={3} md={2}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  letterSpacing: "0.15em",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  color: "#FFFFFF",
-                  mb: 2.5,
-                }}
-              >
-                SHOP
-              </Typography>
-              <List dense disablePadding>
-                {[
-                  "New Arrivals",
-                  "Linen Dresses",
-                  "Tailored Blazers",
-                  "Pure Silk Tops",
-                  "Bottoms & Trousers",
-                  "Archive Sale",
-                ].map((item) => (
-                  <ListItem key={item} disableGutters sx={{ py: 0.6 }}>
-                    <Typography
-                      component="a"
-                      href="#new-arrivals"
-                      sx={{
-                        color: "#A89F97",
-                        fontSize: 13,
-                        textDecoration: "none",
-                        "&:hover": { color: "#FFFFFF" },
-                      }}
-                    >
-                      {item}
-                    </Typography>
-                  </ListItem>
-                ))}
-              </List>
-            </Grid>
-
-            {/* Col 3: Collections & Smart Factory */}
-            <Grid item xs={6} sm={3} md={2}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  letterSpacing: "0.15em",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  color: "#FFFFFF",
-                  mb: 2.5,
-                }}
-              >
-                COLLECTIONS
-              </Typography>
-              <List dense disablePadding>
-                {[
-                  "Summer Linen",
-                  "Autumn Knit",
-                  "Evening Silk",
-                  "Casual Cotton",
-                  "Smart Factory Portal",
-                  "Staff & Admin Login",
-                ].map((item) => (
-                  <ListItem key={item} disableGutters sx={{ py: 0.6 }}>
-                    <Typography
-                      component={Link}
-                      to={item.includes("Login") || item.includes("Portal") ? "/login" : "/"}
-                      sx={{
-                        color: "#A89F97",
-                        fontSize: 13,
-                        textDecoration: "none",
-                        "&:hover": { color: "#FFFFFF" },
-                      }}
-                    >
-                      {item}
-                    </Typography>
-                  </ListItem>
-                ))}
-              </List>
-            </Grid>
-
-            {/* Col 4: Support & Policies */}
-            <Grid item xs={6} sm={3} md={2}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  letterSpacing: "0.15em",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  color: "#FFFFFF",
-                  mb: 2.5,
-                }}
-              >
-                SUPPORT
-              </Typography>
-              <List dense disablePadding>
-                {[
-                  "Help Center",
-                  "AI Size Guide",
-                  "Shipping & Delivery",
-                  "Returns & Exchanges",
-                  "Track Your Order",
-                  "Factory Quality Control",
-                ].map((item) => (
-                  <ListItem key={item} disableGutters sx={{ py: 0.6 }}>
-                    <Typography
-                      component="a"
-                      href="#ai-sizing"
-                      onClick={() => setFitModalOpen(true)}
-                      sx={{
-                        color: "#A89F97",
-                        fontSize: 13,
-                        textDecoration: "none",
-                        cursor: "pointer",
-                        "&:hover": { color: "#FFFFFF" },
-                      }}
-                    >
-                      {item}
-                    </Typography>
-                  </ListItem>
-                ))}
-              </List>
-            </Grid>
-
-            {/* Col 5: Newsletter */}
-            <Grid item xs={12} sm={9} md={2}>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  letterSpacing: "0.15em",
-                  fontWeight: 700,
-                  fontSize: 12,
-                  color: "#FFFFFF",
-                  mb: 1.5,
-                }}
-              >
-                NEWSLETTER
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#A89F97",
-                  fontSize: 12,
-                  display: "block",
-                  lineHeight: 1.5,
-                  mb: 2,
-                }}
-              >
-                Stay inspired with new arrivals, style tips & private atelier offers.
-              </Typography>
-
-              {subscribed ? (
-                <Box
-                  sx={{
-                    p: 1.5,
-                    bgcolor: "rgba(255,255,255,0.08)",
-                    border: `1px solid ${THEME.accentCamel}`,
-                    color: "#FED7B8",
-                    fontSize: 12,
-                  }}
-                >
-                  ✦ Thank you for subscribing to GarmentOS Atelier.
-                </Box>
-              ) : (
-                <Box
-                  component="form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (newsletterEmail) setSubscribed(true);
-                  }}
-                  sx={{ display: "flex", flexDirection: "column", gap: 1 }}
-                >
-                  <TextField
-                    placeholder="Enter your email"
-                    value={newsletterEmail}
-                    onChange={(e) => setNewsletterEmail(e.target.value)}
-                    size="small"
-                    required
-                    type="email"
-                    sx={{
-                      bgcolor: "rgba(255,255,255,0.06)",
-                      "& input": { color: "#fff", fontSize: 12.5, py: 1 },
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "rgba(255,255,255,0.2)",
-                      },
-                    }}
-                  />
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    sx={{
-                      bgcolor: THEME.accentCamel,
-                      color: "#fff",
-                      borderRadius: 0,
-                      fontSize: 11.5,
-                      fontWeight: 600,
-                      letterSpacing: "0.1em",
-                      py: 0.9,
-                      "&:hover": { bgcolor: THEME.accentCamelHover },
-                    }}
-                  >
-                    SUBSCRIBE
-                  </Button>
-                </Box>
-              )}
-            </Grid>
-          </Grid>
-
-          <Divider sx={{ borderColor: "rgba(255,255,255,0.1)", mb: 4 }} />
-
-          {/* Bottom Copyright */}
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Typography variant="caption" sx={{ color: "#7A726C", fontSize: 11.5 }}>
-              © 2026 GarmentOS & Atelier. All rights reserved. Precision Manufacturing & Sustainable Haute Couture.
+          <Box sx={{ textAlign: "center" }}>
+            <Typography variant="caption" sx={{ letterSpacing: "0.2em", color: THEME.accentCamel, fontWeight: 700 }}>
+              ✦ VIP ATELIER ACCESS
             </Typography>
-            <Box sx={{ display: "flex", gap: 3 }}>
-              {["Privacy Policy", "Terms of Service", "Factory ISO Certifications"].map((item) => (
-                <Typography
-                  key={item}
-                  variant="caption"
+            <Typography variant="h4" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, mt: 0.5, mb: 1 }}>
+              Join the GarmentOS Atelier Circle
+            </Typography>
+            <Typography variant="body2" sx={{ color: THEME.textSecondary, mb: 3 }}>
+              Receive private invitations to limited bespoke capsules, custom fabric drops, and 15% off your first order.
+            </Typography>
+
+            {subscribed ? (
+              <Alert severity="success" sx={{ maxWidth: 460, mx: "auto", borderRadius: "10px" }}>
+                Welcome to the Atelier Circle. Check your inbox for your 15% welcome voucher!
+              </Alert>
+            ) : (
+              <Box
+                component="form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (newsletterEmail) setSubscribed(true);
+                }}
+                sx={{ display: "flex", gap: 1, maxWidth: 500, mx: "auto" }}
+              >
+                <TextField
+                  fullWidth
+                  placeholder="Enter your email address..."
+                  variant="outlined"
+                  size="small"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  sx={{ bgcolor: "#FFFFFF", borderRadius: "8px" }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
                   sx={{
-                    color: "#7A726C",
-                    fontSize: 11.5,
-                    cursor: "pointer",
-                    "&:hover": { color: "#FFFFFF" },
+                    bgcolor: THEME.textPrimary,
+                    color: "#FFFFFF",
+                    fontWeight: 700,
+                    px: 3,
+                    borderRadius: "8px",
+                    "&:hover": { bgcolor: THEME.accentCamel },
                   }}
                 >
-                  {item}
-                </Typography>
-              ))}
-            </Box>
+                  SUBSCRIBE
+                </Button>
+              </Box>
+            )}
           </Box>
         </Container>
       </Box>
 
-      {/* 14. SHOPPING BAG DRAWER */}
+      {/* 14. FOOTER */}
+      <Box component="footer" sx={{ bgcolor: THEME.bgDark, color: "#E5DDD5", py: 7 }}>
+        <Container maxWidth="xl">
+          <Grid container spacing={5}>
+            <Grid item xs={12} md={4}>
+              <Typography variant="h6" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.15em" }}>
+                GARMENTOS <span style={{ color: THEME.accentCamel }}>ATELIER</span>
+              </Typography>
+              <Typography variant="caption" sx={{ color: "#9C9590", display: "block", mt: 1, mb: 2 }}>
+                High fashion bespoke design studio & automated zero-waste smart factory platform.
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1.5 }}>
+                <IconButton size="small" sx={{ color: "#E5DDD5" }}><InstagramIcon fontSize="small" /></IconButton>
+                <IconButton size="small" sx={{ color: "#E5DDD5" }}><PinterestIcon fontSize="small" /></IconButton>
+                <IconButton size="small" sx={{ color: "#E5DDD5" }}><FacebookIcon fontSize="small" /></IconButton>
+                <IconButton size="small" sx={{ color: "#E5DDD5" }}><YouTubeIcon fontSize="small" /></IconButton>
+              </Box>
+            </Grid>
+
+            <Grid item xs={6} md={2}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF", mb: 1.5 }}>COLLECTIONS</Typography>
+              <List dense disablePadding>
+                {["Summer Linen", "Autumn Knit", "Mulberry Silk", "Minimal Tailoring"].map((item) => (
+                  <ListItem key={item} disablePadding sx={{ py: 0.4 }}>
+                    <Typography variant="caption" sx={{ color: "#9C9590", cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}>{item}</Typography>
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
+
+            <Grid item xs={6} md={2}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF", mb: 1.5 }}>3D EXPERIENCES</Typography>
+              <List dense disablePadding>
+                {["360° Studio Viewer", "3D Cloth Physics", "Fabric Microscopy", "Virtual Sizing Room"].map((item) => (
+                  <ListItem key={item} disablePadding sx={{ py: 0.4 }}>
+                    <Typography variant="caption" sx={{ color: "#9C9590", cursor: "pointer", "&:hover": { color: "#FFFFFF" } }}>{item}</Typography>
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "#FFFFFF", mb: 1.5 }}>GARMENTOS PLATFORM</Typography>
+              <Typography variant="caption" sx={{ color: "#9C9590", display: "block", mb: 2 }}>
+                Factory Managers, Production Admins, & QC Operators can access the smart telemetry dashboard.
+              </Typography>
+              <Button
+                component={Link}
+                to="/login"
+                variant="outlined"
+                startIcon={<PrecisionManufacturingIcon />}
+                sx={{
+                  borderColor: "#A88362",
+                  color: "#A88362",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  "&:hover": { borderColor: "#D4AF37", color: "#D4AF37" },
+                }}
+              >
+                ACCESS FACTORY PORTAL
+              </Button>
+            </Grid>
+          </Grid>
+
+          <Divider sx={{ my: 4, borderColor: "rgba(255,255,255,0.1)" }} />
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+            <Typography variant="caption" sx={{ color: "#6E6966" }}>
+              © {new Date().getFullYear()} GarmentOS Atelier. All rights reserved. Designed for supreme elegance.
+            </Typography>
+            <Typography variant="caption" sx={{ color: "#6E6966" }}>
+              Privacy Policy • Terms of Service • Ethical Sourcing
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* 15. SLIDE-OUT SHOPPING BAG DRAWER */}
       <Drawer
         anchor="right"
         open={bagOpen}
@@ -2310,141 +1526,112 @@ export default function LandingPage() {
         PaperProps={{
           sx: {
             width: { xs: "100%", sm: 440 },
+            bgcolor: "#FBF8F5",
             p: 3,
-            bgcolor: THEME.bgWarm,
             display: "flex",
             flexDirection: "column",
+            justifyContent: "space-between",
           },
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            pb: 2,
-            borderBottom: `1px solid ${THEME.borderLight}`,
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{
-              fontFamily: "'Cormorant Garamond', serif",
-              fontSize: 22,
-              fontWeight: 700,
-              color: THEME.textPrimary,
-            }}
-          >
-            Shopping Bag ({cartItems.reduce((s, i) => s + i.quantity, 0)})
-          </Typography>
-          <IconButton onClick={() => setBagOpen(false)} size="small">
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </Box>
-
-        {cartItems.length === 0 ? (
-          <Box
-            sx={{
-              py: 8,
-              textAlign: "center",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <ShoppingBagOutlinedIcon
-              sx={{ fontSize: 48, color: THEME.textMuted, mb: 2 }}
-            />
-            <Typography variant="body1" sx={{ color: THEME.textSecondary, mb: 3 }}>
-              Your Atelier shopping bag is empty.
-            </Typography>
-            <Button
-              onClick={() => setBagOpen(false)}
-              variant="contained"
-              sx={{
-                bgcolor: THEME.accentCamel,
-                color: "#fff",
-                borderRadius: 0,
-                fontSize: 12,
-                px: 3,
-              }}
-            >
-              CONTINUE SHOPPING
-            </Button>
+        <Box>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 2, borderBottom: `1px solid ${THEME.borderLight}` }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <ShoppingBagOutlinedIcon sx={{ color: THEME.accentCamel }} />
+              <Typography variant="h6" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700 }}>
+                Your Bespoke Bag ({cartItems.reduce((s, i) => s + i.quantity, 0)})
+              </Typography>
+            </Box>
+            <IconButton onClick={() => setBagOpen(false)} size="small">
+              <CloseIcon fontSize="small" />
+            </IconButton>
           </Box>
-        ) : (
-          <>
-            <List sx={{ flexGrow: 1, overflowY: "auto", py: 2 }}>
+
+          {/* Free Shipping Alert Bar */}
+          <Box sx={{ my: 2, p: 1.5, bgcolor: "#FFFFFF", borderRadius: "10px", border: `1px solid ${THEME.borderLight}` }}>
+            <Typography variant="caption" sx={{ color: THEME.accentCamel, fontWeight: 700, display: "block" }}>
+              ✦ COMPLIMENTARY EXPRESS GLOBAL SHIPPING
+            </Typography>
+            <Typography variant="caption" sx={{ color: THEME.textSecondary, fontSize: 11 }}>
+              Delivered in sustainable silk gift packaging within 3-4 business days.
+            </Typography>
+          </Box>
+
+          {/* Cart Items List */}
+          {cartItems.length === 0 ? (
+            <Box sx={{ textAlign: "center", py: 6 }}>
+              <Typography variant="body2" sx={{ color: THEME.textSecondary }}>Your bag is currently empty.</Typography>
+              <Button
+                variant="outlined"
+                onClick={() => setBagOpen(false)}
+                sx={{ mt: 2, borderColor: THEME.accentCamel, color: THEME.accentCamel }}
+              >
+                Discover Pieces
+              </Button>
+            </Box>
+          ) : (
+            <List sx={{ maxHeight: "calc(100vh - 420px)", overflowY: "auto", pr: 0.5 }}>
               {cartItems.map((item) => (
                 <ListItem
                   key={`${item.id}-${item.selectedSize}`}
-                  disableGutters
+                  alignItems="flex-start"
                   sx={{
-                    py: 2,
-                    borderBottom: `1px solid ${THEME.borderLight}`,
-                    alignItems: "flex-start",
+                    bgcolor: "#FFFFFF",
+                    mb: 1.5,
+                    borderRadius: "12px",
+                    p: 1.5,
+                    border: `1px solid ${THEME.borderLight}`,
                   }}
                 >
-                  <ListItemAvatar sx={{ mr: 2 }}>
+                  <ListItemAvatar>
                     <Box
                       component="img"
-                      src={item.image}
+                      src={item.image || heroSilkImg}
                       alt={item.name}
-                      sx={{
-                        width: 70,
-                        height: 90,
-                        objectFit: "cover",
-                        borderRadius: 0,
-                      }}
+                      sx={{ width: 60, height: 75, objectFit: "cover", borderRadius: "8px", mr: 1 }}
                     />
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontFamily: "'Cormorant Garamond', serif",
-                          fontSize: 18,
-                          fontWeight: 700,
-                          color: THEME.textPrimary,
-                        }}
-                      >
-                        {item.name}
-                      </Typography>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: 13 }}>
+                          {item.name}
+                        </Typography>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: THEME.accentCamel }}>
+                          ${(item.price * item.quantity).toFixed(2)}
+                        </Typography>
+                      </Box>
                     }
                     secondary={
                       <Box sx={{ mt: 0.5 }}>
-                        <Typography variant="caption" sx={{ color: THEME.textSecondary, display: "block" }}>
+                        <Typography variant="caption" sx={{ color: THEME.textMuted, display: "block" }}>
                           Size: {item.selectedSize} • {item.material}
                         </Typography>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 700, color: THEME.textPrimary, mt: 0.5 }}
-                        >
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </Typography>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
-                          <IconButton
-                            size="small"
-                            onClick={() => updateQuantity(item.id, item.selectedSize, -1)}
-                            sx={{ border: `1px solid ${THEME.borderLight}`, p: 0.3 }}
-                          >
-                            <RemoveIcon sx={{ fontSize: 12 }} />
-                          </IconButton>
-                          <Typography variant="body2" sx={{ fontWeight: 600, px: 1 }}>
-                            {item.quantity}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            onClick={() => updateQuantity(item.id, item.selectedSize, 1)}
-                            sx={{ border: `1px solid ${THEME.borderLight}`, p: 0.3 }}
-                          >
-                            <AddIcon sx={{ fontSize: 12 }} />
-                          </IconButton>
+                          <Box sx={{ display: "flex", alignItems: "center", border: `1px solid ${THEME.borderLight}`, borderRadius: "6px" }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => updateQuantity(item.id, item.selectedSize, -1)}
+                              sx={{ p: 0.3 }}
+                            >
+                              <RemoveIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                            <Typography variant="caption" sx={{ px: 1, fontWeight: 700 }}>
+                              {item.quantity}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              onClick={() => updateQuantity(item.id, item.selectedSize, 1)}
+                              sx={{ p: 0.3 }}
+                            >
+                              <AddIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Box>
+
                           <IconButton
                             size="small"
                             onClick={() => updateQuantity(item.id, item.selectedSize, -item.quantity)}
-                            sx={{ ml: "auto", color: THEME.textMuted }}
+                            sx={{ color: "#D32F2F", p: 0.3 }}
                           >
                             <DeleteOutlineIcon sx={{ fontSize: 16 }} />
                           </IconButton>
@@ -2455,328 +1642,236 @@ export default function LandingPage() {
                 </ListItem>
               ))}
             </List>
+          )}
+        </Box>
 
-            {/* Bag Checkout Summary */}
-            <Box sx={{ pt: 2, borderTop: `1px solid ${THEME.borderLight}` }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                <Typography variant="body2" sx={{ color: THEME.textSecondary }}>
-                  Subtotal
-                </Typography>
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                  ${calculateTotal().toFixed(2)}
-                </Typography>
+        {/* Bag Footer & Checkout */}
+        {cartItems.length > 0 && (
+          <Box sx={{ pt: 2, borderTop: `1px solid ${THEME.borderLight}` }}>
+            {/* Promo Code Box */}
+            <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+              <TextField
+                size="small"
+                fullWidth
+                placeholder="Promo code (try ATELIER2026)"
+                value={promoCode}
+                onChange={(e) => setPromoCode(e.target.value)}
+                sx={{ bgcolor: "#FFFFFF", borderRadius: "6px" }}
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleApplyPromo}
+                sx={{ borderColor: THEME.accentCamel, color: THEME.accentCamel }}
+              >
+                Apply
+              </Button>
+            </Box>
+
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+              <Typography variant="caption" sx={{ color: THEME.textSecondary }}>Subtotal</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 600 }}>${subtotal.toFixed(2)}</Typography>
+            </Box>
+
+            {discountApplied && (
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                <Typography variant="caption" sx={{ color: "#2E7D32" }}>VIP Discount (15%)</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: "#2E7D32" }}>-${discount.toFixed(2)}</Typography>
               </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2.5 }}>
-                <Typography variant="body2" sx={{ color: THEME.textSecondary }}>
-                  Express Global Delivery
+            )}
+
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Total</Typography>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: THEME.accentCamel }}>
+                ${total.toFixed(2)}
+              </Typography>
+            </Box>
+
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => setCheckoutOpen(true)}
+              sx={{
+                bgcolor: THEME.textPrimary,
+                color: "#FFFFFF",
+                py: 1.6,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                borderRadius: "8px",
+                "&:hover": { bgcolor: THEME.accentCamel },
+              }}
+            >
+              PROCEED TO BESPOKE CHECKOUT
+            </Button>
+          </Box>
+        )}
+      </Drawer>
+
+      {/* 16. QUICK 3D VIEW MODAL */}
+      <Dialog
+        open={Boolean(quickViewProduct)}
+        onClose={() => setQuickViewProduct(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: "20px", p: 3, bgcolor: THEME.bgWarm } }}
+      >
+        {quickViewProduct && (
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ height: 380, borderRadius: "12px", overflow: "hidden" }}>
+                <Box
+                  component="img"
+                  src={quickViewProduct.image}
+                  alt={quickViewProduct.name}
+                  sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant="caption" sx={{ color: THEME.accentCamel, fontWeight: 700 }}>
+                  {quickViewProduct.material}
                 </Typography>
-                <Typography variant="caption" sx={{ color: "#2e7d32", fontWeight: 700 }}>
-                  FREE
-                </Typography>
+                <IconButton onClick={() => setQuickViewProduct(null)} size="small">
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+
+              <Typography variant="h4" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, mt: 0.5 }}>
+                {quickViewProduct.name}
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: THEME.accentCamel, my: 1 }}>
+                ${quickViewProduct.price.toFixed(2)}
+              </Typography>
+              <Typography variant="body2" sx={{ color: THEME.textSecondary, lineHeight: 1.6, mb: 2 }}>
+                {quickViewProduct.description}
+              </Typography>
+
+              {/* Size selector */}
+              <Typography variant="caption" sx={{ fontWeight: 700, display: "block", mb: 1 }}>
+                SELECT SIZE:
+              </Typography>
+              <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
+                {quickViewProduct.sizes.map((s) => (
+                  <Button
+                    key={s}
+                    variant={selectedSize === s ? "contained" : "outlined"}
+                    onClick={() => setSelectedSize(s)}
+                    size="small"
+                    sx={{
+                      minWidth: 40,
+                      bgcolor: selectedSize === s ? THEME.accentCamel : "transparent",
+                      color: selectedSize === s ? "#fff" : THEME.textPrimary,
+                      borderColor: THEME.borderLight,
+                    }}
+                  >
+                    {s}
+                  </Button>
+                ))}
               </Box>
 
               <Button
                 fullWidth
                 variant="contained"
                 onClick={() => {
-                  alert(
-                    "Order placed successfully! Order dispatch sent to GarmentOS Production Queue."
-                  );
-                  setCartItems([]);
-                  setBagOpen(false);
+                  addToBag(quickViewProduct, selectedSize);
+                  setQuickViewProduct(null);
                 }}
                 sx={{
                   bgcolor: THEME.accentCamel,
-                  color: "#fff",
+                  color: "#FFFFFF",
                   py: 1.5,
-                  borderRadius: 0,
                   fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  fontSize: 13,
+                  borderRadius: "8px",
                   "&:hover": { bgcolor: THEME.accentCamelHover },
                 }}
               >
-                PROCEED TO CHECKOUT (${calculateTotal().toFixed(2)})
+                ADD TO BESPOKE BAG
               </Button>
-            </Box>
-          </>
-        )}
-      </Drawer>
-
-      {/* 15. QUICK VIEW PRODUCT MODAL */}
-      <Dialog
-        open={Boolean(quickViewProduct)}
-        onClose={() => setQuickViewProduct(null)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 0,
-            bgcolor: THEME.bgWarm,
-            p: 0,
-            overflow: "hidden",
-          },
-        }}
-      >
-        {quickViewProduct && (
-          <Box sx={{ position: "relative" }}>
-            <IconButton
-              onClick={() => setQuickViewProduct(null)}
-              sx={{ position: "absolute", top: 12, right: 12, zIndex: 10 }}
-            >
-              <CloseIcon />
-            </IconButton>
-
-            <Grid container>
-              <Grid item xs={12} sm={6}>
-                <Box
-                  component="img"
-                  src={quickViewProduct.image}
-                  alt={quickViewProduct.name}
-                  sx={{
-                    width: "100%",
-                    height: { xs: 300, sm: 480 },
-                    objectFit: "cover",
-                  }}
-                />
-              </Grid>
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                sx={{
-                  p: { xs: 3, sm: 4 },
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <Chip
-                  label={quickViewProduct.tag}
-                  size="small"
-                  sx={{
-                    bgcolor: THEME.bgDark,
-                    color: "#fff",
-                    alignSelf: "flex-start",
-                    borderRadius: 0,
-                    fontSize: 10,
-                    mb: 1.5,
-                  }}
-                />
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontFamily: "'Cormorant Garamond', serif",
-                    fontSize: 26,
-                    fontWeight: 700,
-                    color: THEME.textPrimary,
-                    mb: 0.5,
-                  }}
-                >
-                  {quickViewProduct.name}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: THEME.textSecondary, mb: 2, display: "block" }}
-                >
-                  {quickViewProduct.material}
-                </Typography>
-
-                <Typography
-                  variant="h5"
-                  sx={{ fontWeight: 700, color: THEME.textPrimary, mb: 2 }}
-                >
-                  ${quickViewProduct.price.toFixed(2)}
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ color: THEME.textSecondary, lineHeight: 1.6, mb: 3 }}
-                >
-                  {quickViewProduct.description}
-                </Typography>
-
-                {/* Size Selector */}
-                <Typography variant="caption" sx={{ fontWeight: 700, mb: 1, display: "block" }}>
-                  SELECT SIZE:
-                </Typography>
-                <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
-                  {quickViewProduct.sizes.map((sz) => (
-                    <Button
-                      key={sz}
-                      onClick={() => setSelectedSize(sz)}
-                      variant={selectedSize === sz ? "contained" : "outlined"}
-                      sx={{
-                        minWidth: 42,
-                        height: 38,
-                        borderRadius: 0,
-                        p: 0,
-                        borderColor: THEME.borderLight,
-                        bgcolor: selectedSize === sz ? THEME.textPrimary : "transparent",
-                        color: selectedSize === sz ? "#fff" : THEME.textPrimary,
-                        "&:hover": {
-                          borderColor: THEME.textPrimary,
-                          bgcolor: selectedSize === sz ? THEME.textPrimary : "transparent",
-                        },
-                      }}
-                    >
-                      {sz}
-                    </Button>
-                  ))}
-                </Box>
-
-                <Button
-                  fullWidth
-                  variant="contained"
-                  onClick={() => {
-                    addToBag(quickViewProduct, selectedSize);
-                    setQuickViewProduct(null);
-                  }}
-                  startIcon={<ShoppingBagOutlinedIcon />}
-                  sx={{
-                    bgcolor: THEME.accentCamel,
-                    color: "#fff",
-                    py: 1.4,
-                    borderRadius: 0,
-                    fontWeight: 700,
-                    fontSize: 13,
-                    letterSpacing: "0.08em",
-                    mt: "auto",
-                    "&:hover": { bgcolor: THEME.accentCamelHover },
-                  }}
-                >
-                  ADD TO BAG • ${quickViewProduct.price.toFixed(2)}
-                </Button>
-              </Grid>
             </Grid>
-          </Box>
+          </Grid>
         )}
       </Dialog>
 
-      {/* 16. AI SIZING & FIT CALCULATOR MODAL */}
+      {/* 17. VIRTUAL FIT MODAL */}
       <Dialog
         open={fitModalOpen}
         onClose={() => setFitModalOpen(false)}
-        maxWidth="sm"
+        maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 0,
-            bgcolor: THEME.bgWarm,
-            p: 3,
-          },
-        }}
+        PaperProps={{ sx: { borderRadius: "20px", p: 2, bgcolor: THEME.bgWarm } }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-          <Box>
-            <Typography
-              variant="caption"
-              sx={{ color: THEME.accentCamel, fontWeight: 700, letterSpacing: "0.1em" }}
-            >
-              GARMENTOS AI BESPOKE SIZING
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700 }}
-            >
-              Smart Biometric Fit Finder
-            </Typography>
-          </Box>
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <IconButton onClick={() => setFitModalOpen(false)} size="small">
-            <CloseIcon />
+            <CloseIcon fontSize="small" />
           </IconButton>
         </Box>
+        <VirtualFit3D
+          onApplySize={(size) => {
+            setSelectedSize(size);
+            setFitModalOpen(false);
+          }}
+        />
+      </Dialog>
 
-        <Typography variant="body2" sx={{ color: THEME.textSecondary, mb: 3 }}>
-          Our neural tailoring engine computes the exact garment pattern matching your body proportions with 98.4% precision.
-        </Typography>
-
-        <Box component="form" onSubmit={handleCalculateFit}>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Height (cm)"
-                type="number"
-                value={fitHeight}
-                onChange={(e) => setFitHeight(e.target.value)}
-                size="small"
-                required
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Weight (kg)"
-                type="number"
-                value={fitWeight}
-                onChange={(e) => setFitWeight(e.target.value)}
-                size="small"
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                select
-                SelectProps={{ native: true }}
-                label="Fit Preference"
-                value={fitPreference}
-                onChange={(e) => setFitPreference(e.target.value)}
-                size="small"
-              >
-                <option value="Fitted Silhouette">Fitted / Tailored Silhouette</option>
-                <option value="Regular Fit">Regular / Classic Drape</option>
-                <option value="Relaxed Oversized">Relaxed / Flowing Oversized</option>
-              </TextField>
-            </Grid>
-          </Grid>
-
-          <Button
-            fullWidth
-            type="submit"
-            variant="contained"
-            sx={{
-              bgcolor: THEME.textPrimary,
-              color: "#fff",
-              py: 1.3,
-              borderRadius: 0,
-              fontWeight: 700,
-              fontSize: 12.5,
-              letterSpacing: "0.08em",
-              "&:hover": { bgcolor: THEME.accentCamel },
-            }}
-          >
-            CALCULATE MY BESPOKE SIZE
-          </Button>
-        </Box>
-
-        {calculatedSize && (
-          <Box
-            sx={{
-              mt: 3,
-              p: 2.5,
-              bgcolor: THEME.bgSecondary,
-              border: `1px solid ${THEME.accentCamel}`,
-              textAlign: "center",
-            }}
-          >
-            <Typography variant="caption" sx={{ color: THEME.accentCamel, fontWeight: 700 }}>
-              RECOMMENDED ATELIER SIZE
+      {/* 18. CHECKOUT DIALOG */}
+      <Dialog
+        open={checkoutOpen}
+        onClose={() => {
+          setCheckoutOpen(false);
+          setOrderComplete(false);
+        }}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: "20px", p: 3, bgcolor: THEME.bgWarm } }}
+      >
+        {orderComplete ? (
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <CheckCircleOutlineIcon sx={{ fontSize: 64, color: "#2E7D32", mb: 2 }} />
+            <Typography variant="h4" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700 }}>
+              Order Confirmed & Allocated to Atelier
             </Typography>
-            <Typography
-              variant="h3"
-              sx={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontWeight: 700,
-                color: THEME.textPrimary,
-                my: 0.5,
+            <Typography variant="body2" sx={{ color: THEME.textSecondary, mt: 1, mb: 3 }}>
+              Your order #GOS-{Math.floor(100000 + Math.random() * 900000)} has been assigned to our master tailors.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setCheckoutOpen(false);
+                setBagOpen(false);
+                setCartItems([]);
               }}
+              sx={{ bgcolor: THEME.accentCamel, color: "#fff", px: 4, py: 1.2 }}
             >
-              SIZE {calculatedSize.size}
+              Return to Atelier
+            </Button>
+          </Box>
+        ) : (
+          <Box component="form" onSubmit={handlePlaceOrder}>
+            <Typography variant="h5" sx={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 700, mb: 2 }}>
+              Bespoke Atelier Checkout
             </Typography>
-            <Typography variant="body2" sx={{ color: THEME.textSecondary }}>
-              {calculatedSize.notes} (Confidence: {calculatedSize.confidence})
-            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={6}><TextField fullWidth label="First Name" size="small" required /></Grid>
+              <Grid item xs={6}><TextField fullWidth label="Last Name" size="small" required /></Grid>
+              <Grid item xs={12}><TextField fullWidth label="Shipping Address" size="small" required /></Grid>
+              <Grid item xs={6}><TextField fullWidth label="City" size="small" required /></Grid>
+              <Grid item xs={6}><TextField fullWidth label="Country" size="small" required defaultValue="United States" /></Grid>
+              <Grid item xs={12}><TextField fullWidth label="Card Number (Demo)" size="small" defaultValue="4242 •••• •••• 4242" required /></Grid>
+            </Grid>
+
+            <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: THEME.accentCamel }}>
+                Total: ${total.toFixed(2)}
+              </Typography>
+              <Button
+                type="submit"
+                variant="contained"
+                sx={{ bgcolor: THEME.textPrimary, color: "#fff", px: 3, py: 1.2, fontWeight: 700 }}
+              >
+                AUTHORIZE & CRAFT PIECE
+              </Button>
+            </Box>
           </Box>
         )}
       </Dialog>
