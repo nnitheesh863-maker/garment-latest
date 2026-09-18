@@ -8,6 +8,14 @@ export default function GlassCard({
   glow = false,
   sx,
   cardContentSx,
+  delay,
+  whileHover,
+  whileTap,
+  initial,
+  animate,
+  exit,
+  transition,
+  variants,
   ...props
 }) {
   return (

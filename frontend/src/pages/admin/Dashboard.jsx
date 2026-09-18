@@ -770,7 +770,7 @@ export default function AdminDashboard() {
 
       <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12}>
-          <GlassCard delay={0.22} whileHover={undefined} sx={{ border: '1px solid rgba(89,23,27,0.1)' }}>
+          <GlassCard sx={{ border: '1px solid rgba(89,23,27,0.1)' }}>
             <SectionTitle
               icon={<NotificationsActiveIcon sx={{ fontSize: 17, color: '#FED7B8' }} />}
               title="Live Decision Stream"
