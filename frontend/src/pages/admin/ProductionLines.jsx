@@ -158,9 +158,24 @@ export default function ProductionLines() {
         <Chip label={val || 'unknown'} size="small" color={statusColors[val] || 'default'} />
       ),
     },
-    { id: 'supervisor', label: 'Supervisor', render: (val) => val?.profile?.firstName || val?.email || '-' },
-    { id: 'capacityDaily', label: 'Daily Capacity', render: (val) => val ? `${val} units` : '-' },
-    { id: 'efficiency', label: 'Efficiency', render: (val) => val != null ? `${val}%` : '-' },
+    {
+      id: 'supervisor',
+      label: 'Supervisor',
+      render: (val) =>
+        typeof val === 'object' && val !== null
+          ? `${val?.profile?.firstName || ''} ${val?.profile?.lastName || ''}`.trim() || val?.email || '-'
+          : val || '-',
+    },
+    {
+      id: 'capacityDaily',
+      label: 'Daily Capacity',
+      render: (val, row) => (row.capacity?.daily || val ? `${row.capacity?.daily || val} units` : '-'),
+    },
+    {
+      id: 'efficiency',
+      label: 'Efficiency',
+      render: (val, row) => (row.metrics?.efficiency != null ? `${row.metrics.efficiency}%` : val != null ? `${val}%` : '-'),
+    },
     {
       id: 'actions', label: 'Actions', sortable: false, align: 'right',
       render: (_, row) => (
@@ -255,19 +270,27 @@ export default function ProductionLines() {
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">Supervisor</Typography>
-                <Typography variant="body2" fontWeight={500}>{detailData.supervisor?.profile?.firstName || detailData.supervisor?.email || '-'}</Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  {typeof detailData.supervisor === 'object' && detailData.supervisor !== null
+                    ? `${detailData.supervisor?.profile?.firstName || ''} ${detailData.supervisor?.profile?.lastName || ''}`.trim() || detailData.supervisor?.email || '-'
+                    : detailData.supervisor || '-'}
+                </Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">Daily Capacity</Typography>
-                <Typography variant="body2" fontWeight={500}>{detailData.capacityDaily ? `${detailData.capacityDaily} units` : '-'}</Typography>
+                <Typography variant="body2" fontWeight={500}>{detailData.capacity?.daily || detailData.capacityDaily ? `${detailData.capacity?.daily || detailData.capacityDaily} units` : '-'}</Typography>
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="caption" color="text.secondary">Efficiency</Typography>
-                <Typography variant="body2" fontWeight={500}>{detailData.efficiency != null ? `${detailData.efficiency}%` : '-'}</Typography>
+                <Typography variant="body2" fontWeight={500}>{detailData.metrics?.efficiency != null ? `${detailData.metrics.efficiency}%` : detailData.efficiency != null ? `${detailData.efficiency}%` : '-'}</Typography>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="caption" color="text.secondary">Location</Typography>
-                <Typography variant="body2" fontWeight={500}>{detailData.location || '-'}</Typography>
+                <Typography variant="body2" fontWeight={500}>
+                  {typeof detailData.location === 'object' && detailData.location !== null
+                    ? `${detailData.location.floor || ''} ${detailData.location.section || ''}`.trim() || '-'
+                    : detailData.location || '-'}
+                </Typography>
               </Grid>
               {detailData.description && (
                 <Grid item xs={12}>
