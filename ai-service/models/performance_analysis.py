@@ -1,39 +1,96 @@
+"""
+Employee Performance Analytics & Skill Gap Module
+=================================================
+Evaluates garment factory worker productivity, stitch quality, process efficiency,
+and attendance using multi-criteria weighted scoring. Identifies skill deficiencies
+and provides actionable upskilling and career development recommendations.
+
+Scoring Formula:
+- Productivity Rate : 30% Weight
+- Quality Score     : 30% Weight
+- Efficiency        : 25% Weight
+- Attendance Rate   : 15% Weight
+"""
+
+from typing import Dict, Any, List, Optional, Union, Set
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-from collections import defaultdict
+
 from config import setup_logging
 
 logger = setup_logging(__name__)
 
 
 class PerformanceAnalysis:
+    """
+    Statistical workforce analytics engine.
+    Calculates multidimensional performance metrics, detects skill gaps,
+    and formulates tailored training recommendations.
+    """
+
+    # Multi-criteria scoring weights
+    WEIGHTS: Dict[str, float] = {
+        'productivity_rate': 0.30,
+        'quality_score': 0.30,
+        'efficiency': 0.25,
+        'attendance_rate': 0.15
+    }
+
     def __init__(self):
-        self.version = '1.0.0'
+        """Initializes the Performance Analysis engine."""
+        self.version: str = '1.0.0'
 
-    def analyze_performance(self, employee_data):
-        df = pd.DataFrame(employee_data) if not isinstance(employee_data, pd.DataFrame) else employee_data.copy()
-        logger.info(f"Analyzing performance for {df.shape[0]} employees")
+    def analyze_performance(
+        self,
+        employee_data: Union[pd.DataFrame, List[Dict[str, Any]], Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Processes employee task and attendance history to compute detailed metrics,
+        skill gaps, overall score, and growth recommendations.
 
-        metrics = self.calculate_metrics(df)
+        Args:
+            employee_data: List of employee dictionaries or DataFrame.
+
+        Returns:
+            List[Dict[str, Any]]: Structured analysis for each employee.
+        """
+        if isinstance(employee_data, dict):
+            df = pd.DataFrame([employee_data])
+        elif isinstance(employee_data, list):
+            df = pd.DataFrame(employee_data)
+        else:
+            df = employee_data.copy()
+
+        logger.info(f"Analyzing workforce performance for {len(df)} employees")
+        metrics_dict = self.calculate_metrics(df)
 
         results = []
         for i in range(len(df)):
             emp = df.iloc[i].to_dict()
-            emp_id = emp.get('employee_id', emp.get('id', f'EMP_{i}'))
-            emp_name = emp.get('employee_name', emp.get('name', f'Employee {emp_id}'))
+            emp_id = str(emp.get('employee_id', emp.get('id', f'EMP_{i+1}')))
+            emp_name = str(emp.get('employee_name', emp.get('name', f'Employee {emp_id}')))
 
-            emp_metrics = {
-                k: float(v[i]) if hasattr(v, '__getitem__') and not isinstance(v, (str, bytes)) else v
-                for k, v in metrics.items()
-            } if metrics else self._compute_single_metrics(emp)
+            # Extract per-employee metrics
+            if metrics_dict:
+                emp_metrics = {}
+                for k, v in metrics_dict.items():
+                    if hasattr(v, '__getitem__') and not isinstance(v, (str, bytes)):
+                        emp_metrics[k] = round(float(v.iloc[i] if hasattr(v, 'iloc') else v[i]), 2)
+                    else:
+                        emp_metrics[k] = round(float(v), 2)
+            else:
+                emp_metrics = self._compute_single_metrics(emp)
 
+            # Detect missing required skills
             skill_gaps = self.identify_skill_gaps(
                 emp.get('skills', emp.get('employee_skills', [])),
                 emp.get('required_skills', [])
             )
 
+            # Generate personalized recommendations
             recommendations = self.generate_recommendations(emp_metrics, emp)
+
+            overall_score = self._compute_overall_score(emp_metrics)
 
             results.append({
                 'employee_id': emp_id,
@@ -41,175 +98,238 @@ class PerformanceAnalysis:
                 'metrics': emp_metrics,
                 'skill_gaps': skill_gaps,
                 'recommendations': recommendations,
-                'overall_score': self._compute_overall_score(emp_metrics)
+                'overall_score': overall_score
             })
 
         return results
 
-    def calculate_metrics(self, tasks_history):
-        df = pd.DataFrame(tasks_history) if not isinstance(tasks_history, pd.DataFrame) else tasks_history.copy()
+    def calculate_metrics(self, tasks_history: pd.DataFrame) -> Dict[str, pd.Series]:
+        """
+        Calculates performance dimensions from task completion and time tracking data.
+
+        Metrics Calculated:
+        - `productivity_rate`: (tasks_completed / tasks_assigned) * 100
+        - `quality_score`: (1 - defects / total_products) * 100
+        - `efficiency`: (standard_allowed_minutes / actual_minutes) * 100
+        - `attendance_rate`: recorded attendance percentage (0-100%)
+        - `fatigue_score`: overtime load index (0-100)
+
+        Args:
+            tasks_history (pd.DataFrame): DataFrame of employee records.
+
+        Returns:
+            Dict[str, pd.Series]: Dictionary of computed metric Series.
+        """
+        df = tasks_history.copy()
+        n = len(df)
         metrics = {}
 
+        # 1. Productivity Rate (%)
         if 'tasks_completed' in df.columns and 'tasks_assigned' in df.columns:
-            metrics['productivity_rate'] = (
-                pd.to_numeric(df['tasks_completed'], errors='coerce') /
-                pd.to_numeric(df['tasks_assigned'], errors='coerce').replace(0, np.nan)
-            ).fillna(0) * 100
+            completed = pd.to_numeric(df['tasks_completed'], errors='coerce').fillna(0)
+            assigned = pd.to_numeric(df['tasks_assigned'], errors='coerce').replace(0, np.nan)
+            metrics['productivity_rate'] = (completed / assigned).fillna(0.75) * 100.0
         else:
-            metrics['productivity_rate'] = pd.Series(np.random.uniform(70, 100, len(df)))
+            np.random.seed(42)
+            metrics['productivity_rate'] = pd.Series(np.random.uniform(75, 98, n), index=df.index)
 
+        # 2. Quality Score (%)
         if 'defects_count' in df.columns and 'total_products' in df.columns:
-            metrics['quality_score'] = (
-                1 - pd.to_numeric(df['defects_count'], errors='coerce') /
-                pd.to_numeric(df['total_products'], errors='coerce').replace(0, np.nan)
-            ).fillna(0.9) * 100
+            defects = pd.to_numeric(df['defects_count'], errors='coerce').fillna(0)
+            total = pd.to_numeric(df['total_products'], errors='coerce').replace(0, np.nan)
+            metrics['quality_score'] = (1.0 - (defects / total)).fillna(0.95) * 100.0
         elif 'quality_score' in df.columns:
-            metrics['quality_score'] = pd.to_numeric(df['quality_score'], errors='coerce').fillna(0.9) * 100
+            metrics['quality_score'] = pd.to_numeric(df['quality_score'], errors='coerce').fillna(0.92) * 100.0
         else:
-            metrics['quality_score'] = pd.Series(np.random.uniform(75, 100, len(df)))
+            np.random.seed(43)
+            metrics['quality_score'] = pd.Series(np.random.uniform(80, 99, n), index=df.index)
 
+        # 3. Efficiency Rate (Standard vs Actual Time %)
         if 'actual_time' in df.columns and 'standard_time' in df.columns:
-            efficiency = (
-                pd.to_numeric(df['standard_time'], errors='coerce') /
-                pd.to_numeric(df['actual_time'], errors='coerce').replace(0, np.nan)
-            ).fillna(0.8)
-            metrics['efficiency'] = np.clip(efficiency * 100, 0, 150)
+            actual = pd.to_numeric(df['actual_time'], errors='coerce').replace(0, np.nan)
+            std_time = pd.to_numeric(df['standard_time'], errors='coerce').fillna(1.0)
+            efficiency = (std_time / actual).fillna(0.85) * 100.0
+            metrics['efficiency'] = pd.Series(np.clip(efficiency, 30.0, 150.0), index=df.index)
         else:
-            metrics['efficiency'] = pd.Series(np.random.uniform(75, 110, len(df)))
+            np.random.seed(44)
+            metrics['efficiency'] = pd.Series(np.random.uniform(75, 110, n), index=df.index)
 
+        # 4. Attendance Rate (%)
         if 'attendance_rate' in df.columns:
-            metrics['attendance_rate'] = pd.to_numeric(df['attendance_rate'], errors='coerce').fillna(0.95) * 100
+            metrics['attendance_rate'] = pd.to_numeric(df['attendance_rate'], errors='coerce').fillna(0.95) * 100.0
         else:
-            metrics['attendance_rate'] = pd.Series(np.random.uniform(85, 100, len(df)))
+            np.random.seed(45)
+            metrics['attendance_rate'] = pd.Series(np.random.uniform(88, 100, n), index=df.index)
 
+        # 5. Overtime & Fatigue Tracking
         if 'overtime_hours' in df.columns and 'regular_hours' in df.columns:
-            ot_ratio = (
-                pd.to_numeric(df['overtime_hours'], errors='coerce') /
-                pd.to_numeric(df['regular_hours'], errors='coerce').replace(0, np.nan)
-            ).fillna(0)
-            metrics['overtime_ratio'] = ot_ratio * 100
-            metrics['fatigue_score'] = np.clip(ot_ratio * 50, 0, 100)
+            ot = pd.to_numeric(df['overtime_hours'], errors='coerce').fillna(0)
+            reg = pd.to_numeric(df['regular_hours'], errors='coerce').replace(0, np.nan).fillna(40)
+            ot_ratio = (ot / reg) * 100.0
+            metrics['overtime_ratio'] = ot_ratio
+            metrics['fatigue_score'] = pd.Series(np.clip(ot_ratio * 0.5, 0.0, 100.0), index=df.index)
 
-        weights = {'productivity_rate': 0.3, 'quality_score': 0.3, 'efficiency': 0.25, 'attendance_rate': 0.15}
-        available = [k for k in weights if k in metrics]
-        if available:
-            w_sum = sum(weights[k] for k in available)
+        # 6. Overall Performance Aggregation
+        available_keys = [k for k in self.WEIGHTS if k in metrics]
+        if available_keys:
+            weight_sum = sum(self.WEIGHTS[k] for k in available_keys)
             metrics['overall_performance'] = sum(
-                metrics[k] * weights[k] / w_sum for k in available
+                metrics[k] * (self.WEIGHTS[k] / weight_sum) for k in available_keys
             )
 
-        logger.info(f"Computed {len(metrics)} performance metrics")
         return metrics
 
-    def _compute_single_metrics(self, emp):
-        prod = float(emp.get('productivity_rate', emp.get('productivity', np.random.uniform(70, 100))))
-        qual = float(emp.get('quality_score', emp.get('quality', np.random.uniform(75, 100))))
-        eff = float(emp.get('efficiency', np.random.uniform(75, 110)))
-        att = float(emp.get('attendance_rate', emp.get('attendance', np.random.uniform(85, 100))))
+    def _compute_single_metrics(self, emp: Dict[str, Any]) -> Dict[str, float]:
+        """Calculates fallback metrics for a single employee record."""
+        prod = float(emp.get('productivity_rate', emp.get('productivity', 85.0)))
+        qual = float(emp.get('quality_score', emp.get('quality', 92.0)))
+        eff = float(emp.get('efficiency', 88.0))
+        att = float(emp.get('attendance_rate', emp.get('attendance', 95.0)))
+
+        overall = (
+            self.WEIGHTS['productivity_rate'] * prod +
+            self.WEIGHTS['quality_score'] * qual +
+            self.WEIGHTS['efficiency'] * eff +
+            self.WEIGHTS['attendance_rate'] * att
+        )
+
         return {
             'productivity_rate': round(prod, 2),
             'quality_score': round(qual, 2),
             'efficiency': round(eff, 2),
             'attendance_rate': round(att, 2),
-            'overall_performance': round(0.3 * prod + 0.3 * qual + 0.25 * eff + 0.15 * att, 2)
+            'overall_performance': round(overall, 2)
         }
 
-    def _compute_overall_score(self, metrics):
-        weights = {'productivity_rate': 0.3, 'quality_score': 0.3, 'efficiency': 0.25, 'attendance_rate': 0.15}
+    def _compute_overall_score(self, metrics: Dict[str, float]) -> float:
+        """Computes weighted aggregate score from individual metric dictionary."""
         score = 0.0
-        total_w = 0.0
-        for k, w in weights.items():
+        total_weight = 0.0
+        for k, w in self.WEIGHTS.items():
             if k in metrics:
                 score += metrics[k] * w
-                total_w += w
-        return round(score / total_w, 2) if total_w > 0 else 0.0
+                total_weight += w
 
-    def identify_skill_gaps(self, employee_skills, required_skills):
+        return round(score / total_weight, 2) if total_weight > 0 else 0.0
+
+    def identify_skill_gaps(
+        self,
+        employee_skills: Union[List[str], str, Dict[str, Any]],
+        required_skills: Union[List[str], str, Dict[str, Any]]
+    ) -> List[str]:
+        """
+        Performs set difference to determine skills missing for assigned line operations.
+
+        Args:
+            employee_skills: Skills possessed by the operator.
+            required_skills: Skills demanded by the product line.
+
+        Returns:
+            List[str]: Alphabetically sorted missing skills.
+        """
         if not required_skills:
             return []
 
-        if isinstance(employee_skills, str):
-            employee_skills = [s.strip() for s in employee_skills.split(',')]
-        if isinstance(required_skills, str):
-            required_skills = [s.strip() for s in required_skills.split(',')]
+        def to_set(val) -> Set[str]:
+            if isinstance(val, str):
+                return {s.strip().lower() for s in val.split(',') if s.strip()}
+            elif isinstance(val, dict):
+                return {str(k).strip().lower() for k in val.keys()}
+            elif isinstance(val, (list, tuple, set)):
+                return {str(s).strip().lower() for s in val if str(s).strip()}
+            return set()
 
-        if isinstance(employee_skills, dict):
-            employee_skills = list(employee_skills.keys())
-        if isinstance(required_skills, dict):
-            required_skills = list(required_skills.keys())
+        emp_set = to_set(employee_skills)
+        req_set = to_set(required_skills)
 
-        employee_skills_set = set(s.lower() for s in employee_skills)
-        required_skills_set = set(s.lower() for s in required_skills)
+        gaps = req_set - emp_set
+        return sorted(list(gaps))
 
-        gaps = required_skills_set - employee_skills_set
-        return sorted(gaps)
+    def generate_recommendations(
+        self,
+        metrics: Dict[str, float],
+        employee_data: Optional[Dict[str, Any]] = None
+    ) -> List[Dict[str, str]]:
+        """
+        Generates targeted growth, coaching, and career advancement suggestions.
 
-    def generate_recommendations(self, metrics, employee_data=None):
-        recommendations = []
+        Args:
+            metrics: Performance indicator dictionary.
+            employee_data: Additional context (skills, tenure).
 
-        prod = metrics.get('productivity_rate', 100)
-        if prod < 70:
-            recommendations.append({
+        Returns:
+            List[Dict[str, str]]: Tailored suggestions with urgency priority.
+        """
+        recs = []
+
+        # 1. Productivity Evaluation
+        prod = metrics.get('productivity_rate', 100.0)
+        if prod < 70.0:
+            recs.append({
                 'area': 'productivity',
                 'priority': 'high',
-                'suggestion': 'Enroll in time-management and workflow optimization training'
+                'suggestion': 'Enroll in Standard Allowed Minute (SAM) workflow and ergonomic pacing training'
             })
-        elif prod < 85:
-            recommendations.append({
+        elif prod < 85.0:
+            recs.append({
                 'area': 'productivity',
                 'priority': 'medium',
-                'suggestion': 'Consider shadowing high-performers to improve techniques'
+                'suggestion': 'Shadow top-tier operator on complex garment stitch passes to boost cycle speed'
             })
 
-        quality = metrics.get('quality_score', 100)
-        if quality < 80:
-            recommendations.append({
+        # 2. Quality Evaluation
+        quality = metrics.get('quality_score', 100.0)
+        if quality < 80.0:
+            recs.append({
                 'area': 'quality',
                 'priority': 'high',
-                'suggestion': 'Attend quality control training and review defect patterns'
+                'suggestion': 'Mandatory refresher on seam tension, thread trimming, and defect inspection'
             })
-        elif quality < 90:
-            recommendations.append({
+        elif quality < 90.0:
+            recs.append({
                 'area': 'quality',
                 'priority': 'medium',
-                'suggestion': 'Focus on attention to detail in finishing processes'
+                'suggestion': 'Conduct weekly self-inspection audits on the first 5 garments of each batch'
             })
 
-        efficiency = metrics.get('efficiency', 100)
-        if efficiency < 75:
-            recommendations.append({
+        # 3. Efficiency Evaluation
+        efficiency = metrics.get('efficiency', 100.0)
+        if efficiency < 75.0:
+            recs.append({
                 'area': 'efficiency',
                 'priority': 'high',
-                'suggestion': 'Review workflow and identify bottlenecks in current process'
+                'suggestion': 'Audit workstation layout to eliminate unnecessary material handling steps'
             })
-        elif efficiency < 90:
-            recommendations.append({
+        elif efficiency < 90.0:
+            recs.append({
                 'area': 'efficiency',
                 'priority': 'medium',
-                'suggestion': 'Practice standardized work methods to reduce cycle time'
+                'suggestion': 'Practice standardized needle positioning and quick-clamp methods'
             })
 
-        attendance = metrics.get('attendance_rate', 100)
-        if attendance < 85:
-            recommendations.append({
+        # 4. Attendance Evaluation
+        attendance = metrics.get('attendance_rate', 100.0)
+        if attendance < 85.0:
+            recs.append({
                 'area': 'attendance',
                 'priority': 'high',
-                'suggestion': 'Discuss attendance concerns and offer flexible scheduling options'
+                'suggestion': 'Schedule line supervisor check-in to discuss attendance patterns and shift flexibility'
             })
 
-        overall = metrics.get('overall_performance', 100)
-        if overall >= 90:
-            recommendations.append({
+        # 5. High Performer Career Growth
+        overall = metrics.get('overall_performance', metrics.get('productivity_rate', 80.0))
+        if overall >= 90.0:
+            recs.append({
                 'area': 'career',
                 'priority': 'low',
-                'suggestion': 'Consider for team lead role or cross-training opportunities'
+                'suggestion': 'Recommend for Line Team Leader training or Cross-Skilled Master Stitcher certification'
             })
 
-        if not recommendations:
-            recommendations.append({
+        if not recs:
+            recs.append({
                 'area': 'general',
                 'priority': 'low',
-                'suggestion': 'Continue current performance level; consider advanced skill development'
+                'suggestion': 'Strong overall performance; maintain standards and explore multi-machine operation'
             })
 
-        return recommendations
+        return recs
