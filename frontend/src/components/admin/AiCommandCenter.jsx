@@ -28,6 +28,8 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import BuildIcon from '@mui/icons-material/Build';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import HowToRegIcon from '@mui/icons-material/HowToReg';
+import EditIcon from '@mui/icons-material/Edit';
+import CheckIcon from '@mui/icons-material/Check';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../api/axios';
 
@@ -187,6 +189,14 @@ export default function AiCommandCenter({ onOrderCreated }) {
         setPromptMsg(resData.prompt);
         setMissingField(null);
         setContext(resData.context);
+        const p = resData.context?.parameters || {};
+        setEditParams({
+          garmentType: p.garmentType || 'T-Shirt',
+          quantity: p.quantity || 500,
+          customerName: p.customerName || 'Direct Client',
+          deadline: p.deadline ? new Date(p.deadline).toISOString().split('T')[0] : new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+          priority: p.priority || 'medium',
+        });
         setShowConfirmation(true);
         setIsEditing(false);
         setValidationErrors([]);
@@ -202,6 +212,17 @@ export default function AiCommandCenter({ onOrderCreated }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateEditField = (field, value) => {
+    setEditParams((prev) => ({ ...prev, [field]: value }));
+    setContext((prev) => ({
+      ...prev,
+      parameters: {
+        ...(prev.parameters || {}),
+        [field]: field === 'quantity' ? Number(value) : value,
+      },
+    }));
   };
 
   const handleConfirmOrder = async () => {
@@ -581,43 +602,137 @@ export default function AiCommandCenter({ onOrderCreated }) {
                 boxShadow: '0 4px 20px rgba(89,23,27,0.08)',
               }}
             >
-              <Box display="flex" alignItems="center" gap={1} mb={1.5}>
-                <AutoAwesomeIcon sx={{ color: '#59171B', fontSize: 20 }} />
-                <Typography variant="subtitle2" fontWeight={800} color="#59171B">
-                  Order Review & AI Factory Allocation
-                </Typography>
+              <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} flexWrap="wrap" gap={1}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <AutoAwesomeIcon sx={{ color: '#59171B', fontSize: 20 }} />
+                  <Typography variant="subtitle2" fontWeight={800} color="#59171B">
+                    Order Review & AI Factory Allocation
+                  </Typography>
+                </Box>
+                <Button
+                  size="small"
+                  startIcon={isEditing ? <CheckIcon fontSize="small" /> : <EditIcon fontSize="small" />}
+                  onClick={() => setIsEditing(!isEditing)}
+                  sx={{
+                    color: '#59171B',
+                    bgcolor: 'rgba(89,23,27,0.08)',
+                    fontWeight: 700,
+                    fontSize: 12,
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    px: 1.5,
+                    '&:hover': { bgcolor: 'rgba(89,23,27,0.15)' },
+                  }}
+                >
+                  {isEditing ? 'Done Editing' : 'Edit Details'}
+                </Button>
               </Box>
 
-              <Grid container spacing={1.5} mb={2}>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="caption" color="text.secondary" display="block">Garment Type</Typography>
-                  <Typography variant="body2" fontWeight={700}>{context?.parameters?.garmentType || 'T-Shirt'}</Typography>
+              {/* READ-ONLY SUMMARY VIEW */}
+              {!isEditing ? (
+                <Grid container spacing={2} mb={2}>
+                  <Grid item xs={6} sm={4} md={2.4}>
+                    <Typography variant="caption" color="text.secondary" display="block">Garment Type</Typography>
+                    <Typography variant="body2" fontWeight={700}>{context?.parameters?.garmentType || editParams.garmentType || 'T-Shirt'}</Typography>
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2.4}>
+                    <Typography variant="caption" color="text.secondary" display="block">Batch Quantity</Typography>
+                    <Typography variant="body2" fontWeight={700}>{context?.parameters?.quantity || editParams.quantity || 500} Units</Typography>
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2.4}>
+                    <Typography variant="caption" color="text.secondary" display="block">Customer</Typography>
+                    <Typography variant="body2" fontWeight={700}>{context?.parameters?.customerName || editParams.customerName || 'Direct Client'}</Typography>
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2.4}>
+                    <Typography variant="caption" color="text.secondary" display="block">Priority</Typography>
+                    <Chip
+                      size="small"
+                      label={String(context?.parameters?.priority || editParams.priority || 'medium').toUpperCase()}
+                      sx={{
+                        height: 20,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        bgcolor: '#59171B',
+                        color: '#FED7B8',
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={2.4}>
+                    <Typography variant="caption" color="text.secondary" display="block">AI Line & Delay Risk</Typography>
+                    <Chip
+                      size="small"
+                      label={`${context?.aiPlan?.delayProbability || 12}% Risk · Line ${context?.aiPlan?.recommendedLine || 3}`}
+                      sx={{
+                        height: 22,
+                        fontSize: 11,
+                        fontWeight: 800,
+                        bgcolor: (context?.aiPlan?.delayProbability || 12) > 30 ? 'rgba(220,38,38,0.12)' : 'rgba(22,163,74,0.12)',
+                        color: (context?.aiPlan?.delayProbability || 12) > 30 ? '#DC2626' : '#16A34A',
+                      }}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="caption" color="text.secondary" display="block">Batch Quantity</Typography>
-                  <Typography variant="body2" fontWeight={700}>{context?.parameters?.quantity || 500} Units</Typography>
+              ) : (
+                /* INLINE EDIT MODE VIEW */
+                <Grid container spacing={2} mb={2.5}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Customer Name"
+                      value={editParams.customerName || ''}
+                      onChange={(e) => updateEditField('customerName', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Garment Silhouette"
+                      value={editParams.garmentType || ''}
+                      onChange={(e) => updateEditField('garmentType', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Quantity"
+                      type="number"
+                      value={editParams.quantity || 100}
+                      onChange={(e) => updateEditField('quantity', e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      select
+                      label="Priority"
+                      value={editParams.priority || 'medium'}
+                      onChange={(e) => updateEditField('priority', e.target.value)}
+                    >
+                      <MenuItem value="low">Low</MenuItem>
+                      <MenuItem value="medium">Medium</MenuItem>
+                      <MenuItem value="high">High</MenuItem>
+                      <MenuItem value="urgent">Urgent</MenuItem>
+                    </TextField>
+                  </Grid>
+                  <Grid item xs={12} sm={4} md={2}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label="Deadline"
+                      type="date"
+                      value={editParams.deadline || ''}
+                      onChange={(e) => updateEditField('deadline', e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
                 </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="caption" color="text.secondary" display="block">Customer</Typography>
-                  <Typography variant="body2" fontWeight={700}>{context?.parameters?.customerName || 'Direct Client'}</Typography>
-                </Grid>
-                <Grid item xs={6} sm={3}>
-                  <Typography variant="caption" color="text.secondary" display="block">AI Line & Delay Risk</Typography>
-                  <Chip
-                    size="small"
-                    label={`${context?.aiPlan?.delayProbability || 12}% Risk · Line ${context?.aiPlan?.recommendedLine || 3}`}
-                    sx={{
-                      height: 22,
-                      fontSize: 11,
-                      fontWeight: 800,
-                      bgcolor: (context?.aiPlan?.delayProbability || 12) > 30 ? 'rgba(220,38,38,0.12)' : 'rgba(22,163,74,0.12)',
-                      color: (context?.aiPlan?.delayProbability || 12) > 30 ? '#DC2626' : '#16A34A',
-                    }}
-                  />
-                </Grid>
-              </Grid>
+              )}
 
-              <Box display="flex" gap={1.5} justifyContent="flex-end">
+              <Box display="flex" gap={1.5} justifyContent="flex-end" alignItems="center">
                 <Button
                   variant="outlined"
                   size="small"
@@ -633,6 +748,22 @@ export default function AiCommandCenter({ onOrderCreated }) {
                 >
                   Cancel / Stop
                 </Button>
+                {isEditing ? (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setIsEditing(false)}
+                    startIcon={<CheckIcon fontSize="small" />}
+                    sx={{
+                      color: '#59171B',
+                      borderColor: '#59171B',
+                      fontWeight: 700,
+                      borderRadius: '8px',
+                    }}
+                  >
+                    Save Changes
+                  </Button>
+                ) : null}
                 <Button
                   variant="contained"
                   size="small"
