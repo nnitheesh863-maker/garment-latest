@@ -43,7 +43,7 @@ export default function AiCommandCenter({ onOrderCreated }) {
     quantity: 100,
     size: 'M',
     color: 'Champagne Pearl',
-    priority: 'normal',
+    priority: 'medium',
     startDate: new Date().toISOString().split('T')[0],
     deliveryDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
   });
@@ -81,23 +81,26 @@ export default function AiCommandCenter({ onOrderCreated }) {
     setDirectSuccess(null);
 
     try {
+      const clientName = directOrder.customerName?.trim() || 'Direct Client';
       const payload = {
         customer: {
-          name: directOrder.customerName,
-          email: directOrder.customerEmail || `${directOrder.customerName.toLowerCase().replace(/\s+/g, '')}@client.com`,
-          phone: directOrder.customerPhone || '+1 555-0199',
+          name: clientName,
+          email: directOrder.customerEmail?.trim() || `${clientName.toLowerCase().replace(/\s+/g, '')}@client.com`,
+          phone: directOrder.customerPhone?.trim() || '+1 555-0199',
         },
         orderDetails: {
-          garmentType: directOrder.garmentType,
-          quantity: Number(directOrder.quantity),
-          color: directOrder.color,
-          sizes: [{ size: directOrder.size, quantity: Number(directOrder.quantity) }],
+          garmentType: directOrder.garmentType || 'Linen Garment',
+          quantity: Number(directOrder.quantity) || 100,
+          colors: [directOrder.color || 'Champagne Pearl'],
+          sizes: [directOrder.size || 'M'],
         },
+        requiredDate: directOrder.deliveryDate || new Date(Date.now() + 14 * 86400000),
+        plannedDate: directOrder.startDate || new Date(),
         timeline: {
           startDate: directOrder.startDate,
           deliveryDate: directOrder.deliveryDate,
         },
-        priority: directOrder.priority,
+        priority: directOrder.priority === 'normal' ? 'medium' : (directOrder.priority || 'medium'),
         status: 'pending',
       };
 
@@ -380,7 +383,7 @@ export default function AiCommandCenter({ onOrderCreated }) {
                   onChange={(e) => setDirectOrder({ ...directOrder, priority: e.target.value })}
                 >
                   <MenuItem value="low">Low Priority</MenuItem>
-                  <MenuItem value="normal">Normal</MenuItem>
+                  <MenuItem value="medium">Medium / Normal</MenuItem>
                   <MenuItem value="high">High Priority</MenuItem>
                   <MenuItem value="urgent">Urgent Rush</MenuItem>
                 </TextField>

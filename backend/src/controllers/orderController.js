@@ -10,20 +10,52 @@ exports.createOrder = async (req, res, next) => {
   try {
     const orderData = { ...req.body };
     orderData.orderNumber = generateOrderNumber();
-    orderData.assignedManager = req.user._id;
+    orderData.assignedManager = req.user?._id;
 
-    let aiInsights = null;
-    try {
-      aiInsights = await getDelayPrediction(orderData);
-    } catch {
+    // 1. Normalize priority enum
+    if (orderData.priority === 'normal' || !['low', 'medium', 'high', 'urgent'].includes(orderData.priority)) {
+      orderData.priority = 'medium';
     }
 
-    if (aiInsights) {
-      orderData.aiInsights = {
-        riskLevel: aiInsights.riskLevel || 'low',
-        predictedDelay: aiInsights.predictedDelay || 0,
-        recommendations: aiInsights.recommendations || [],
-      };
+    // 2. Normalize requiredDate and plannedDate
+    if (!orderData.requiredDate) {
+      orderData.requiredDate = orderData.timeline?.deliveryDate || orderData.deliveryDate || orderData.dueDate || new Date(Date.now() + 14 * 86400000);
+    }
+    if (!orderData.plannedDate) {
+      orderData.plannedDate = orderData.timeline?.startDate || orderData.startDate || new Date();
+    }
+
+    // 3. Normalize customer details
+    orderData.customer = {
+      name: orderData.customer?.name?.trim() || 'Direct Client',
+      email: orderData.customer?.email?.trim() || `client-${Date.now()}@garment.com`,
+      phone: orderData.customer?.phone?.trim() || '+1 555-0199',
+      address: orderData.customer?.address || {},
+    };
+
+    // 4. Normalize order details
+    if (!orderData.orderDetails) {
+      orderData.orderDetails = {};
+    }
+    orderData.orderDetails.garmentType = orderData.orderDetails.garmentType || orderData.garmentType || 'Linen Garment';
+    orderData.orderDetails.quantity = Number(orderData.orderDetails.quantity || orderData.quantity || 100);
+
+    // Normalize sizes to string array
+    if (Array.isArray(orderData.orderDetails.sizes)) {
+      orderData.orderDetails.sizes = orderData.orderDetails.sizes.map((s) => (typeof s === 'object' && s !== null ? s.size || 'M' : String(s)));
+    } else if (orderData.orderDetails.sizes) {
+      orderData.orderDetails.sizes = [String(orderData.orderDetails.sizes)];
+    } else {
+      orderData.orderDetails.sizes = ['M'];
+    }
+
+    // Normalize colors to string array
+    if (Array.isArray(orderData.orderDetails.colors)) {
+      orderData.orderDetails.colors = orderData.orderDetails.colors.map(String);
+    } else if (orderData.orderDetails.color) {
+      orderData.orderDetails.colors = [String(orderData.orderDetails.color)];
+    } else {
+      orderData.orderDetails.colors = ['Classic'];
     }
 
     const order = await Order.create(orderData);
