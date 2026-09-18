@@ -138,18 +138,35 @@ export default function UserManagement() {
 
   const handleFormSubmit = async (values) => {
     try {
+      const payload = {
+        email: values.email,
+        password: values.password,
+        role: values.role || "employee",
+        firstName: values.firstName,
+        lastName: values.lastName,
+        profile: {
+          firstName: values.firstName,
+          lastName: values.lastName,
+          department: values.department || "",
+          position: values.position || "",
+          employeeId: values.employeeId || `EMP-${Date.now().toString().slice(-6)}`,
+          phone: values.contactNumber || "",
+          joiningDate: values.joiningDate || new Date().toISOString().split("T")[0],
+        },
+      };
+
       if (editUser) {
-        await api.put(`/api/employees/${editUser._id}`, values);
+        await api.put(`/api/employees/${editUser._id}`, payload);
         toast.success("User updated successfully");
       } else {
-        await authApi.register(values);
+        await authApi.register(payload);
         toast.success("User created successfully");
       }
       setFormOpen(false);
       loadUsers();
       loadPendingApprovals();
-    } catch {
-      // handled by api interceptor
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save user account");
     }
   };
 

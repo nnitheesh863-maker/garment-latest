@@ -12,7 +12,25 @@ const ADMIN_SECRET_CODE = process.env.ADMIN_SECRET_CODE || "ADMIN2026";
 
 exports.register = async (req, res, next) => {
   try {
-    const { email, password, role = "employee", profile = {}, adminSecurityCode } = req.body;
+    const { email, password, role = "employee", adminSecurityCode } = req.body;
+    const firstName = req.body.profile?.firstName || req.body.firstName || "Staff";
+    const lastName = req.body.profile?.lastName || req.body.lastName || "Member";
+    const department = req.body.profile?.department || req.body.department || "";
+    const position = req.body.profile?.position || req.body.position || "";
+    const employeeId = req.body.profile?.employeeId || req.body.employeeId || `EMP-${Date.now().toString().slice(-6)}`;
+    const phone = req.body.profile?.phone || req.body.contactNumber || "";
+    const joiningDate = req.body.profile?.joiningDate || req.body.joiningDate || new Date();
+
+    const profile = {
+      firstName,
+      lastName,
+      department,
+      position,
+      employeeId,
+      phone,
+      joiningDate,
+      ...(req.body.profile || {}),
+    };
 
     const exists = await User.findOne({ email });
     if (exists) {

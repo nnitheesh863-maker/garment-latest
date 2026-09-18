@@ -18,9 +18,18 @@ const loginRules = [
 const registerRules = [
   body('email').isEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('role').isIn(['admin', 'manager', 'employee']).withMessage('Invalid role'),
-  body('profile.firstName').notEmpty().withMessage('First name is required'),
-  body('profile.lastName').notEmpty().withMessage('Last name is required'),
+  body('role').optional().isIn(['admin', 'manager', 'employee']).withMessage('Invalid role'),
+  body().custom((val, { req }) => {
+    const firstName = req.body.profile?.firstName || req.body.firstName;
+    const lastName = req.body.profile?.lastName || req.body.lastName;
+    if (!firstName || typeof firstName !== 'string' || !firstName.trim()) {
+      throw new Error('First name is required');
+    }
+    if (!lastName || typeof lastName !== 'string' || !lastName.trim()) {
+      throw new Error('Last name is required');
+    }
+    return true;
+  }),
 ];
 
 const createOrderRules = [
