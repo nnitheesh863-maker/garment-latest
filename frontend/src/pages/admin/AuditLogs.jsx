@@ -1,3 +1,7 @@
+/**
+ * AuditLogs Page
+ * Comprehensive security and operational event log with IP tracking and user attribution.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
