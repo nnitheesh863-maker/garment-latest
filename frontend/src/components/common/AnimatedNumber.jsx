@@ -1,3 +1,7 @@
+/**
+ * AnimatedNumber Component
+ * Renders smooth numeric transitions with customizable formatting and ease-out curves.
+ */
 import React from 'react';
 
 export default function AnimatedNumber({
