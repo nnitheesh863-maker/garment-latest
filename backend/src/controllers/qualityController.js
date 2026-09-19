@@ -1,3 +1,7 @@
+/**
+ * JSDoc: QualityController - Quality control audits, pass/fail inspection metrics and compliance reports
+ * @module controllers/qualityController
+ */
 const mongoose = require('mongoose');
 const Quality = require('../models/Quality');
 const Order = require('../models/Order');
