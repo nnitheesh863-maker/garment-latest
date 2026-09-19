@@ -1,3 +1,7 @@
+/**
+ * Employee TaskList Page
+ * Shop-floor operator interface for tracking daily task assignments and logging completions.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
