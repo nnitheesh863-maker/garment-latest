@@ -1,4 +1,8 @@
 """
+AI Service Microservice Main Application
+FastAPI / Flask application serving ML inference and analytics endpoints.
+"""
+"""
 Flask REST API Entrypoint for AI Microservice
 ==============================================
 Provides high-performance RESTful API endpoints for garment production forecasting,
