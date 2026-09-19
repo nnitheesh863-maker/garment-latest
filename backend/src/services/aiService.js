@@ -1,3 +1,7 @@
+/**
+ * JSDoc: AIService - Communication bridge with Python AI microservice and LLM inference providers
+ * @module services/aiService
+ */
 const axios = require('axios');
 
 const CEREBRAS_API_KEY = process.env.CEREBRAS_API_KEY;
