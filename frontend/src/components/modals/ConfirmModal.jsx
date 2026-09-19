@@ -1,3 +1,7 @@
+/**
+ * ConfirmModal Component
+ * Accessible confirmation dialog with keyboard shortcuts and action safeguards.
+ */
 import React from 'react';
 import {
   Dialog,
