@@ -1,3 +1,7 @@
+/**
+ * AdminOrders Page
+ * Production order scheduling, client deliveries, and batch order processing.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
