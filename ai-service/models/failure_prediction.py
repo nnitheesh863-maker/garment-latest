@@ -1,4 +1,8 @@
 """
+Machine Failure Prediction Model
+Analyzes machine sensor telemetry to forecast equipment breakdown risks and maintenance urgency.
+"""
+"""
 Machine Failure & Predictive Maintenance Machine Learning Model
 ==============================================================
 Analyzes IoT telemetry and maintenance history from sewing, cutting, and
