@@ -1,3 +1,7 @@
+/**
+ * AdminAnalytics Page
+ * Executive intelligence dashboard with financial yields, line efficiency and defect breakdowns.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
