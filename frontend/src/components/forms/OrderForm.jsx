@@ -1,3 +1,7 @@
+/**
+ * OrderForm Component
+ * Production order creation and editing form with live validation and material requirements.
+ */
 import React from 'react';
 import {
   Dialog,
