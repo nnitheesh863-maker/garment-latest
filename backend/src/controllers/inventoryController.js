@@ -1,3 +1,7 @@
+/**
+ * JSDoc: InventoryController - Material and item stock management with automatic low-stock alerts
+ * @module controllers/inventoryController
+ */
 const Inventory = require('../models/Inventory');
 const ApiResponse = require('../utils/apiResponse');
 const { getRecommendations } = require('../services/aiService');
