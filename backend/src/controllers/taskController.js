@@ -1,3 +1,7 @@
+/**
+ * JSDoc: TaskController - Floor task assignment, progress tracking, and supervisor verification
+ * @module controllers/taskController
+ */
 const Task = require('../models/Task');
 const Order = require('../models/Order');
 const Notification = require('../models/Notification');
