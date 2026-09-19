@@ -1,4 +1,8 @@
 """
+Performance Analysis Model
+Computes operator productivity scores, learning curves, and quality correlation metrics.
+"""
+"""
 Employee Performance Analytics & Skill Gap Module
 =================================================
 Evaluates garment factory worker productivity, stitch quality, process efficiency,
