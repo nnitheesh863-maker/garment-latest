@@ -1,4 +1,8 @@
 """
+Production Forecast Model
+Forecasts daily and weekly garment yield utilizing exponential smoothing and trend projections.
+"""
+"""
 Production Forecast Machine Learning Model
 ==========================================
 Predicts expected garment production output based on workforce capacity,
