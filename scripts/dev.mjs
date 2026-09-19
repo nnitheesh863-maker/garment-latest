@@ -1,3 +1,7 @@
+/**
+ * Development Orchestrator Script
+ * Boots frontend, backend, and AI service concurrently with health checks and log formatting.
+ */
 import { spawn } from "node:child_process";
 import net from "node:net";
 import fs from "node:fs";
