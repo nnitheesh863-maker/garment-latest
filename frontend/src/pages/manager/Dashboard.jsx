@@ -1,3 +1,7 @@
+/**
+ * Manager Dashboard Page
+ * Operational supervisor command center with active line throughput and urgent blocker resolution.
+ */
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
