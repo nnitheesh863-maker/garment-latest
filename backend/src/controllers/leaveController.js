@@ -1,3 +1,7 @@
+/**
+ * JSDoc: LeaveController - Employee leave requests, approval hierarchies, and quota tracking
+ * @module controllers/leaveController
+ */
 const Leave = require('../models/Leave');
 const ApiResponse = require('../utils/apiResponse');
 
