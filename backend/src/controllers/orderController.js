@@ -1,3 +1,7 @@
+/**
+ * JSDoc: OrderController - Production order lifecycle management, scheduling, and status tracking
+ * @module controllers/orderController
+ */
 const Order = require('../models/Order');
 const Task = require('../models/Task');
 const ApiResponse = require('../utils/apiResponse');
