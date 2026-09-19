@@ -1,3 +1,7 @@
+/**
+ * JSDoc: AuthController - Handles user registration, login, profile management and authentication tokens
+ * @module controllers/authController
+ */
 const User = require("../models/User");
 const ApiResponse = require("../utils/apiResponse");
 const { sanitizeUser } = require("../utils/helpers");
