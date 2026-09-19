@@ -1,3 +1,7 @@
+/**
+ * JSDoc: NotificationController - Real-time alerts, system announcements, and user push notifications
+ * @module controllers/notificationController
+ */
 const Notification = require('../models/Notification');
 const ApiResponse = require('../utils/apiResponse');
 const { emitToUser } = require('../services/socketService');
