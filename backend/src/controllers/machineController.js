@@ -1,3 +1,7 @@
+/**
+ * JSDoc: MachineController - Factory floor machine health monitoring, maintenance logging and telemetry
+ * @module controllers/machineController
+ */
 const mongoose = require('mongoose');
 const Machine = require('../models/Machine');
 const ApiResponse = require('../utils/apiResponse');
