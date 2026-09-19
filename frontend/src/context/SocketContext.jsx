@@ -1,3 +1,7 @@
+/**
+ * SocketContext
+ * Centralized WebSockets provider with auto-reconnect backoff and room subscription management.
+ */
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { toast } from 'react-toastify';
