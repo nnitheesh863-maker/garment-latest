@@ -1,3 +1,7 @@
+/**
+ * AdminQuality Page
+ * Quality control audit log, defect heat-maps, and inspection pass-rate analytics.
+ */
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
