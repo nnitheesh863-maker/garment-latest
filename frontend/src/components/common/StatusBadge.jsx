@@ -1,3 +1,7 @@
+/**
+ * StatusBadge Component
+ * Displays normalized status indicators with high-contrast color tokens and ARIA labels.
+ */
 import React from 'react';
 import { Box } from '@mui/material';
 import { motion } from 'framer-motion';
