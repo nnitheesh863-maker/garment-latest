@@ -1,3 +1,7 @@
+/**
+ * AdminMachines Page
+ * Equipment directory, maintenance logs, and IoT sensor health monitoring.
+ */
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
