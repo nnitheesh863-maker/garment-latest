@@ -1,3 +1,7 @@
+/**
+ * UserForm Component
+ * User management and onboarding form with dynamic role-based permission display.
+ */
 import React from 'react';
 import {
   Dialog,
