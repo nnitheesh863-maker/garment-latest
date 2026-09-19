@@ -1,3 +1,7 @@
+/**
+ * JSDoc: DefectReportController - Defect reporting, root cause tracking, and corrective action workflows
+ * @module controllers/defectReportController
+ */
 const DefectReport = require('../models/DefectReport');
 const ApiResponse = require('../utils/apiResponse');
 
