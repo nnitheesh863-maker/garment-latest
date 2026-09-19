@@ -1,3 +1,7 @@
+/**
+ * AdminInventory Page
+ * Raw materials and fabric stock management with reorder level alerts and suppliers.
+ */
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
