@@ -1,3 +1,7 @@
+/**
+ * JSDoc: ProductionLineController - Production line routing, throughput analytics and line assignment
+ * @module controllers/productionLineController
+ */
 const ProductionLine = require('../models/ProductionLine');
 const ApiResponse = require('../utils/apiResponse');
 
