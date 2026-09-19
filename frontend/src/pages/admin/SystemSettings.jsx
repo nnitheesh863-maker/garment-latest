@@ -1,3 +1,7 @@
+/**
+ * SystemSettings Page
+ * System configuration, backup management, AI inference thresholds, and company preferences.
+ */
 import React, { useState } from 'react';
 import {
   Box,
