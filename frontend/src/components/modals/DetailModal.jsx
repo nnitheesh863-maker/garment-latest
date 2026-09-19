@@ -1,3 +1,7 @@
+/**
+ * DetailModal Component
+ * Full-featured inspection modal with tabbed views, JSON data viewer, and print trigger.
+ */
 import React from 'react';
 import {
   Dialog,
