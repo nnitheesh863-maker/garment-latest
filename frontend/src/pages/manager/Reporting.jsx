@@ -25,6 +25,8 @@ import DownloadIcon from "@mui/icons-material/Download";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import GenerateIcon from "@mui/icons-material/AutoAwesome";
 import { toast } from "react-toastify";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import PageHeader from "../../components/common/PageHeader";
 import GradientButton from "../../components/common/GradientButton";
 import GlassCard from "../../components/common/GlassCard";
@@ -55,8 +57,6 @@ export default function Reporting() {
 
   const handleDownloadPDF = () => {
     try {
-      const { jsPDF } = require("jspdf");
-      require("jspdf-autotable");
       const doc = new jsPDF();
 
       doc.setFontSize(18);
@@ -78,7 +78,7 @@ export default function Reporting() {
         ["2026-06-03", "10", "9", "97%", "90%"],
       ];
 
-      doc.autoTable({
+      autoTable(doc, {
         head: [tableData[0]],
         body: tableData.slice(1),
         startY: 50,
@@ -89,7 +89,8 @@ export default function Reporting() {
       doc.save(`${reportType}-report-${Date.now()}.pdf`);
       toast.success("PDF downloaded successfully");
     } catch (err) {
-      toast.error("Failed to generate PDF. Make sure jspdf is installed.");
+      console.error("PDF generation error:", err);
+      toast.error("Failed to generate PDF.");
     }
   };
 
