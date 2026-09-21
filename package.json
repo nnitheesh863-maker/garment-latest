@@ -7,6 +7,7 @@
     "dev": "node scripts/dev.mjs",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
+    "postinstall": "npm --prefix frontend install",
     "install:all": "npm --prefix backend install && npm --prefix frontend install",
     "seed": "npm --prefix backend run seed",
     "seed:demo": "npm --prefix backend run seed:demo",
@@ -16,6 +17,8 @@
     "test": "playwright test"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0"
+    "@playwright/test": "^1.63.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "vite": "^5.0.0"
   }
 }
