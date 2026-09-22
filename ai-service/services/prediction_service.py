@@ -6,16 +6,32 @@ Order Delay Prediction, Machine Predictive Maintenance, Workforce Analytics).
 Includes a thread-safe LRU/TTL caching layer and aggregate insight generators.
 """
 
+import os
+import sys
 import threading
 import time
 from collections import OrderedDict
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Union
 
+# Ensure parent directory is in sys.path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import numpy as np
 import pandas as pd
 
-from config import Config, setup_logging
+try:
+    from config import Config, setup_logging
+except ImportError:
+    import logging
+    def setup_logging(name='ai-service'):
+        return logging.getLogger(name)
+    class Config:
+        CACHE_TTL_SECONDS = 300
+        MODEL_DIR = os.path.join(BASE_DIR, 'models', 'saved')
+
 from utils.preprocessor import (
     preprocess_order_data,
     preprocess_employee_data,

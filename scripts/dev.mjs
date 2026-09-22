@@ -104,10 +104,32 @@ function spawnChild(name, color, args) {
   children.push(child);
 }
 
+function findPythonExecutable(serviceDir) {
+  const venvCandidates = [
+    path.join(serviceDir, "venv", "Scripts", "python.exe"),
+    path.join(serviceDir, ".venv", "Scripts", "python.exe"),
+    path.join(serviceDir, "venv", "bin", "python"),
+    path.join(serviceDir, ".venv", "bin", "python"),
+    path.join(projectRoot, "venv", "Scripts", "python.exe"),
+    path.join(projectRoot, ".venv", "Scripts", "python.exe"),
+    path.join(projectRoot, "venv", "bin", "python"),
+    path.join(projectRoot, ".venv", "bin", "python"),
+  ];
+
+  for (const candidate of venvCandidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return process.platform === "win32" ? "python" : "python3";
+}
+
 function spawnPython(name, color, script) {
-  const pythonCmd = process.platform === "win32" ? "python" : "python3";
+  const serviceDir = path.join(projectRoot, name);
+  const pythonCmd = findPythonExecutable(serviceDir);
   const child = spawn(pythonCmd, [script], {
-    cwd: path.join(projectRoot, name),
+    cwd: serviceDir,
     stdio: ["ignore", "pipe", "pipe"],
   });
   child.stdout.on("data", makePrefixed(name, color));

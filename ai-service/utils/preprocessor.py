@@ -9,12 +9,25 @@ This module provides data cleaning, missing value imputation, feature engineerin
 normalization, and categorical encoding functions for order, employee, and machine datasets.
 """
 
+import os
+import sys
 from typing import Tuple, List, Optional, Union, Dict, Any
+
+# Ensure parent directory is in sys.path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
-from config import setup_logging
+try:
+    from config import setup_logging
+except ImportError:
+    import logging
+    def setup_logging(name='ai-service'):
+        return logging.getLogger(name)
 
 logger = setup_logging(__name__)
 

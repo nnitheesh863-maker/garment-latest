@@ -12,6 +12,12 @@ delivery delay prediction, predictive maintenance, and workforce analytics.
 import os
 import sys
 from typing import Dict, Any, Tuple
+
+# Ensure current and parent dirs are in sys.path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 

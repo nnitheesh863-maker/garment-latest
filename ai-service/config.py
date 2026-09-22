@@ -6,12 +6,51 @@ model directories, logging configurations, and model version definitions.
 """
 
 import os
+import sys
 import logging
 from typing import Dict
-from dotenv import load_dotenv
 
-# Load environment variables from .env file if present
-load_dotenv()
+# Ensure the ai-service root directory is in sys.path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+# Load environment variables from .env file if present (with fallback if python-dotenv is missing)
+try:
+    from dotenv import load_dotenv
+    env_paths = [
+        os.path.join(BASE_DIR, '.env'),
+        os.path.join(BASE_DIR, '..', '.env'),
+        os.path.join(BASE_DIR, '..', '..', '.env'),
+    ]
+    loaded = False
+    for env_path in env_paths:
+        if os.path.isfile(env_path):
+            load_dotenv(dotenv_path=env_path)
+            loaded = True
+            break
+    if not loaded:
+        load_dotenv()
+except (ImportError, Exception):
+    def load_dotenv(*args, **kwargs):
+        pass
+
+
+def _get_port() -> int:
+    """Safely retrieves the AI service port avoiding collision with backend port 5000."""
+    port_env = os.getenv('AI_SERVICE_PORT') or os.getenv('AI_PORT')
+    if port_env:
+        try:
+            return int(port_env)
+        except ValueError:
+            pass
+    port_generic = os.getenv('PORT')
+    if port_generic and str(port_generic).strip() != '5000':
+        try:
+            return int(port_generic)
+        except ValueError:
+            pass
+    return 5001
 
 
 class Config:
@@ -21,8 +60,8 @@ class Config:
     # Database & Networking Settings
     # ---------------------------------------------------------
     MONGO_URI: str = os.getenv('MONGO_URI', 'mongodb://localhost:27017/garment_production')
-    PORT: int = int(os.getenv('PORT', 5001))
-    DEBUG: bool = os.getenv('DEBUG', 'false').lower() == 'true'
+    PORT: int = _get_port()
+    DEBUG: bool = os.getenv('DEBUG', 'false').lower() in ('true', '1', 'yes')
 
     # ---------------------------------------------------------
     # Model Storage & Persistence
@@ -30,7 +69,7 @@ class Config:
     # Directory where trained joblib model binaries are saved and loaded
     MODEL_DIR: str = os.getenv(
         'MODEL_DIR',
-        os.path.join(os.path.dirname(__file__), 'models', 'saved')
+        os.path.join(BASE_DIR, 'models', 'saved')
     )
 
     # ---------------------------------------------------------
@@ -62,9 +101,28 @@ class Config:
     }
 
 
+# Ensure model directory exists
+try:
+    os.makedirs(Config.MODEL_DIR, exist_ok=True)
+except Exception:
+    pass
+
+
+LOG_LEVEL_MAP = {
+    'CRITICAL': logging.CRITICAL,
+    'FATAL': logging.CRITICAL,
+    'ERROR': logging.ERROR,
+    'WARN': logging.WARNING,
+    'WARNING': logging.WARNING,
+    'INFO': logging.INFO,
+    'DEBUG': logging.DEBUG,
+    'NOTSET': logging.NOTSET,
+}
+
+
 def setup_logging(name: str = 'ai-service') -> logging.Logger:
     """
-    Configures and returns a standardized logger instance.
+    Configures and returns a standardized logger instance safely.
 
     Args:
         name (str): The name for the logger (defaults to 'ai-service').
@@ -74,11 +132,22 @@ def setup_logging(name: str = 'ai-service') -> logging.Logger:
     """
     logger = logging.getLogger(name)
     if not logger.handlers:
-        level = getattr(logging, Config.LOG_LEVEL.upper(), logging.INFO)
+        default_level = getattr(Config, 'LOG_LEVEL', 'INFO') if 'Config' in globals() else 'INFO'
+        env_level = os.getenv('LOG_LEVEL', default_level)
+        log_level_name = str(env_level).strip().upper()
+
+        level = LOG_LEVEL_MAP.get(log_level_name, logging.INFO)
+        if not isinstance(level, int):
+            level = logging.INFO
+
         logger.setLevel(level)
 
-        handler = logging.StreamHandler()
-        handler.setFormatter(logging.Formatter(Config.LOG_FORMAT))
+        log_format = getattr(Config, 'LOG_FORMAT', '%(asctime)s - %(name)s - %(levelname)s - %(message)s') if 'Config' in globals() else '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(logging.Formatter(log_format))
         logger.addHandler(handler)
 
     return logger
+
+

@@ -6,15 +6,28 @@ model persistence, version tracking, and background retraining scheduling.
 """
 
 import os
+import sys
 import threading
 import time
 from datetime import datetime
 from typing import Dict, Any, Optional
 
+# Ensure parent directory is in sys.path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import numpy as np
 import pandas as pd
 
-from config import Config, setup_logging
+try:
+    from config import Config, setup_logging
+except ImportError:
+    import logging
+    def setup_logging(name='ai-service'):
+        return logging.getLogger(name)
+    class Config:
+        MODEL_DIR = os.path.join(BASE_DIR, 'models', 'saved')
 
 logger = setup_logging(__name__)
 

@@ -2,7 +2,13 @@
 AI Service Unit Tests
 Tests preprocessing matrices, feature imputation, and model prediction boundaries.
 """
+import os
+import sys
 import unittest
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 class TestAIPreprocessor(unittest.TestCase):
     def test_feature_scaling_range(self):

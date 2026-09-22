@@ -14,8 +14,14 @@ Sensors: Temperature, Vibration, Speed, Power Usage, Maintenance Recency
 """
 
 import os
+import sys
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Union
+
+# Ensure parent directory is in sys.path
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
 import joblib
 import numpy as np
@@ -24,7 +30,12 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 
-from config import setup_logging
+try:
+    from config import setup_logging
+except ImportError:
+    import logging
+    def setup_logging(name='ai-service'):
+        return logging.getLogger(name)
 
 logger = setup_logging(__name__)
 
