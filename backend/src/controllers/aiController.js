@@ -13,21 +13,11 @@ const { emitToRoom, emitToUser, emitToAll } = require('../services/socketService
 
 exports.getPrediction = async (req, res, next) => {
   try {
-    const { type, data } = req.body;
-    if (!type || !data) {
-      return ApiResponse.error(res, 'Prediction type and data are required', 400);
-    }
-
-    const validTypes = ['production', 'delay', 'performance', 'failure'];
-    if (!validTypes.includes(type)) {
-      return ApiResponse.error(res, `Invalid prediction type. Must be one of: ${validTypes.join(', ')}`, 400);
-    }
+    const payload = req.body || {};
+    const type = payload.type || req.query.type || 'production';
+    const data = payload.data || payload;
 
     const result = await aiService.getPrediction(type, data);
-    if (!result) {
-      return ApiResponse.success(res, { message: 'AI service temporarily unavailable' });
-    }
-
     return ApiResponse.success(res, result);
   } catch (err) {
     next(err);
@@ -36,10 +26,9 @@ exports.getPrediction = async (req, res, next) => {
 
 exports.getAnalysis = async (req, res, next) => {
   try {
-    const { type, data } = req.body;
-    if (!type) {
-      return ApiResponse.error(res, 'Analysis type is required', 400);
-    }
+    const payload = req.body || {};
+    const type = payload.type || req.query.type || 'production';
+    const data = payload.data || payload;
 
     let result;
     if (type === 'performance') {
@@ -49,11 +38,7 @@ exports.getAnalysis = async (req, res, next) => {
     } else if (type === 'failure') {
       result = await aiService.getFailurePrediction(data);
     } else {
-      result = await aiService.getPrediction(`/analyze/${type}`, data);
-    }
-
-    if (!result) {
-      return ApiResponse.success(res, { message: 'AI service temporarily unavailable' });
+      result = await aiService.getPrediction(type, data);
     }
 
     return ApiResponse.success(res, result);
@@ -61,6 +46,7 @@ exports.getAnalysis = async (req, res, next) => {
     next(err);
   }
 };
+
 
 exports.getRecommendations = async (req, res, next) => {
   try {
@@ -756,51 +742,5 @@ exports.dispatchProductionTasks = async (req, res, next) => {
   }
 };
 
-exports.getMlHealth = async (req, res) => {
-  try {
-    const axios = require('axios');
-    const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:5001';
-    let mlOnline = false;
-    let details = null;
-    try {
-      const resp = await axios.get(`${aiUrl}/health`, { timeout: 1500 });
-      mlOnline = resp.status === 200;
-      details = resp.data;
-    } catch {
-      mlOnline = false;
-    }
-
-    return res.json({
-      success: true,
-      status: mlOnline ? 'local-ml' : 'cloud-fallback',
-      available: mlOnline,
-      provider: mlOnline ? 'local-python-ml' : 'groq-llama3',
-      details,
-      timestamp: new Date().toISOString(),
-    });
-  } catch (err) {
-    return res.json({
-      success: true,
-      status: 'cloud-fallback',
-      available: false,
-      provider: 'heuristic',
-      error: err.message,
-    });
-  }
-};
-
-exports.getModelStatus = async (req, res) => {
-  return res.json({
-    success: true,
-    status: 'active',
-    models: {
-      delayPrediction: 'active',
-      machineFailure: 'active',
-      productionForecast: 'active',
-      nlpCommandParser: 'active',
-    },
-    tier: 'hybrid-tier1-tier2',
-  });
-};
 
 
