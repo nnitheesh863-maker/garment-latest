@@ -355,18 +355,27 @@ exports.predictOrder = async (req, res, next) => {
       return ApiResponse.error(res, 'Order not found', 404);
     }
 
-    let prediction = null;
-    try {
-      prediction = await getDelayPrediction(order);
-    } catch {
-      return ApiResponse.success(res, { message: 'AI service unavailable' });
+    let rawPrediction = await getDelayPrediction(order);
+    let prediction = rawPrediction;
+    if (typeof rawPrediction === 'string') {
+      try {
+        prediction = JSON.parse(rawPrediction);
+      } catch {
+        prediction = { prediction: rawPrediction, riskLevel: 'low', delayProbability: 5 };
+      }
     }
 
-    if (prediction) {
+    if (prediction && typeof prediction === 'object') {
+      const recs = Array.isArray(prediction.recommendations)
+        ? prediction.recommendations
+        : prediction.recommendation
+        ? [prediction.recommendation]
+        : order.aiInsights?.recommendations || [];
+
       order.aiInsights = {
-        riskLevel: prediction.riskLevel || order.aiInsights?.riskLevel || 'low',
-        predictedDelay: prediction.predictedDelay || order.aiInsights?.predictedDelay || 0,
-        recommendations: prediction.recommendations || order.aiInsights?.recommendations || [],
+        riskLevel: prediction.riskLevel || (prediction.delayProbability > 40 ? 'high' : prediction.delayProbability > 20 ? 'medium' : 'low'),
+        predictedDelay: Number(prediction.predictedDelay) || 0,
+        recommendations: recs,
       };
       await order.save();
     }

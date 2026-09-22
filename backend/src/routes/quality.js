@@ -13,6 +13,9 @@ router.post('/:id/rework', protect, qualityController.requestRework);
 router.post('/:id/reject', protect, qualityController.rejectQuality);
 router.get('/:id', protect, qualityController.getInspection);
 router.put('/:id', protect, qualityController.updateInspection);
-router.post('/report', protect, qualityController.generateReport);
+router.route('/report')
+  .post(protect, qualityController.generateReport)
+  .get(protect, qualityController.generateReport);
+
 
 module.exports = router;

@@ -12,9 +12,21 @@ router.get('/summary/today', protect, taskController.getTaskSummary);
 router.get('/employee/:id', protect, taskController.getEmployeeTasks);
 router.get('/:id', protect, taskController.getTask);
 router.put('/:id', protect, updateTaskRules, validate, taskController.updateTask);
-router.put('/:id/assign', protect, authorize('admin', 'manager'), taskController.assignTask);
-router.put('/:id/status', protect, taskController.updateStatus);
-router.post('/:id/progress', protect, taskController.updateProgress);
-router.post('/:id/complete', protect, taskController.completeTask);
+router.route('/:id/assign')
+  .put(protect, authorize('admin', 'manager'), taskController.assignTask)
+  .post(protect, authorize('admin', 'manager'), taskController.assignTask);
+
+router.route('/:id/status')
+  .put(protect, taskController.updateStatus)
+  .post(protect, taskController.updateStatus);
+
+router.route('/:id/progress')
+  .post(protect, taskController.updateProgress)
+  .put(protect, taskController.updateProgress);
+
+router.route('/:id/complete')
+  .post(protect, taskController.completeTask)
+  .put(protect, taskController.completeTask);
+
 
 module.exports = router;

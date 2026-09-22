@@ -80,10 +80,10 @@ export const orderApi = {
   create: (data) => api.post("/api/orders", data),
   update: (id, data) => api.put(`/api/orders/${id}`, data),
   delete: (id) => api.delete(`/api/orders/${id}`),
-  assign: (id, data) => api.put(`/api/orders/${id}/assign`, data),
+  assign: (id, data) => api.post(`/api/orders/${id}/assign`, data),
   updateStatus: (id, data) => api.put(`/api/orders/${id}/status`, data),
   getAnalytics: (params) => api.get("/api/orders/analytics", { params }),
-  predict: (id) => api.get(`/api/orders/${id}/predict`),
+  predict: (id, data) => api.post(`/api/orders/${id}/predict`, data || {}),
 };
 
 export const taskApi = {
@@ -94,8 +94,8 @@ export const taskApi = {
   delete: (id) => api.delete(`/api/tasks/${id}`),
   assign: (id, data) => api.put(`/api/tasks/${id}/assign`, data),
   updateStatus: (id, data) => api.put(`/api/tasks/${id}/status`, data),
-  updateProgress: (id, data) => api.put(`/api/tasks/${id}/progress`, data),
-  complete: (id, data) => api.put(`/api/tasks/${id}/complete`, data),
+  updateProgress: (id, data) => api.post(`/api/tasks/${id}/progress`, data),
+  complete: (id, data) => api.post(`/api/tasks/${id}/complete`, data),
   getAnalytics: (params) => api.get("/api/tasks/analytics", { params }),
 };
 
@@ -132,8 +132,8 @@ export const machineApi = {
   update: (id, data) => api.put(`/api/machines/${id}`, data),
   delete: (id) => api.delete(`/api/machines/${id}`),
   updateStatus: (id, data) => api.put(`/api/machines/${id}/status`, data),
-  maintenance: (id, data) => api.put(`/api/machines/${id}/maintenance`, data),
-  predict: (id) => api.get(`/api/machines/${id}/predict`),
+  maintenance: (id, data) => api.post(`/api/machines/${id}/maintenance`, data),
+  predict: (id, data) => api.post(`/api/machines/${id}/predict`, data || {}),
   getAnalytics: (params) => api.get("/api/machines/analytics", { params }),
 };
 
@@ -156,17 +156,24 @@ export const qualityApi = {
   update: (id, data) => api.put(`/api/quality/${id}`, data),
   delete: (id) => api.delete(`/api/quality/${id}`),
   getAnalytics: (params) => api.get("/api/quality/analytics", { params }),
-  generateReport: (params) => api.get("/api/quality/report", { params }),
+  generateReport: (params) => api.post("/api/quality/report", params || {}),
 };
 
 export const aiApi = {
-  predict: (endpoint, data) => api.post(`/api/ai/${endpoint}`, data),
+  predict: (endpointOrData, maybeData) => {
+    if (typeof endpointOrData === "string") {
+      const endpoint = endpointOrData.replace(/^\//, "");
+      return api.post(`/api/ai/${endpoint}`, maybeData);
+    }
+    return api.post("/api/ai/predict", endpointOrData);
+  },
   analyze: (data) => api.post("/api/ai/analyze", data),
   recommendations: (params) => api.get("/api/ai/recommendations", { params }),
   train: (data) => api.post("/api/ai/train", data),
   modelStatus: () => api.get("/api/ai/model-status"),
   dashboard: () => api.get("/api/ai/dashboard"),
 };
+
 
 export const learningVideoApi = {
   list: (params) => api.get("/api/learning-videos", { params }),
