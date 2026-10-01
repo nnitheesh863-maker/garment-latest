@@ -85,9 +85,12 @@ function makePrefixed(name, color) {
 }
 
 function spawnChild(name, color, args) {
-  const child = spawn(process.execPath, [npmCli, "run", ...args], {
+  const isWin = process.platform === "win32";
+  const cmd = isWin ? "npm.cmd" : "npm";
+  const child = spawn(cmd, ["run", ...args], {
     cwd: path.join(projectRoot, name),
     stdio: ["ignore", "pipe", "pipe"],
+    shell: isWin,
   });
   child.stdout.on("data", makePrefixed(name, color));
   child.stderr.on("data", makePrefixed(name, color));
