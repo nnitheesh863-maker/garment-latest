@@ -1,35 +1,40 @@
 const mongoose = require('mongoose');
 
-const MAX_RETRIES = 5;
-const RETRY_INTERVAL = 3000;
-
-let retryCount = 0;
+const LOCAL_FALLBACK_URI = process.env.LOCAL_MONGO_URI || 'mongodb://127.0.0.1:27017/garment_production';
 
 async function connectDB() {
-  const primaryUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/garment_production';
-  const localFallbackUri = 'mongodb://127.0.0.1:27017/garment_production';
+  const primaryUri = process.env.MONGO_URI || LOCAL_FALLBACK_URI;
 
-  const uriToUse = (retryCount >= 2 && primaryUri !== localFallbackUri) ? localFallbackUri : primaryUri;
-
+  // Try primary URI first
   try {
-    console.log(`Attempting MongoDB connection to: ${uriToUse.includes('@') ? 'Cloud Cluster' : 'Local MongoDB'}...`);
-    await mongoose.connect(uriToUse, {
-      serverSelectionTimeoutMS: 5000,
-    });
-    retryCount = 0;
-    console.log(`MongoDB connected: ${mongoose.connection.host}`);
-  } catch (err) {
-    retryCount += 1;
-    console.error(`MongoDB connection attempt ${retryCount} failed: ${err.message}`);
+    const isCloud = primaryUri.includes('@') || primaryUri.includes('mongodb+srv');
+    console.log(`Attempting MongoDB connection to: ${isCloud ? 'Cloud Atlas Cluster' : 'Local MongoDB'}...`);
     
-    // If cloud cluster DNS/SRV fails, try local fallback on next attempt
-    if (retryCount < MAX_RETRIES) {
-      console.log(`Retrying in ${RETRY_INTERVAL / 1000}s...`);
-      await new Promise(resolve => setTimeout(resolve, RETRY_INTERVAL));
-      return connectDB();
+    await mongoose.connect(primaryUri, {
+      serverSelectionTimeoutMS: 3000,
+    });
+    console.log(`MongoDB connected successfully: ${mongoose.connection.host}`);
+    return;
+  } catch (err) {
+    console.warn(`Primary MongoDB connection failed (${err.message}).`);
+    
+    // If primary was cloud and failed, immediately attempt local MongoDB fallback
+    if (primaryUri !== LOCAL_FALLBACK_URI) {
+      console.log(`Falling back to Local MongoDB: ${LOCAL_FALLBACK_URI}...`);
+      try {
+        await mongoose.connect(LOCAL_FALLBACK_URI, {
+          serverSelectionTimeoutMS: 3000,
+        });
+        console.log(`Local MongoDB connected successfully: ${mongoose.connection.host}`);
+        return;
+      } catch (fallbackErr) {
+        console.error(`Local MongoDB connection also failed: ${fallbackErr.message}`);
+        console.error('Ensure MongoDB is running locally on port 27017 or whitelist your IP on MongoDB Atlas.');
+        process.exit(1);
+      }
+    } else {
+      process.exit(1);
     }
-    console.error('Max retries reached. Exiting.');
-    process.exit(1);
   }
 }
 
@@ -51,3 +56,4 @@ process.on('SIGINT', async () => {
 });
 
 module.exports = connectDB;
+
