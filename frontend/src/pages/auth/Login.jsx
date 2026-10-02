@@ -65,10 +65,15 @@ export default function Login() {
   const queryParams = new URLSearchParams(location.search);
   const isPendingManager = queryParams.get("pending") === "manager";
 
-  const handleQuickSelect = (acc) => {
+  const handleQuickSelect = async (acc) => {
     setSelectedRole(acc.role);
     setEmail(acc.email);
     setPassword(acc.password);
+    try {
+      await login(acc.email, acc.password);
+    } catch {
+      // error handled in context
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -123,7 +128,7 @@ export default function Login() {
               </Typography>
             </Box>
             <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
-              Click to autofill
+              Click to sign in instantly
             </Typography>
           </Box>
 
