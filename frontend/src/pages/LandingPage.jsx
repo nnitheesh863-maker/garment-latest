@@ -387,22 +387,40 @@ export default function LandingPage() {
           bgcolor: THEME.bgDark,
           color: "#E5DDD5",
           py: 0.9,
-          px: 2,
-          textAlign: "center",
+          px: { xs: 1.5, sm: 3 },
           fontSize: { xs: 11, sm: 12.5 },
           letterSpacing: "0.06em",
           fontWeight: 400,
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "space-between",
           alignItems: "center",
-          gap: 1.5,
+          flexWrap: "wrap",
+          gap: 1,
         }}
       >
-        <Typography variant="caption" sx={{ letterSpacing: "0.08em" }}>
+        <Typography variant="caption" sx={{ letterSpacing: "0.08em", mx: "auto" }}>
           ✦ COMPLIMENTARY GLOBAL EXPRESS DELIVERY ON ALL BESPOKE ATELIER ORDERS • USE CODE{" "}
           <strong style={{ color: "#D4AF37" }}>ATELIER2026</strong> FOR 15% OFF
         </Typography>
+        <Button
+          component={Link}
+          to="/login"
+          size="small"
+          sx={{
+            color: "#D4AF37",
+            fontSize: 11,
+            py: 0.2,
+            px: 1,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            display: { xs: "none", md: "inline-flex" },
+            "&:hover": { color: "#FFF", bgcolor: "rgba(255,255,255,0.08)" },
+          }}
+        >
+          Staff & Factory Sign In →
+        </Button>
       </Box>
 
       {/* 2. LUXURY EDITORIAL NAVBAR */}
@@ -501,11 +519,11 @@ export default function LandingPage() {
             </Box>
 
             {/* Action Icons & Portal Link */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 2 } }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.8, sm: 1.5 } }}>
               <Tooltip title="AI 3D Size Calculator">
                 <IconButton
                   onClick={() => setFitModalOpen(true)}
-                  sx={{ color: THEME.textPrimary }}
+                  sx={{ color: THEME.textPrimary, display: { xs: "none", sm: "inline-flex" } }}
                 >
                   <StraightenIcon fontSize="small" />
                 </IconButton>
@@ -514,7 +532,7 @@ export default function LandingPage() {
               <Tooltip title="Wishlist">
                 <IconButton
                   onClick={() => setBagOpen(true)}
-                  sx={{ color: THEME.textPrimary }}
+                  sx={{ color: THEME.textPrimary, display: { xs: "none", sm: "inline-flex" } }}
                 >
                   <Badge badgeContent={wishlist.length} color="secondary">
                     <FavoriteBorderIcon fontSize="small" />
@@ -541,51 +559,77 @@ export default function LandingPage() {
                 </IconButton>
               </Tooltip>
 
-              {/* Portal Access Button */}
+              {/* Prominent Sign In & Portal Access */}
               {user ? (
-                <Button
-                  component={Link}
-                  to={getPortalRedirect()}
-                  variant="contained"
-                  startIcon={<PrecisionManufacturingIcon />}
-                  sx={{
-                    bgcolor: THEME.textPrimary,
-                    color: "#FFFFFF",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    letterSpacing: "0.05em",
-                    px: 2.2,
-                    py: 0.9,
-                    borderRadius: "8px",
-                    textTransform: "none",
-                    "&:hover": {
-                      bgcolor: THEME.accentCamel,
-                      transform: "translateY(-2px)",
-                    },
-                  }}
-                >
-                  {user.role?.toUpperCase()} PORTAL
-                </Button>
-              ) : (
-                <Box sx={{ display: "flex", gap: 1 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Button
+                    component={Link}
+                    to={getPortalRedirect()}
+                    variant="contained"
+                    startIcon={<PrecisionManufacturingIcon />}
+                    sx={{
+                      bgcolor: "#59171B",
+                      color: "#FFFFFF",
+                      fontSize: { xs: 11, sm: 12 },
+                      fontWeight: 700,
+                      letterSpacing: "0.05em",
+                      px: { xs: 1.5, sm: 2.2 },
+                      py: 0.9,
+                      borderRadius: "8px",
+                      textTransform: "none",
+                      boxShadow: "0 2px 10px rgba(89,23,27,0.3)",
+                      "&:hover": {
+                        bgcolor: "#7A2328",
+                        transform: "translateY(-1px)",
+                      },
+                    }}
+                  >
+                    {user.role?.toUpperCase()} PORTAL
+                  </Button>
                   <Button
                     component={Link}
                     to="/login"
                     variant="outlined"
                     sx={{
-                      borderColor: THEME.textPrimary,
-                      color: THEME.textPrimary,
-                      fontSize: 11.5,
+                      borderColor: THEME.borderLight,
+                      color: THEME.textSecondary,
+                      fontSize: 11,
                       fontWeight: 600,
-                      letterSpacing: "0.06em",
-                      px: 2,
+                      px: 1.2,
                       py: 0.8,
                       borderRadius: "8px",
                       textTransform: "uppercase",
+                      display: { xs: "none", sm: "inline-flex" },
                       "&:hover": {
                         borderColor: THEME.accentCamel,
                         color: THEME.accentCamel,
-                        bgcolor: "transparent",
+                      },
+                    }}
+                  >
+                    SWITCH / LOGIN
+                  </Button>
+                </Box>
+              ) : (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Button
+                    component={Link}
+                    to="/login"
+                    variant="contained"
+                    sx={{
+                      bgcolor: "#59171B",
+                      color: "#FFFFFF",
+                      fontSize: { xs: 11.5, sm: 12.5 },
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      px: { xs: 2, sm: 2.8 },
+                      py: 1.0,
+                      borderRadius: "8px",
+                      textTransform: "uppercase",
+                      boxShadow: "0 2px 12px rgba(89,23,27,0.3)",
+                      "&:hover": {
+                        bgcolor: "#7A2328",
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 4px 16px rgba(89,23,27,0.4)",
                       },
                     }}
                   >
@@ -594,24 +638,25 @@ export default function LandingPage() {
                   <Button
                     component={Link}
                     to="/register"
-                    variant="contained"
+                    variant="outlined"
                     sx={{
-                      bgcolor: THEME.accentCamel,
-                      color: "#FFFFFF",
-                      fontSize: 11.5,
+                      borderColor: THEME.accentCamel,
+                      color: THEME.accentCamel,
+                      fontSize: 11,
                       fontWeight: 600,
                       letterSpacing: "0.06em",
                       px: 2,
-                      py: 0.8,
+                      py: 0.9,
                       borderRadius: "8px",
                       textTransform: "uppercase",
-                      display: { xs: "none", sm: "inline-flex" },
+                      display: { xs: "none", md: "inline-flex" },
                       "&:hover": {
-                        bgcolor: THEME.accentCamelHover,
+                        borderColor: THEME.accentCamelHover,
+                        bgcolor: "rgba(168,131,98,0.08)",
                       },
                     }}
                   >
-                    JOIN ATELIER
+                    REGISTER
                   </Button>
                 </Box>
               )}
@@ -721,6 +766,32 @@ export default function LandingPage() {
                       }}
                     >
                       ENTER 3D ATELIER STUDIO
+                    </Button>
+
+                    <Button
+                      component={Link}
+                      to={user ? getPortalRedirect() : "/login"}
+                      variant="contained"
+                      startIcon={<PrecisionManufacturingIcon />}
+                      sx={{
+                        bgcolor: "#59171B",
+                        color: "#FFFFFF",
+                        px: { xs: 3, sm: 3.5 },
+                        py: 1.6,
+                        borderRadius: "8px",
+                        fontWeight: 700,
+                        letterSpacing: "0.08em",
+                        fontSize: 13,
+                        textTransform: "uppercase",
+                        boxShadow: "0 4px 16px rgba(89,23,27,0.3)",
+                        "&:hover": {
+                          bgcolor: "#7A2328",
+                          transform: "translateY(-2px)",
+                          boxShadow: "0 6px 20px rgba(89,23,27,0.4)",
+                        },
+                      }}
+                    >
+                      {user ? `${user.role?.toUpperCase()} DASHBOARD` : "SIGN IN / FACTORY PORTAL"}
                     </Button>
 
                     <Button
@@ -1875,6 +1946,44 @@ export default function LandingPage() {
           </Box>
         )}
       </Dialog>
+
+      {/* Floating Quick Action Button for Sign In / Portal */}
+      <Box
+        sx={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          zIndex: 1200,
+        }}
+      >
+        <Button
+          component={Link}
+          to={user ? getPortalRedirect() : "/login"}
+          variant="contained"
+          startIcon={<PrecisionManufacturingIcon sx={{ fontSize: "18px !important" }} />}
+          sx={{
+            bgcolor: "#59171B",
+            color: "#FFFFFF",
+            fontSize: 12,
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            px: 2.2,
+            py: 1.2,
+            borderRadius: "50px",
+            textTransform: "uppercase",
+            boxShadow: "0 6px 24px rgba(89,23,27,0.45)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            "&:hover": {
+              bgcolor: "#7A2328",
+              transform: "translateY(-3px)",
+              boxShadow: "0 8px 30px rgba(89,23,27,0.6)",
+            },
+          }}
+        >
+          {user ? `${user.role?.toUpperCase()} PORTAL` : "SIGN IN"}
+        </Button>
+      </Box>
     </Box>
   );
 }
