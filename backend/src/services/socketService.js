@@ -9,7 +9,11 @@ function initSocket(server) {
   const { Server } = require('socket.io');
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:3000',
+      origin: process.env.CLIENT_URL
+        ? (process.env.CLIENT_URL.includes(',')
+            ? process.env.CLIENT_URL.split(',').map((s) => s.trim())
+            : process.env.CLIENT_URL)
+        : true,
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
       credentials: true,
     },
