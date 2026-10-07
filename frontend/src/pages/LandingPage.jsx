@@ -1946,44 +1946,6 @@ export default function LandingPage() {
           </Box>
         )}
       </Dialog>
-
-      {/* Floating Quick Action Button for Sign In / Portal */}
-      <Box
-        sx={{
-          position: "fixed",
-          bottom: 24,
-          right: 24,
-          zIndex: 1200,
-        }}
-      >
-        <Button
-          component={Link}
-          to={user ? getPortalRedirect() : "/login"}
-          variant="contained"
-          startIcon={<PrecisionManufacturingIcon sx={{ fontSize: "18px !important" }} />}
-          sx={{
-            bgcolor: "#59171B",
-            color: "#FFFFFF",
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: "0.06em",
-            px: 2.2,
-            py: 1.2,
-            borderRadius: "50px",
-            textTransform: "uppercase",
-            boxShadow: "0 6px 24px rgba(89,23,27,0.45)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid rgba(255,255,255,0.2)",
-            "&:hover": {
-              bgcolor: "#7A2328",
-              transform: "translateY(-3px)",
-              boxShadow: "0 8px 30px rgba(89,23,27,0.6)",
-            },
-          }}
-        >
-          {user ? `${user.role?.toUpperCase()} PORTAL` : "SIGN IN"}
-        </Button>
-      </Box>
     </Box>
   );
 }
