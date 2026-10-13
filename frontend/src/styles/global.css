@@ -443,6 +443,47 @@ body[data-theme="dark"] {
 .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
 .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
 
+/* Smooth Global Micro-Interactions & Transitions */
+.MuiButton-root {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.MuiButton-contained:hover {
+  transform: translateY(-1.5px);
+}
+
+.MuiButton-contained:active {
+  transform: translateY(0.5px) scale(0.99);
+}
+
+.MuiCard-root, .MuiPaper-elevation {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease !important;
+}
+
+.MuiOutlinedInput-root {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #59171B !important;
+}
+
+.MuiTableRow-root {
+  transition: background-color 0.2s ease !important;
+}
+
+.MuiChip-root {
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.MuiChip-root:hover {
+  transform: translateY(-1px);
+}
+
+.MuiTab-root {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
 /* Skeleton shimmer override */
 .MuiSkeleton-root {
   background: linear-gradient(90deg, rgba(241, 213, 192, 0.25) 25%, rgba(254, 215, 184, 0.5) 50%, rgba(241, 213, 192, 0.25) 75%);

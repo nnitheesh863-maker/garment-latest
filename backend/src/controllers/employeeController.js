@@ -275,17 +275,44 @@ exports.markAttendance = async (req, res, next) => {
     attendanceDate.setHours(0, 0, 0, 0);
 
     const now = new Date();
-    const clockInTime = clockIn ? new Date(clockIn) : now;
-    const clockOutTime = clockOut ? new Date(clockOut) : null;
 
     const existing = await Attendance.findOne({
       employee: employeeId,
       date: attendanceDate,
     });
 
-    let clockInTimeStr, clockOutTimeStr;
-    if (clockInTime) {
-      clockInTimeStr = clockInTime.toLocaleTimeString([], {
+    let effectiveClockIn = null;
+    let clockInTimeStr = null;
+
+    if (clockIn) {
+      effectiveClockIn = new Date(clockIn);
+      clockInTimeStr = effectiveClockIn.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } else if (existing && existing.clockIn) {
+      effectiveClockIn = new Date(existing.clockIn);
+      clockInTimeStr = existing.clockInTime || effectiveClockIn.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } else if (!clockOut) {
+      effectiveClockIn = now;
+      clockInTimeStr = now.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
+    let effectiveClockOut = null;
+    let clockOutTimeStr = null;
+
+    if (clockOut) {
+      effectiveClockOut = new Date(clockOut);
+      clockOutTimeStr = effectiveClockOut.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
@@ -294,48 +321,50 @@ exports.markAttendance = async (req, res, next) => {
 
     const updates = {
       date: attendanceDate,
-      status: status || "present",
-      shift: shift || "general",
-      timezone: timezone || "IST",
+      shift: shift || (existing ? existing.shift : "general"),
+      timezone: timezone || (existing ? existing.timezone : "IST"),
       deviceTime: deviceTime || now.toISOString(),
-      clockIn: clockInTime,
-      clockInTime: clockInTimeStr,
-      notes,
+      notes: notes !== undefined ? notes : (existing ? existing.notes : undefined),
     };
 
-    let attendance;
-    if (clockOutTime) {
-      updates.clockOut = clockOutTime;
-      updates.clockOutTime = clockOutTime.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+    if (effectiveClockIn) {
+      updates.clockIn = effectiveClockIn;
+      updates.clockInTime = clockInTimeStr;
+    }
 
-      const workingHours = clockOutTime - clockInTime;
-      const hours = workingHours / (1000 * 60 * 60);
-      const breakTime = Math.min(hours * 0.1, 1);
-      const actualWorkingHours = Math.max(0, hours - breakTime);
+    if (effectiveClockOut) {
+      updates.clockOut = effectiveClockOut;
+      updates.clockOutTime = clockOutTimeStr;
 
-      const lateArrival = Math.max(0, hours - 9);
-      const earlyLeaving = 0;
+      const startMs = effectiveClockIn ? effectiveClockIn.getTime() : (effectiveClockOut.getTime() - 8 * 3600000);
+      const endMs = effectiveClockOut.getTime();
+      const diffMs = Math.max(0, endMs - startMs);
+      const rawHours = diffMs / (1000 * 60 * 60);
+
+      const breakTime = rawHours >= 5 ? Math.min(rawHours * 0.1, 1) : 0;
+      const actualWorkingHours = Math.max(0, rawHours - breakTime);
       const overtime = Math.max(0, actualWorkingHours - 8);
+      const lateArrival = Math.max(0, rawHours - 9);
+      const earlyLeaving = 0;
 
       updates.workingHours = Math.round(actualWorkingHours * 100) / 100;
       updates.breakTime = Math.round(breakTime * 100) / 100;
       updates.overtime = Math.round(overtime * 100) / 100;
       updates.lateArrival = Math.round(lateArrival * 100) / 100;
       updates.earlyLeaving = Math.round(earlyLeaving * 100) / 100;
-
-      updates.status = "working";
+      updates.status = status || "present";
     } else {
+      updates.clockOut = null;
+      updates.clockOutTime = null;
+      updates.workingHours = 0;
       updates.status = "working";
     }
 
+    let attendance;
     if (existing) {
       attendance = await Attendance.findOneAndUpdate(
         { employee: employeeId, date: attendanceDate },
-        updates,
+        { $set: updates },
         { new: true },
       );
     } else {
@@ -345,7 +374,22 @@ exports.markAttendance = async (req, res, next) => {
       });
     }
 
-    return ApiResponse.success(res, attendance, "Attendance recorded");
+    if (global.io) {
+      global.io.to(employeeId.toString()).emit("attendance_update", {
+        clockInTime: attendance.clockInTime,
+        clockOutTime: attendance.clockOutTime,
+        status: attendance.status,
+        workingHours: attendance.workingHours,
+      });
+      global.io.to("management").emit("employee_activity", {
+        employeeId,
+        action: effectiveClockOut ? "clock_out" : "clock_in",
+        time: now,
+        hours: attendance.workingHours || 0,
+      });
+    }
+
+    return ApiResponse.success(res, attendance, "Attendance recorded successfully");
   } catch (err) {
     next(err);
   }

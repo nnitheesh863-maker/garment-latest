@@ -72,16 +72,30 @@ export default function Attendance() {
         if (today.clockIn) {
           setClockedIn(true);
           setClockInTime(formatTime12(today.clockInTime || today.clockIn));
+        } else {
+          setClockedIn(false);
+          setClockInTime(null);
         }
         if (today.clockOut) {
           setClockedOut(true);
           setClockOutTime(formatTime12(today.clockOutTime || today.clockOut));
+        } else {
+          setClockedOut(false);
+          setClockOutTime(null);
         }
-        if (today.workingHours != null) setWorkingHours(today.workingHours);
-        if (today.breakTime != null) setBreakTime(today.breakTime);
-        if (today.overtime != null) setOvertime(today.overtime);
-        if (today.lateArrival != null) setLateArrival(today.lateArrival);
-        if (today.earlyLeaving != null) setEarlyLeaving(today.earlyLeaving);
+        setWorkingHours(today.workingHours || 0);
+        setBreakTime(today.breakTime || 0);
+        setOvertime(today.overtime || 0);
+        setLateArrival(today.lateArrival || 0);
+        setEarlyLeaving(today.earlyLeaving || 0);
+      } else {
+        setClockedIn(false);
+        setClockedOut(false);
+        setClockInTime(null);
+        setClockOutTime(null);
+        setWorkingHours(0);
+        setBreakTime(0);
+        setOvertime(0);
       }
     } catch (err) {
       console.error("Failed to load attendance:", err);
@@ -93,14 +107,14 @@ export default function Attendance() {
 
   useEffect(() => {
     loadAttendance();
-    const interval = setInterval(() => setCurrentTime(new Date()), 10000);
+    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, [loadAttendance]);
 
   const handleClockIn = async () => {
     try {
       const now = new Date();
-      const res = await employeeApi.attendance(user._id, {
+      await employeeApi.attendance(user._id, {
         date: now.toISOString().split('T')[0],
         clockIn: now.toISOString(),
         shift: 'general',
@@ -108,9 +122,11 @@ export default function Attendance() {
         deviceTime: now.toISOString(),
       });
       setClockedIn(true);
+      setClockedOut(false);
       setClockInTime(formatTime12(now));
+      setClockOutTime(null);
       toast.success(`Clocked in at ${formatTime12(now)}`);
-      loadAttendance();
+      await loadAttendance();
     } catch (err) {
       toast.error("Failed to clock in");
     }
@@ -125,15 +141,13 @@ export default function Attendance() {
       });
       setClockedOut(true);
       setClockOutTime(formatTime12(now));
-      if (res.data?.data?.workingHours) {
+      if (res.data?.data?.workingHours != null) {
         setWorkingHours(res.data.data.workingHours);
         setBreakTime(res.data.data.breakTime || 0);
         setOvertime(res.data.data.overtime || 0);
-        setLateArrival(res.data.data.lateArrival || 0);
-        setEarlyLeaving(res.data.data.earlyLeaving || 0);
       }
       toast.success(`Clocked out at ${formatTime12(now)}`);
-      loadAttendance();
+      await loadAttendance();
     } catch (err) {
       toast.error("Failed to clock out");
     }
@@ -249,12 +263,18 @@ export default function Attendance() {
                 <Grid item xs={6}>
                   <Button
                     fullWidth
-                    variant={clockedIn ? "outlined" : "contained"}
+                    variant={clockedIn && !clockedOut ? "outlined" : "contained"}
                     color="primary"
                     onClick={handleClockIn}
-                    disabled={clockedIn}
+                    disabled={clockedIn && !clockedOut}
+                    sx={{
+                      py: 1,
+                      fontWeight: 700,
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                    }}
                   >
-                    {clockedIn ? "Clocked In" : "Clock In"}
+                    {clockedIn && !clockedOut ? "Clocked In" : clockedOut ? "Clock In Again" : "Clock In"}
                   </Button>
                 </Grid>
                 <Grid item xs={6}>
@@ -263,7 +283,18 @@ export default function Attendance() {
                     variant={clockedOut ? "outlined" : "contained"}
                     color="secondary"
                     onClick={handleClockOut}
-                    disabled={clockedOut || !clockedIn}
+                    disabled={!clockedIn || clockedOut}
+                    sx={{
+                      py: 1,
+                      fontWeight: 700,
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      bgcolor: clockedIn && !clockedOut ? '#59171B' : undefined,
+                      color: clockedIn && !clockedOut ? '#FFFFFF' : undefined,
+                      '&:hover': {
+                        bgcolor: clockedIn && !clockedOut ? '#7A2328' : undefined,
+                      },
+                    }}
                   >
                     {clockedOut ? "Clocked Out" : "Clock Out"}
                   </Button>
@@ -404,7 +435,7 @@ export default function Attendance() {
                   .map((a) => {
                     const rowDuration = a.workingHours != null && a.workingHours > 0
                       ? formatHoursMinutes(a.workingHours, 'long')
-                      : (a.clockIn && a.clockOut ? getWorkingDuration(a.clockIn, a.clockOut).detailed : '-');
+                      : (a.clockIn && a.clockOut ? getWorkingDuration(a.clockIn, a.clockOut).detailed : (a.clockIn && !a.clockOut ? 'In Progress' : '-'));
                     return (
                       <TableRow key={a._id || a.date}>
                         <TableCell>

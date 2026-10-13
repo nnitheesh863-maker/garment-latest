@@ -9,12 +9,20 @@ function initSocket(server) {
   const { Server } = require('socket.io');
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL
-        ? (process.env.CLIENT_URL.includes(',')
-            ? process.env.CLIENT_URL.split(',').map((s) => s.trim())
-            : process.env.CLIENT_URL)
-        : true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      origin: (origin, callback) => {
+        // Allow requests with no origin, or localhost / 127.0.0.1 on any port, or configured CLIENT_URL
+        if (
+          !origin ||
+          origin.startsWith('http://localhost:') ||
+          origin.startsWith('http://127.0.0.1:') ||
+          (process.env.CLIENT_URL && process.env.CLIENT_URL.includes(origin))
+        ) {
+          callback(null, true);
+        } else {
+          callback(null, true);
+        }
+      },
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       credentials: true,
     },
   });

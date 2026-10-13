@@ -42,7 +42,8 @@ async function sendEmail({ to, subject, html }) {
 }
 
 async function sendPasswordReset(email, token) {
-  const resetUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/reset-password/${token}`;
+  const primaryClientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',')[0].trim() : 'http://localhost:3000';
+  const resetUrl = `${primaryClientUrl}/reset-password/${token}`;
   return sendEmail({
     to: email,
     subject: 'Password Reset Request',
