@@ -33,15 +33,19 @@ export function SocketProvider({ children }) {
       return;
     }
 
-    const socketUrl =
-      import.meta.env.VITE_SOCKET_URL ||
-      import.meta.env.VITE_API_URL ||
-      API_BASE_URL ||
-      (typeof window !== 'undefined' &&
+    const isLocal =
+      typeof window !== 'undefined' &&
       (window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1')
-        ? 'http://localhost:5000'
-        : 'https://garment-latest.onrender.com');
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.startsWith('192.168.') ||
+        window.location.hostname.startsWith('10.'));
+
+    const envSocket = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL;
+    const isEnvSocketLocal = !envSocket || envSocket.includes('localhost') || envSocket.includes('127.0.0.1');
+
+    const socketUrl = isLocal
+      ? (envSocket || `http://${window.location.hostname}:5000`)
+      : (isEnvSocketLocal ? 'https://garment-latest.onrender.com' : envSocket);
     const newSocket = io(socketUrl, {
       auth: { token },
       transports: ['polling', 'websocket'],
