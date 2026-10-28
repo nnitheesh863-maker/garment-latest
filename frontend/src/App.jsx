@@ -21,14 +21,21 @@ function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth();
 
   if (loading) return <LoadingSpinner />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user || typeof user !== "object" || !user.role) {
+    return <Navigate to="/login" replace />;
+  }
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     const redirect =
       user.role === "admin"
         ? "/admin/dashboard"
         : user.role === "manager"
           ? "/manager/dashboard"
-          : "/employee/dashboard";
+          : user.role === "employee"
+            ? "/employee/dashboard"
+            : "/login";
+    if (redirect === window.location.pathname) {
+      return <Navigate to="/login" replace />;
+    }
     return <Navigate to={redirect} replace />;
   }
   return children;
@@ -57,14 +64,18 @@ function EmployeeRoute({ children }) {
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <LoadingSpinner />;
-  if (user) {
+  if (user && typeof user === "object" && user.role) {
     const redirect =
       user.role === "admin"
         ? "/admin/dashboard"
         : user.role === "manager"
           ? "/manager/dashboard"
-          : "/employee/dashboard";
-    return <Navigate to={redirect} replace />;
+          : user.role === "employee"
+            ? "/employee/dashboard"
+            : null;
+    if (redirect && redirect !== window.location.pathname) {
+      return <Navigate to={redirect} replace />;
+    }
   }
   return children;
 }

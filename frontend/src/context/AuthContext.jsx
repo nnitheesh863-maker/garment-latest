@@ -7,8 +7,21 @@ import { ROLES } from "../utils/constants";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("user");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object" && parsed.role) {
+          return parsed;
+        }
+      }
+    } catch {
+      localStorage.removeItem("user");
+    }
+    return null;
+  });
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -22,16 +35,19 @@ export function AuthProvider({ children }) {
     try {
       const res = await authApi.getMe();
       const userData = res.data?.data?.user || res.data?.data || res.data;
+      if (!userData || typeof userData !== "object" || !userData.role) {
+        throw new Error("Invalid user profile response received");
+      }
       setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
       setToken(storedToken);
     } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("user");
-        setToken(null);
-        setUser(null);
-      }
+      console.warn("User session verification failed:", err?.message || err);
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      setToken(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }

@@ -19,7 +19,24 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (
+      typeof response.data === "string" &&
+      (response.data.trim().startsWith("<!doctype") ||
+        response.data.trim().startsWith("<!DOCTYPE") ||
+        response.data.trim().startsWith("<html"))
+    ) {
+      const error = new Error(
+        "API endpoint returned HTML. The backend server may be unreachable or VITE_API_URL is missing."
+      );
+      error.response = {
+        status: 503,
+        data: { message: "Backend API server unreachable or misconfigured." },
+      };
+      return Promise.reject(error);
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     const isAuthRequest = originalRequest?.url?.includes("/api/auth/");
