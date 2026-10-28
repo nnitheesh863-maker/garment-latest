@@ -190,6 +190,6 @@ export const API_BASE_URL =
     window.location.hostname.startsWith("192.168.") ||
     window.location.hostname.startsWith("10."))
     ? `http://${window.location.hostname}:5000`
-    : "");
+    : "https://garment-latest.onrender.com");
 
 

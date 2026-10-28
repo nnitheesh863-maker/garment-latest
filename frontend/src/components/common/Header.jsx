@@ -105,21 +105,26 @@ export default function Header({ onToggleSidebar }) {
         </IconButton>
 
         <Box
-          component="img"
-          src="/logo.png"
-          alt="Logo"
           sx={{
             height: 32,
             width: 32,
             mr: 1,
-            display: { xs: 'none', sm: 'block' },
+            display: { xs: 'none', sm: 'flex' },
+            alignItems: 'center',
+            justifyContent: 'center',
             borderRadius: '8px',
-            boxShadow: '0 2px 8px rgba(89, 23, 27, 0.2)',
+            background: 'linear-gradient(135deg, #59171B, #7A2328, #A45A4A)',
+            boxShadow: '0 2px 8px rgba(89, 23, 27, 0.25)',
           }}
-          onError={(e) => {
-            e.target.style.display = 'none';
-          }}
-        />
+        >
+          <Typography
+            variant="body2"
+            fontWeight={900}
+            sx={{ color: '#FED7B8', fontSize: 16, lineHeight: 1 }}
+          >
+            C
+          </Typography>
+        </Box>
 
         <Typography
           variant="h6"

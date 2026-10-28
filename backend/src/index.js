@@ -98,6 +98,17 @@ app.use("/api/defect-reports", defectReportRoutes);
 app.use("/api/voice", voiceRoutes);
 app.use("/api/admin/dashboard", adminDashboardRoutes);
 
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    name: "Garment Production & MES API Server",
+    status: "online",
+    healthCheck: "/api/health",
+    endpoints: "/api",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
