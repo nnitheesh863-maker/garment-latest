@@ -5,31 +5,26 @@
 import React, { createContext, useState, useEffect, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { toast } from 'react-toastify';
-import { API_BASE_URL } from '../utils/constants';
+import { useAuth } from '../hooks/useAuth';
 
 export const SocketContext = createContext();
 
 export function SocketProvider({ children }) {
+  const { token, user } = useAuth();
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const socketRef = useRef(null);
-  const [token, setToken] = useState(() => localStorage.getItem('token'));
 
   useEffect(() => {
-    const handleStorage = () => setToken(localStorage.getItem('token'));
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
-
-  useEffect(() => {
-    if (!token) {
+    // Only connect when user is actively logged in with a valid token
+    if (!token || !user) {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;
-        setSocket(null);
-        setConnected(false);
       }
+      setSocket(null);
+      setConnected(false);
       return;
     }
 
@@ -46,6 +41,7 @@ export function SocketProvider({ children }) {
     const socketUrl = isLocal
       ? (envSocket || `http://${window.location.hostname}:5000`)
       : (isEnvSocketLocal ? 'https://garment-latest.onrender.com' : envSocket);
+
     const newSocket = io(socketUrl, {
       auth: { token },
       transports: ['polling', 'websocket'],
@@ -56,9 +52,28 @@ export function SocketProvider({ children }) {
 
     socketRef.current = newSocket;
 
-    newSocket.on('connect', () => setConnected(true));
-    newSocket.on('disconnect', () => setConnected(false));
-    newSocket.on('connect_error', () => setConnected(false));
+    newSocket.on('connect', () => {
+      setConnected(true);
+      setSocket(newSocket);
+    });
+
+    newSocket.on('disconnect', () => {
+      setConnected(false);
+    });
+
+    newSocket.on('connect_error', (err) => {
+      setConnected(false);
+      const errMsg = err?.message?.toLowerCase() || '';
+      if (
+        errMsg.includes('auth') ||
+        errMsg.includes('token') ||
+        errMsg.includes('forbidden') ||
+        errMsg.includes('inactive')
+      ) {
+        // Disconnect immediately on auth rejection to stop polling/400 errors
+        newSocket.disconnect();
+      }
+    });
 
     newSocket.on('newNotification', (notification) => {
       setNotifications((prev) => [notification, ...prev].slice(0, 50));
@@ -85,9 +100,11 @@ export function SocketProvider({ children }) {
 
     return () => {
       newSocket.disconnect();
+      socketRef.current = null;
+      setSocket(null);
       setConnected(false);
     };
-  }, [token]);
+  }, [token, user]);
 
   const addNotification = useCallback((notification) => {
     setNotifications((prev) => [notification, ...prev].slice(0, 50));

@@ -42,7 +42,9 @@ export function AuthProvider({ children }) {
       localStorage.setItem("user", JSON.stringify(userData));
       setToken(storedToken);
     } catch (err) {
-      console.warn("User session verification failed:", err?.message || err);
+      if (err?.response?.status !== 401) {
+        console.warn("User session verification failed:", err?.message || err);
+      }
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");

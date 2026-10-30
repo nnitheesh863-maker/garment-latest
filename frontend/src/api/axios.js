@@ -67,16 +67,16 @@ api.interceptors.response.use(
           localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
           localStorage.removeItem("user");
-          if (window.location.pathname !== "/login" && window.location.pathname !== "/") {
-            if (window.location.pathname !== "/login" && window.location.pathname !== "/") {
-          window.location.href = "/login";
-        }
+          const publicRoutes = ["/", "/landing", "/home", "/login", "/register"];
+          if (!publicRoutes.includes(window.location.pathname)) {
+            window.location.href = "/login";
           }
         }
       } else {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        if (window.location.pathname !== "/login" && window.location.pathname !== "/") {
+        const publicRoutes = ["/", "/landing", "/home", "/login", "/register"];
+        if (!publicRoutes.includes(window.location.pathname)) {
           window.location.href = "/login";
         }
       }

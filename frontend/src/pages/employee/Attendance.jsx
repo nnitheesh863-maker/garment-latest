@@ -41,6 +41,7 @@ export default function Attendance() {
   const [loading, setLoading] = useState(true);
   const [clockInTime, setClockInTime] = useState(null);
   const [clockOutTime, setClockOutTime] = useState(null);
+  const [clockInIso, setClockInIso] = useState(null);
   const [todayRecord, setTodayRecord] = useState(null);
   const [workingHours, setWorkingHours] = useState(0);
   const [breakTime, setBreakTime] = useState(0);
@@ -61,24 +62,29 @@ export default function Attendance() {
       const records = res.data?.data || res.data?.attendance || [];
       setAttendance(records);
 
+      const todayDateStr = new Date().toLocaleDateString();
       const today = Array.isArray(records)
-        ? records.find(
-            (r) =>
-              (r.clockIn ? new Date(r.clockIn) : new Date(r.date)).toLocaleDateString() === new Date().toLocaleDateString(),
-          )
+        ? records.find((r) => {
+            if (r.clockIn && new Date(r.clockIn).toLocaleDateString() === todayDateStr) return true;
+            if (r.date && new Date(r.date).toLocaleDateString() === todayDateStr) return true;
+            if (r.createdAt && new Date(r.createdAt).toLocaleDateString() === todayDateStr) return true;
+            return false;
+          })
         : null;
       setTodayRecord(today);
       if (today) {
-        if (today.clockIn) {
+        if (today.clockIn || today.clockInTime) {
           setClockedIn(true);
-          setClockInTime(formatTime12(today.clockIn || today.clockInTime));
+          setClockInTime(today.clockIn ? formatTime12(today.clockIn) : formatTime12(today.clockInTime));
+          setClockInIso(today.clockIn || null);
         } else {
           setClockedIn(false);
           setClockInTime(null);
+          setClockInIso(null);
         }
-        if (today.clockOut) {
+        if (today.clockOut || today.clockOutTime) {
           setClockedOut(true);
-          setClockOutTime(formatTime12(today.clockOut || today.clockOutTime));
+          setClockOutTime(today.clockOut ? formatTime12(today.clockOut) : formatTime12(today.clockOutTime));
         } else {
           setClockedOut(false);
           setClockOutTime(null);
@@ -124,6 +130,7 @@ export default function Attendance() {
       setClockedIn(true);
       setClockedOut(false);
       setClockInTime(formatTime12(now));
+      setClockInIso(now.toISOString());
       setClockOutTime(null);
       toast.success(`Clocked in at ${formatTime12(now)}`);
       await loadAttendance();
@@ -250,7 +257,7 @@ export default function Attendance() {
                   ) : (
                     <Box mt={1}>
                       <Typography variant="body2" color="success.main" fontWeight={600}>
-                        Working: {getWorkingDuration(todayRecord?.clockIn || (clockedIn ? currentTime : null)).detailed}
+                        Working: {getWorkingDuration(todayRecord?.clockIn || clockInIso).detailed}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         Shift: {todayRecord?.shift || shift || 'General'}
