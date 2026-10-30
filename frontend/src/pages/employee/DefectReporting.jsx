@@ -21,7 +21,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { toast } from "react-toastify";
 import { defectApi } from "../../api/axios";
 import { useAuth } from "../../hooks/useAuth";
-import { formatDate, formatDateTime, getStatusColor } from "../../utils/helpers";
+import { formatDate, formatDateTime, getStatusColor, getMediaUrl } from "../../utils/helpers";
 import PageHeader from "../../components/common/PageHeader";
 import GradientButton from "../../components/common/GradientButton";
 import StatusBadge from "../../components/common/StatusBadge";
@@ -36,6 +36,7 @@ export default function DefectReporting() {
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     garmentType: "",
+    severity: "minor",
     description: "",
     photo: null,
   });
@@ -88,6 +89,7 @@ export default function DefectReporting() {
     try {
       const formPayload = new FormData();
       formPayload.append("garmentType", formData.garmentType);
+      formPayload.append("severity", formData.severity || "minor");
       formPayload.append("description", formData.description);
       if (formData.photo) {
         formPayload.append("photo", formData.photo);
@@ -95,7 +97,7 @@ export default function DefectReporting() {
 
       await defectApi.create(formPayload);
 
-      setFormData({ garmentType: "", description: "", photo: null });
+      setFormData({ garmentType: "", severity: "minor", description: "", photo: null });
       if (photoPreview) {
         URL.revokeObjectURL(photoPreview);
         setPhotoPreview(null);
@@ -137,7 +139,7 @@ export default function DefectReporting() {
       render: (val) =>
         val ? (
           <Avatar
-            src={val}
+            src={getMediaUrl(val)}
             alt="Defect"
             variant="rounded"
             sx={{
@@ -348,7 +350,7 @@ export default function DefectReporting() {
           {dialogPhoto && (
             <Box
               component="img"
-              src={dialogPhoto}
+              src={getMediaUrl(dialogPhoto)}
               alt="Defect photo"
               sx={{
                 maxWidth: "100%",

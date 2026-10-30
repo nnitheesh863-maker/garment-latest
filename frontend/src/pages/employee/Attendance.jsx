@@ -64,21 +64,21 @@ export default function Attendance() {
       const today = Array.isArray(records)
         ? records.find(
             (r) =>
-              new Date(r.date).toDateString() === new Date().toDateString(),
+              (r.clockIn ? new Date(r.clockIn) : new Date(r.date)).toLocaleDateString() === new Date().toLocaleDateString(),
           )
         : null;
       setTodayRecord(today);
       if (today) {
         if (today.clockIn) {
           setClockedIn(true);
-          setClockInTime(formatTime12(today.clockInTime || today.clockIn));
+          setClockInTime(formatTime12(today.clockIn || today.clockInTime));
         } else {
           setClockedIn(false);
           setClockInTime(null);
         }
         if (today.clockOut) {
           setClockedOut(true);
-          setClockOutTime(formatTime12(today.clockOutTime || today.clockOut));
+          setClockOutTime(formatTime12(today.clockOut || today.clockOutTime));
         } else {
           setClockedOut(false);
           setClockOutTime(null);
@@ -115,10 +115,10 @@ export default function Attendance() {
     try {
       const now = new Date();
       await employeeApi.attendance(user._id, {
-        date: now.toISOString().split('T')[0],
+        date: formatDate(now, "yyyy-MM-dd"),
         clockIn: now.toISOString(),
         shift: 'general',
-        timezone: 'IST',
+        timezone: 'Asia/Kolkata',
         deviceTime: now.toISOString(),
       });
       setClockedIn(true);
@@ -136,7 +136,7 @@ export default function Attendance() {
     try {
       const now = new Date();
       const res = await employeeApi.attendance(user._id, {
-        date: now.toISOString().split('T')[0],
+        date: formatDate(now, "yyyy-MM-dd"),
         clockOut: now.toISOString(),
       });
       setClockedOut(true);
@@ -233,12 +233,12 @@ export default function Attendance() {
               {(clockedIn || clockInTime) && (
                 <Box mb={2}>
                   <Typography variant="body2" fontWeight={600} color="primary.main">
-                    Clocked In: {clockInTime || formatTime12(todayRecord?.clockIn)}
+                    Clocked In: {todayRecord?.clockIn ? formatTime12(todayRecord.clockIn) : clockInTime}
                   </Typography>
                   {clockedOut && clockOutTime ? (
                     <Box mt={1}>
                       <Typography variant="body2" fontWeight={600} color="secondary.main">
-                        Clocked Out: {clockOutTime || formatTime12(todayRecord?.clockOut)}
+                        Clocked Out: {todayRecord?.clockOut ? formatTime12(todayRecord.clockOut) : clockOutTime}
                       </Typography>
                       <Typography variant="body2" color="text.primary" fontWeight={600} mt={0.5}>
                         Total Worked: {getWorkingDuration(todayRecord?.clockIn, todayRecord?.clockOut, workingHours).detailed}
@@ -250,7 +250,7 @@ export default function Attendance() {
                   ) : (
                     <Box mt={1}>
                       <Typography variant="body2" color="success.main" fontWeight={600}>
-                        Working: {getWorkingDuration(todayRecord?.clockIn || new Date()).detailed}
+                        Working: {getWorkingDuration(todayRecord?.clockIn || (clockedIn ? currentTime : null)).detailed}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         Shift: {todayRecord?.shift || shift || 'General'}

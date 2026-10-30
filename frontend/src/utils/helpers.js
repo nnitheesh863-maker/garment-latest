@@ -1,5 +1,14 @@
 import { format, parseISO, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
-import { STATUS_COLORS } from './constants';
+import { STATUS_COLORS, API_BASE_URL } from './constants';
+
+export function getMediaUrl(path) {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
+    return path;
+  }
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${API_BASE_URL}${cleanPath}`;
+}
 
 export function formatDate(date, fmt = 'MMM dd, yyyy') {
   if (!date) return 'N/A';

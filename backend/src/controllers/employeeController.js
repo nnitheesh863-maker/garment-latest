@@ -281,30 +281,36 @@ exports.markAttendance = async (req, res, next) => {
       date: attendanceDate,
     });
 
+    const targetTz = timezone === "IST" || !timezone ? "Asia/Kolkata" : timezone;
+    const formatInTz = (dateObj) => {
+      try {
+        return dateObj.toLocaleTimeString("en-US", {
+          timeZone: targetTz,
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      } catch (e) {
+        return dateObj.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+      }
+    };
+
     let effectiveClockIn = null;
     let clockInTimeStr = null;
 
     if (clockIn) {
       effectiveClockIn = new Date(clockIn);
-      clockInTimeStr = effectiveClockIn.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+      clockInTimeStr = formatInTz(effectiveClockIn);
     } else if (existing && existing.clockIn) {
       effectiveClockIn = new Date(existing.clockIn);
-      clockInTimeStr = existing.clockInTime || effectiveClockIn.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+      clockInTimeStr = formatInTz(effectiveClockIn);
     } else if (!clockOut) {
       effectiveClockIn = now;
-      clockInTimeStr = now.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+      clockInTimeStr = formatInTz(now);
     }
 
     let effectiveClockOut = null;
@@ -312,11 +318,7 @@ exports.markAttendance = async (req, res, next) => {
 
     if (clockOut) {
       effectiveClockOut = new Date(clockOut);
-      clockOutTimeStr = effectiveClockOut.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+      clockOutTimeStr = formatInTz(effectiveClockOut);
     }
 
     const updates = {

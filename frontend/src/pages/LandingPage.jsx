@@ -460,10 +460,11 @@ export default function LandingPage() {
                 sx={{
                   fontFamily: "'Cormorant Garamond', serif",
                   fontWeight: 700,
-                  letterSpacing: "0.15em",
-                  fontSize: { xs: 20, md: 26 },
+                  letterSpacing: { xs: "0.08em", sm: "0.15em" },
+                  fontSize: { xs: 18, sm: 22, md: 26 },
                   color: THEME.textPrimary,
                   lineHeight: 1,
+                  whiteSpace: "nowrap",
                 }}
               >
                 GARMENTOS <span style={{ color: THEME.accentCamel, fontWeight: 400 }}>ATELIER</span>
@@ -471,11 +472,12 @@ export default function LandingPage() {
               <Typography
                 variant="caption"
                 sx={{
-                  letterSpacing: "0.22em",
-                  fontSize: 9,
+                  letterSpacing: { xs: "0.12em", sm: "0.22em" },
+                  fontSize: { xs: 8, sm: 9 },
                   color: THEME.textMuted,
                   textTransform: "uppercase",
                   mt: 0.3,
+                  whiteSpace: "nowrap",
                 }}
               >
                 3D Smart Factory & Bespoke Luxury
@@ -559,107 +561,58 @@ export default function LandingPage() {
                 </IconButton>
               </Tooltip>
 
-              {/* Prominent Sign In & Portal Access */}
-              {user ? (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Button
-                    component={Link}
-                    to={getPortalRedirect()}
-                    variant="contained"
-                    startIcon={<PrecisionManufacturingIcon />}
-                    sx={{
-                      bgcolor: "#59171B",
-                      color: "#FFFFFF",
-                      fontSize: { xs: 11, sm: 12 },
-                      fontWeight: 700,
-                      letterSpacing: "0.05em",
-                      px: { xs: 1.5, sm: 2.2 },
-                      py: 0.9,
-                      borderRadius: "8px",
-                      textTransform: "none",
-                      boxShadow: "0 2px 10px rgba(89,23,27,0.3)",
-                      "&:hover": {
-                        bgcolor: "#7A2328",
-                        transform: "translateY(-1px)",
-                      },
-                    }}
-                  >
-                    {user.role?.toUpperCase()} PORTAL
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/login"
-                    variant="outlined"
-                    sx={{
-                      borderColor: THEME.borderLight,
-                      color: THEME.textSecondary,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      px: 1.2,
-                      py: 0.8,
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      display: { xs: "none", sm: "inline-flex" },
-                      "&:hover": {
-                        borderColor: THEME.accentCamel,
-                        color: THEME.accentCamel,
-                      },
-                    }}
-                  >
-                    SWITCH / LOGIN
-                  </Button>
-                </Box>
-              ) : (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Button
-                    component={Link}
-                    to="/login"
-                    variant="contained"
-                    sx={{
-                      bgcolor: "#59171B",
-                      color: "#FFFFFF",
-                      fontSize: { xs: 11.5, sm: 12.5 },
-                      fontWeight: 700,
-                      letterSpacing: "0.06em",
-                      px: { xs: 2, sm: 2.8 },
-                      py: 1.0,
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      boxShadow: "0 2px 12px rgba(89,23,27,0.3)",
-                      "&:hover": {
-                        bgcolor: "#7A2328",
-                        transform: "translateY(-1px)",
-                        boxShadow: "0 4px 16px rgba(89,23,27,0.4)",
-                      },
-                    }}
-                  >
-                    SIGN IN
-                  </Button>
-                  <Button
-                    component={Link}
-                    to="/register"
-                    variant="outlined"
-                    sx={{
-                      borderColor: THEME.accentCamel,
-                      color: THEME.accentCamel,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      letterSpacing: "0.06em",
-                      px: 2,
-                      py: 0.9,
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      display: { xs: "none", md: "inline-flex" },
-                      "&:hover": {
-                        borderColor: THEME.accentCamelHover,
-                        bgcolor: "rgba(168,131,98,0.08)",
-                      },
-                    }}
-                  >
-                    REGISTER
-                  </Button>
-                </Box>
-              )}
+              {/* Always show SIGN IN & REGISTER only */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.8, sm: 1.2 } }}>
+                <Button
+                  component={Link}
+                  to="/login"
+                  variant="contained"
+                  sx={{
+                    bgcolor: "#59171B",
+                    color: "#FFFFFF",
+                    fontSize: { xs: 11, sm: 12.5 },
+                    fontWeight: 700,
+                    letterSpacing: "0.05em",
+                    px: { xs: 1.4, sm: 2.6 },
+                    py: { xs: 0.65, sm: 0.9 },
+                    borderRadius: "8px",
+                    textTransform: "uppercase",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 2px 12px rgba(89,23,27,0.3)",
+                    "&:hover": {
+                      bgcolor: "#7A2328",
+                      transform: "translateY(-1px)",
+                      boxShadow: "0 4px 16px rgba(89,23,27,0.4)",
+                    },
+                  }}
+                >
+                  SIGN IN
+                </Button>
+                <Button
+                  component={Link}
+                  to="/register"
+                  variant="outlined"
+                  sx={{
+                    borderColor: THEME.accentCamel,
+                    color: THEME.accentCamel,
+                    fontSize: { xs: 11, sm: 12 },
+                    fontWeight: 600,
+                    letterSpacing: "0.05em",
+                    px: { xs: 1.2, sm: 2 },
+                    py: { xs: 0.6, sm: 0.85 },
+                    borderRadius: "8px",
+                    textTransform: "uppercase",
+                    whiteSpace: "nowrap",
+                    display: "inline-flex",
+                    "&:hover": {
+                      borderColor: THEME.accentCamelHover,
+                      bgcolor: "rgba(168,131,98,0.08)",
+                    },
+                  }}
+                >
+                  REGISTER
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Container>
@@ -776,12 +729,12 @@ export default function LandingPage() {
                       sx={{
                         bgcolor: "#59171B",
                         color: "#FFFFFF",
-                        px: { xs: 3, sm: 3.5 },
-                        py: 1.6,
+                        px: { xs: 2.5, sm: 3.5 },
+                        py: { xs: 1.4, sm: 1.6 },
                         borderRadius: "8px",
                         fontWeight: 700,
                         letterSpacing: "0.08em",
-                        fontSize: 13,
+                        fontSize: { xs: 12, sm: 13 },
                         textTransform: "uppercase",
                         boxShadow: "0 4px 16px rgba(89,23,27,0.3)",
                         "&:hover": {
@@ -791,7 +744,7 @@ export default function LandingPage() {
                         },
                       }}
                     >
-                      {user ? `${user.role?.toUpperCase()} DASHBOARD` : "SIGN IN / FACTORY PORTAL"}
+                      SIGN IN TO FACTORY PORTAL
                     </Button>
 
                     <Button

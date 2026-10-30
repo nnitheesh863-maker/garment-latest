@@ -36,6 +36,7 @@ import AnimatedNumber from '../../components/common/AnimatedNumber';
 import { timeAgo } from '../../utils/helpers';
 import { CHART_COLORS } from '../../utils/chart';
 import AiCommandCenter from '../../components/admin/AiCommandCenter';
+import DefectReportsWidget from '../../components/common/DefectReportsWidget';
 
 const ORDER_COLORS = ['#E8A06B', '#A45A4A', '#7A2328', '#59171B', '#16A34A', '#2C8C8C'];
 const MACHINE_COLORS = {
@@ -770,6 +771,13 @@ export default function AdminDashboard() {
 
       <Grid container spacing={3} mb={3.5}>
         <Grid item xs={12}>
+          {/* Employee Defect Reports Section */}
+          <Box mb={3.5}>
+            <DefectReportsWidget
+              initialDefects={data?.recentDefects}
+              role="admin"
+            />
+          </Box>
           <GlassCard sx={{ border: '1px solid rgba(89,23,27,0.1)' }}>
             <SectionTitle
               icon={<NotificationsActiveIcon sx={{ fontSize: 17, color: '#FED7B8' }} />}

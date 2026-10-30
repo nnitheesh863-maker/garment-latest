@@ -51,6 +51,7 @@ import StatCard from "../../components/common/StatCard";
 import GlassCard from "../../components/common/GlassCard";
 import PageHeader from "../../components/common/PageHeader";
 import StatusBadge from "../../components/common/StatusBadge";
+import DefectReportsWidget from "../../components/common/DefectReportsWidget";
 import { formatDate, getStatusColor, truncateText } from "../../utils/helpers";
 import api from "../../api/axios";
 import { CHART_COLORS } from "../../utils/chart";
@@ -587,6 +588,11 @@ export default function ManagerDashboard() {
           </GlassCard>
         </Grid>
       </Grid>
+
+      {/* Employee Defect Reports Section with Photos */}
+      <Box mb={3}>
+        <DefectReportsWidget role="manager" />
+      </Box>
 
       <Grid container spacing={3} mb={3}>
         <Grid item xs={12} md={7}>

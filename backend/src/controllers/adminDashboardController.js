@@ -412,7 +412,7 @@ exports.getSummary = async (req, res, next) => {
   try {
     const days = Math.min(30, Math.max(7, parseInt(req.query.days) || 14));
 
-    const [kpis, productionTrend, machines, inventory, quality, lines, workforce, notifications] =
+    const [kpis, productionTrend, machines, inventory, quality, lines, workforce, notifications, recentDefects] =
       await Promise.all([
         getKpis(),
         getProductionTrend(days),
@@ -422,6 +422,11 @@ exports.getSummary = async (req, res, next) => {
         getLineData(),
         getWorkforceData(),
         getNotifications(),
+        DefectReport.find()
+          .sort({ createdAt: -1 })
+          .limit(8)
+          .populate('employee', 'email profile')
+          .lean(),
       ]);
 
     const health = computeFactoryHealth({
@@ -442,6 +447,7 @@ exports.getSummary = async (req, res, next) => {
       lines,
       workforce,
       notifications,
+      recentDefects,
       health,
       generatedAt: new Date().toISOString(),
     };

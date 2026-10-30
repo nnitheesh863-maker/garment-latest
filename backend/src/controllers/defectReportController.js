@@ -29,6 +29,12 @@ exports.createReport = async (req, res, next) => {
     const populated = await DefectReport.findById(report._id)
       .populate('employee', 'email profile');
 
+    if (global.io) {
+      global.io.emit('new_defect_report', populated);
+      global.io.to('admin').emit('new_defect_report', populated);
+      global.io.to('management').emit('new_defect_report', populated);
+    }
+
     return ApiResponse.success(res, populated, 'Defect report created', 201);
   } catch (err) {
     next(err);
@@ -112,6 +118,12 @@ exports.updateReportStatus = async (req, res, next) => {
 
     const populated = await DefectReport.findById(report._id)
       .populate('employee', 'email profile');
+
+    if (global.io) {
+      global.io.emit('defect_status_updated', populated);
+      global.io.to('admin').emit('defect_status_updated', populated);
+      global.io.to('management').emit('defect_status_updated', populated);
+    }
 
     return ApiResponse.success(res, populated, `Defect report marked as ${status}`);
   } catch (err) {
